@@ -12,6 +12,13 @@ class PageMeta(models.Model):
         help_text='Comma separated keywords used for meta tags.',
     )
     canonical_url = models.URLField(blank=True)
+    site = models.ForeignKey(
+        'SiteProfile',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='pages',
+    )
     is_indexable = models.BooleanField(
         default=True,
         help_text='Should search engines index this page?',
@@ -35,6 +42,8 @@ class PageMeta(models.Model):
             'is_indexable': self.is_indexable,
             'updated_at': self.updated_at.isoformat(),
             'backlinks': [backlink.to_dict() for backlink in self.backlinks.order_by('-created_at')[:10]],
+            'site_id': self.site_id,
+            'site': self.site.to_dict() if self.site else None,
         }
 
     def __str__(self) -> str:
@@ -42,6 +51,28 @@ class PageMeta(models.Model):
 
     def get_absolute_url(self) -> str:
         return reverse('seo:page_detail', kwargs={'slug': self.slug})
+
+
+class SiteProfile(models.Model):
+    name = models.CharField(max_length=150)
+    domain = models.URLField(unique=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            'id': self.id,
+            'name': self.name,
+            'domain': self.domain,
+            'description': self.description,
+            'created_at': self.created_at.isoformat(),
+        }
+
+    def __str__(self) -> str:
+        return f'{self.name} ({self.domain})'
 
 
 class Backlink(models.Model):

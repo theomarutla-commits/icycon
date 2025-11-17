@@ -7,11 +7,15 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
-from .models import Backlink, PageMeta
+from .models import Backlink, PageMeta, SiteProfile
 
 
 def serialize_page(page: PageMeta) -> dict[str, object]:
     return page.to_dict()
+
+
+def serialize_site(site: SiteProfile) -> dict[str, object]:
+    return site.to_dict()
 
 
 @require_http_methods(['GET'])
@@ -47,6 +51,17 @@ def page_detail(request: HttpRequest, slug: str) -> JsonResponse:
         if field in payload:
             setattr(page, field, payload[field])
 
+    if 'site_id' in payload:
+        site_id = payload['site_id']
+        if site_id:
+            try:
+                site = SiteProfile.objects.get(pk=site_id)
+            except SiteProfile.DoesNotExist as exc:
+                return JsonResponse({'error': 'Unknown site id'}, status=400)
+            page.site = site
+        else:
+            page.site = None
+
     page.save()
     status_code = 201 if created else 200
     return JsonResponse(serialize_page(page), status=status_code)
@@ -76,6 +91,46 @@ def page_backlinks(request: HttpRequest, slug: str) -> JsonResponse:
     )
 
     return JsonResponse(backlink.to_dict(), status=201)
+
+
+@require_http_methods(['GET', 'POST'])
+@ensure_csrf_cookie
+def site_list(request: HttpRequest) -> JsonResponse:
+    if request.method == 'GET':
+        sites = SiteProfile.objects.order_by('name')
+        return JsonResponse({'sites': [serialize_site(site) for site in sites]})
+
+    try:
+        payload = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+
+    domain = payload.get('domain', '').strip()
+    name = payload.get('name', '').strip()
+    if not domain or not name:
+        return JsonResponse({'error': 'Name and domain are required.'}, status=400)
+
+    site, created = SiteProfile.objects.get_or_create(
+        domain=domain,
+        defaults={
+            'name': name,
+            'description': payload.get('description', '').strip(),
+        },
+    )
+    if not created:
+        updated = False
+        description = payload.get('description')
+        if description is not None and description != site.description:
+            site.description = description
+            updated = True
+        if name != site.name:
+            site.name = name
+            updated = True
+        if updated:
+            site.save(update_fields=['name', 'description'])
+
+    status_code = 201 if created else 200
+    return JsonResponse(serialize_site(site), status=status_code)
 
 
 @ensure_csrf_cookie

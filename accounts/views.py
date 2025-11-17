@@ -3,11 +3,12 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 
-from .forms import SignupForm
+from .forms import SignupForm, SocialMediaForm
 
 
 def _redirect_target(request, default='accounts:home'):
@@ -19,8 +20,24 @@ logger = logging.getLogger(__name__)
 
 
 def home(request):
+    social_form = SocialMediaForm(request.POST or None)
+    profiles = request.user.social_profiles.all() if request.user.is_authenticated else []
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'You must be signed in to track social profiles.')
+            return redirect('accounts:login')
+
+        if social_form.is_valid():
+            social = social_form.save(commit=False)
+            social.user = request.user
+            social.save()
+            messages.success(request, 'Social profile tracked.')
+            return redirect('accounts:home')
+
     return render(request, 'accounts/home.html', {
         'user': request.user,
+        'social_form': social_form,
+        'profiles': profiles,
     })
 
 
@@ -80,7 +97,7 @@ def login_view(request):
     })
 
 
-def logout_view(request):
+def logout_view(request): 
     if request.user.is_authenticated:
         logout(request)
         messages.info(request, 'You have been signed out.')

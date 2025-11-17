@@ -28,4 +28,39 @@
       <li>Use the React SEO dashboard alongside a known identity.</li>
     </ul>
   </section>
+
+  {% if user.is_authenticated %}
+  <section>
+    <h2>Social media service</h2>
+    <p>Track accounts across platforms, share updates, and keep everyone aligned.</p>
+    {% if profiles %}
+    <ul>
+      {% for profile in profiles %}
+      <li>
+        <strong>{{ profile.platform|title }}:</strong> {{ profile.handle }}
+        {% if profile.url %}
+        (<a href="{{ profile.url }}" target="_blank" rel="noopener noreferrer">link</a>)
+        {% endif %}
+        <p>{{ profile.description }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No social profiles yet.</p>
+    {% endif %}
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      {% for field in social_form %}
+      <div>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="error">{{ field.errors|join:', ' }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit">Track profile</button>
+    </form>
+  </section>
+  {% endif %}
 {% endblock %}

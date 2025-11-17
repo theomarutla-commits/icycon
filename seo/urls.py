@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/pages/', views.pages_list, name='pages_list'),
     path('api/pages/<slug:slug>/', views.page_detail, name='page_detail'),
     path('api/pages/<slug:slug>/backlinks/', views.page_backlinks, name='page_backlinks'),
+    path('api/sites/', views.site_list, name='site_list'),
 ]
