@@ -1,0 +1,28 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <h1>Sign in</h1>
+  <p>Enter your credentials to access the SEO dashboard.</p>
+  <form method="post" class="form-grid" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="messages">
+      {% for error in form.non_field_errors %}
+      <p class="error">{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% for field in form %}
+    <div>
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}
+      <p class="error">{{ field.errors|join:', ' }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit">Login</button>
+  </form>
+{% endblock %}

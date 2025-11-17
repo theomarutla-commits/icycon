@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SEO Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background-color: #0c111b;
+        color: #f5f7fb;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top right, #1b1f2c, #0b0f18);
+      }
+
+      header {
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: linear-gradient(135deg, #131a2a, #1b253f);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        letter-spacing: 0.05em;
+      }
+
+      header p {
+        margin: 0.25rem 0 0;
+        color: #93a2c3;
+        font-size: 0.95rem;
+      }
+
+      #seo-app {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto 2rem;
+      }
+
+      .app-content {
+        display: grid;
+        grid-template-columns: 1fr 1.25fr;
+        gap: 1.2rem;
+      }
+
+      .panel {
+        background: #161d2f;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.45);
+      }
+
+      .panel h2 {
+        margin-top: 0;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .status {
+        font-size: 0.9rem;
+        color: #8ea4ff;
+      }
+
+      .status.error {
+        color: #ff7777;
+      }
+
+      .page-list {
+        list-style: none;
+        margin: 1rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+
+      .page-card {
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 0.9rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+        transition: border-color 0.2s, transform 0.2s;
+      }
+
+      .page-card.active {
+        border-color: rgba(74, 153, 255, 0.8);
+        transform: translateX(4px);
+        background: rgba(74, 153, 255, 0.08);
+      }
+
+      .page-card strong {
+        display: block;
+        font-size: 1rem;
+      }
+
+      .page-card span {
+        display: block;
+        font-size: 0.85rem;
+        color: #b7c1d9;
+        margin-top: 0.35rem;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #0f1622;
+        color: inherit;
+        font-size: 0.95rem;
+      }
+
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .form-actions button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 999px;
+        border: none;
+        background: #009ffd;
+        color: #0a0a0a;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .form-actions button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .backlink-area {
+        margin-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 1.5rem;
+      }
+
+      .backlink-grid {
+        display: grid;
+        grid-template-columns: 1fr 0.95fr;
+        gap: 1rem;
+      }
+
+      .backlink-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .backlink-list li {
+        padding: 0.9rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .backlink-badge {
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        margin-bottom: 0.35rem;
+      }
+
+      .backlink-badge.active {
+        background: rgba(41, 209, 145, 0.15);
+        color: #6af2c0;
+      }
+
+      .backlink-badge.pending {
+        background: rgba(253, 186, 116, 0.15);
+        color: #ffd387;
+      }
+
+      .backlink-badge.lost {
+        background: rgba(255, 126, 117, 0.15);
+        color: #ff9c90;
+      }
+
+      .backlink-url {
+        font-weight: 600;
+        word-break: break-all;
+      }
+
+      .backlink-source {
+        font-size: 0.8rem;
+        color: #cfd2e1;
+      }
+
+      .backlink-form button {
+        width: 100%;
+      }
+
+      .backlink-form .status {
+        margin-top: 0.5rem;
+      }
+
+      @media (max-width: 960px) {
+        .app-content {
+          grid-template-columns: 1fr;
+        }
+
+        .backlink-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SEO Intelligence</h1>
+      <p class="status">Manage metadata + backlinks in one place.</p>
+    </header>
+    <div id="seo-app"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      const API_ROOT = '/seo/api/pages/';
+      const BACKLINK_STATUSES = [
+        { value: 'active', label: 'Active' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'lost', label: 'Lost' },
+      ];
+
+      function getCSRFToken() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : '';
+      }
+
+      function SeoEditor({ page, onChange, onSave, busy, error }) {
+        if (!page) {
+          return <p>Select a page to load its metadata.</p>;
+        }
+
+        const handleChange = (event) => {
+          const { name, value, type, checked } = event.target;
+          const payload = type === 'checkbox' ? checked : value;
+          onChange(name, payload);
+        };
+
+        return (
+          <div className="form-grid">
+            <label>
+              Slug
+              <input name="slug" value={page.slug} onChange={handleChange} />
+            </label>
+            <label>
+              Title
+              <input name="title" value={page.title} onChange={handleChange} />
+            </label>
+            <label>
+              Description
+              <textarea name="description" value={page.description} onChange={handleChange} />
+            </label>
+            <label>
+              Keywords (comma separated)
+              <input name="keywords" value={page.keywords} onChange={handleChange} />
+            </label>
+            <label>
+              Canonical URL
+              <input name="canonical_url" value={page.canonical_url} onChange={handleChange} />
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name="is_indexable"
+                checked={page.is_indexable}
+                onChange={handleChange}
+              />
+              {' '}Allow indexing
+            </label>
+            <div className="form-actions">
+              <button type="button" disabled={busy} onClick={onSave}>
+                {busy ? 'Saving…' : 'Save metadata'}
+              </button>
+              {error && <span className="status error">{error}</span>}
+            </div>
+          </div>
+        );
+      }
+
+      function BacklinkPanel({ backlinks, formState, onChange, onSave, busy, error }) {
+        return (
+          <div className="backlink-area">
+            <div className="backlink-header">
+              <h3>Backlinks</h3>
+              <p className="status">
+                {backlinks.length
+                  ? backlinks.length + ' backlink' + (backlinks.length > 1 ? 's' : '')
+                  : 'No backlinks traced yet'}
+              </p>
+            </div>
+            <div className="backlink-grid">
+              <ul className="backlink-list">
+                {backlinks.length ? (
+                  backlinks.map((link) => (
+                    <li key={link.id}>
+                      <span className={'backlink-badge ' + link.status}>
+                        {link.status}
+                      </span>
+                      <div className="backlink-url">
+                        <a href={link.url} target="_blank" rel="noreferrer">
+                          {link.url}
+                        </a>
+                      </div>
+                      {link.anchor_text && <p>{link.anchor_text}</p>}
+                      {link.source && (
+                        <p className="backlink-source">Source: {link.source}</p>
+                      )}
+                    </li>
+                  ))
+                ) : (
+                  <li>
+                    <p>Backlinks populate once you save the first record.</p>
+                  </li>
+                )}
+              </ul>
+              <form
+                className="backlink-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  onSave();
+                }}
+              >
+                <label>
+                  URL
+                  <input
+                    name="url"
+                    value={formState.url}
+                    onChange={(event) => onChange('url', event.target.value)}
+                    placeholder="https://partner.example.com/post"
+                  />
+                </label>
+                <label>
+                  Anchor text
+                  <input
+                    name="anchor_text"
+                    value={formState.anchor_text}
+                    onChange={(event) => onChange('anchor_text', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Source
+                  <input
+                    name="source"
+                    value={formState.source}
+                    onChange={(event) => onChange('source', event.target.value)}
+                    placeholder="Partner.com"
+                  />
+                </label>
+                <label>
+                  Status
+                  <select
+                    name="status"
+                    value={formState.status}
+                    onChange={(event) => onChange('status', event.target.value)}
+                  >
+                    {BACKLINK_STATUSES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_follow"
+                    checked={formState.is_follow}
+                    onChange={(event) => onChange('is_follow', event.target.checked)}
+                  />
+                  {' '}Follow link
+                </label>
+                <div className="form-actions">
+                  <button type="submit" disabled={busy}>
+                    {busy ? 'Saving…' : 'Track backlink'}
+                  </button>
+                </div>
+                {error && <p className="status error">{error}</p>}
+              </form>
+            </div>
+          </div>
+        );
+      }
+
+      const DEFAULT_BACKLINK = {
+        url: '',
+        anchor_text: '',
+        source: '',
+        status: 'active',
+        is_follow: true,
+      };
+
+      function SeoDashboard() {
+        const [pages, setPages] = useState([]);
+        const [selectedSlug, setSelectedSlug] = useState('');
+        const [formState, setFormState] = useState({
+          slug: '',
+          title: '',
+          description: '',
+          keywords: '',
+          canonical_url: '',
+          is_indexable: true,
+        });
+        const [busy, setBusy] = useState(false);
+        const [error, setError] = useState('');
+        const [backlinks, setBacklinks] = useState([]);
+        const [backlinkForm, setBacklinkForm] = useState(DEFAULT_BACKLINK);
+        const [backlinkBusy, setBacklinkBusy] = useState(false);
+        const [backlinkError, setBacklinkError] = useState('');
+
+        const loadPages = () =>
+          fetch(API_ROOT)
+            .then((response) => response.json())
+            .then((data) => {
+              setPages(data.pages || []);
+            })
+            .catch(() => setError('Unable to fetch SEO pages.'));
+
+        const loadBacklinks = (slug) => {
+          if (!slug) {
+            setBacklinks([]);
+            return;
+          }
+          fetch(API_ROOT + slug + '/backlinks/')
+            .then((response) => (response.ok ? response.json() : Promise.reject()))
+            .then((data) => setBacklinks(data.backlinks || []))
+            .catch(() => setBacklinkError('Unable to load backlinks.'));
+        };
+
+        useEffect(() => {
+          loadPages();
+        }, []);
+
+        useEffect(() => {
+          if (!selectedSlug) {
+            return;
+          }
+          const existing = pages.find((p) => p.slug === selectedSlug);
+          if (existing) {
+            setFormState(existing);
+          }
+        }, [selectedSlug, pages]);
+
+        useEffect(() => {
+          loadBacklinks(selectedSlug);
+        }, [selectedSlug]);
+
+        const page = selectedSlug
+          ? pages.find((item) => item.slug === selectedSlug) || formState
+          : formState;
+
+        const handlePageSelect = (slug) => {
+          setSelectedSlug(slug);
+          setError('');
+        };
+
+        const handleChange = (name, value) => {
+          setFormState((prev) => ({ ...prev, [name]: value }));
+          if (name === 'slug') {
+            setSelectedSlug(value);
+          }
+        };
+
+        const handleSave = () => {
+          if (!formState.slug) {
+            setError('Slug is required.');
+            return;
+          }
+          setBusy(true);
+          setError('');
+          fetch(API_ROOT + formState.slug + '/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(formState),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error('Response not OK');
+              }
+              return response.json();
+            })
+            .then((data) => {
+              setFormState(data);
+              setSelectedSlug(data.slug);
+              loadPages();
+            })
+            .catch(() => setError('Unable to save metadata.'))
+            .finally(() => setBusy(false));
+        };
+
+        const handleBacklinkChange = (name, value) => {
+          setBacklinkForm((prev) => ({ ...prev, [name]: value }));
+        };
+
+        const handleBacklinkSave = () => {
+          if (!selectedSlug && !formState.slug) {
+            setBacklinkError('Select or create a slug first.');
+            return;
+          }
+          const targetSlug = selectedSlug || formState.slug;
+          if (!targetSlug) {
+            setBacklinkError('Slug is required for creating backlinks.');
+            return;
+          }
+          if (!backlinkForm.url) {
+            setBacklinkError('Backlink URL is required.');
+            return;
+          }
+          setBacklinkBusy(true);
+          setBacklinkError('');
+          fetch(API_ROOT + targetSlug + '/backlinks/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(backlinkForm),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error('Response not OK');
+              }
+              return response.json();
+            })
+            .then(() => {
+              setBacklinkForm(DEFAULT_BACKLINK);
+              loadBacklinks(targetSlug);
+              loadPages();
+            })
+            .catch(() => setBacklinkError('Unable to save backlink.'))
+            .finally(() => setBacklinkBusy(false));
+        };
+
+        return (
+          <div className="app-content">
+            <section className="panel">
+              <h2>Tracked pages</h2>
+              <p className="status">
+                {pages.length
+                  ? pages.length + ' page' + (pages.length > 1 ? 's' : '') + ' tracked'
+                  : 'No metadata stored yet.'}
+              </p>
+              <ul className="page-list">
+                {pages.map((item) => (
+                  <li key={item.slug}>
+                    <div
+                      className={'page-card ' + (item.slug === selectedSlug ? 'active' : '')}
+                      onClick={() => handlePageSelect(item.slug)}
+                    >
+                      <strong>{item.title || item.slug}</strong>
+                      <span>{item.description?.slice(0, 80)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="panel">
+              <h2>Page metadata</h2>
+              <SeoEditor
+                page={page}
+                onChange={handleChange}
+                onSave={handleSave}
+                busy={busy}
+                error={error}
+              />
+              <BacklinkPanel
+                backlinks={backlinks}
+                formState={backlinkForm}
+                onChange={handleBacklinkChange}
+                onSave={handleBacklinkSave}
+                busy={backlinkBusy}
+                error={backlinkError}
+              />
+            </section>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('seo-app')).render(<SeoDashboard />);
+    </script>
+  </body>
+</html>

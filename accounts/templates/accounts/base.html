@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Icycon{% endblock %}</title>
+    <style>
+      :root {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        color: #0f172a;
+        background: #f5f7fb;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background-color: #f5f7fb;
+      }
+
+      header {
+        background: #050a2a;
+        color: #f5f5ff;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      header .brand {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+
+      nav {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      nav a {
+        color: inherit;
+        text-decoration: none;
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.35rem;
+      }
+
+      nav a.active,
+      nav a:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      main {
+        padding: 2rem;
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1);
+      }
+
+      .messages {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .messages p {
+        margin: 0;
+        padding: 0.75rem 1rem;
+        border-radius: 0.6rem;
+      }
+
+      .messages .success {
+        background: #d1fae5;
+        color: #0f5132;
+      }
+
+      .messages .info {
+        background: #e0f2fe;
+        color: #0f172a;
+      }
+
+      .messages .error {
+        background: #fee2e2;
+        color: #7f1d1d;
+      }
+
+      footer {
+        text-align: center;
+        padding: 1rem;
+        color: #475569;
+        font-size: 0.85rem;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.6rem;
+        border: 1px solid #cbd5f5;
+        font-size: 1rem;
+      }
+
+      button {
+        background: #0d3b8f;
+        border: none;
+        color: #fff;
+        padding: 0.85rem 1.5rem;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #15227c;
+      }
+
+      @media (max-width: 600px) {
+        header {
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: center;
+        }
+
+        nav {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">Icycon</div>
+      <nav>
+        <a href="{% url 'accounts:home' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'accounts:logout' %}">Sign out</a>
+        {% else %}
+        <a href="{% url 'accounts:login' %}">Login</a>
+        <a href="{% url 'accounts:signup' %}">Sign up</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <main>
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <p class="{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="card">{% block content %}{% endblock %}</div>
+    </main>
+
+    <footer>Built on Django’s auth + React SEO tooling.</footer>
+  </body>
+</html>

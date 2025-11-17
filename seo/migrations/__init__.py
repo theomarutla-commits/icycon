@@ -1,0 +1,3 @@
+"""
+Empty migrations package placeholder.
+"""
