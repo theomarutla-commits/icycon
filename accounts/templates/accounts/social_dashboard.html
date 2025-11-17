@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Social Publishing</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #f8fafc, #e0e7ff);
+      }
+
+      header {
+        padding: 1rem 2rem;
+        background: #0f172a;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      header a {
+        color: #e0e7ff;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      main {
+        padding: 2rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 1rem;
+      }
+
+      .panel {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      .panel h2 {
+        margin-top: 0;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.6rem;
+        border-radius: 0.65rem;
+        border: 1px solid #cbd5f5;
+        font-size: 0.95rem;
+        margin-bottom: 0.85rem;
+      }
+
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      button {
+        background: #6366f1;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.2rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status {
+        font-size: 0.85rem;
+        color: #6366f1;
+      }
+
+      .status.error {
+        color: #ef4444;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      li {
+        padding: 0.65rem 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Social Publisher</h1>
+      <a href="{% url 'accounts:home' %}">Home</a>
+      <a href="{% url 'accounts:logout' %}">Logout</a>
+    </header>
+    <main>
+      <div id="social-dashboard"></div>
+    </main>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      const PROFILES_ROOT = '/accounts/api/social-profiles/';
+      const POSTS_ROOT = '/accounts/api/social-posts/';
+
+      function SocialDashboard() {
+        const [profiles, setProfiles] = useState([]);
+        const [posts, setPosts] = useState([]);
+        const [profileForm, setProfileForm] = useState({ platform: 'twitter', handle: '', url: '', description: '' });
+        const [postForm, setPostForm] = useState({ profile_id: '', caption: '', scheduled_at: '' });
+        const [busy, setBusy] = useState({ profile: false, post: false });
+        const [errors, setErrors] = useState({ profile: '', post: '' });
+
+        const fetchProfiles = () =>
+          fetch(PROFILES_ROOT)
+            .then((response) => response.json())
+            .then((data) => setProfiles(data.profiles || []))
+            .catch(() => setErrors((prev) => ({ ...prev, profile: 'Unable to load profiles.' })));
+
+        const fetchPosts = () =>
+          fetch(POSTS_ROOT)
+            .then((response) => response.json())
+            .then((data) => setPosts(data.posts || []))
+            .catch(() => setErrors((prev) => ({ ...prev, post: 'Unable to load posts.' })));
+
+        useEffect(() => {
+          fetchProfiles();
+          fetchPosts();
+        }, []);
+
+        const handleProfileSave = () => {
+          if (!profileForm.handle) {
+            setErrors((prev) => ({ ...prev, profile: 'Handle is required.' }));
+            return;
+          }
+          setBusy((prev) => ({ ...prev, profile: true }));
+          fetch(PROFILES_ROOT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+            },
+            body: JSON.stringify(profileForm),
+          })
+            .then((response) => {
+              if (!response.ok) throw new Error('Failed');
+              return response.json();
+            })
+            .then(() => {
+              setProfileForm({ platform: 'twitter', handle: '', url: '', description: '' });
+              fetchProfiles();
+            })
+            .catch(() => setErrors((prev) => ({ ...prev, profile: 'Unable to save profile.' })))
+            .finally(() => setBusy((prev) => ({ ...prev, profile: false })));
+        };
+
+        const handlePostSave = () => {
+          if (!postForm.profile_id || !postForm.caption) {
+            setErrors((prev) => ({ ...prev, post: 'Profile and caption are required.' }));
+            return;
+          }
+          setBusy((prev) => ({ ...prev, post: true }));
+          fetch(POSTS_ROOT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+            },
+            body: JSON.stringify(postForm),
+          })
+            .then((response) => {
+              if (!response.ok) throw new Error('Failed');
+              return response.json();
+            })
+            .then(() => {
+              setPostForm({ profile_id: '', caption: '', scheduled_at: '' });
+              fetchPosts();
+            })
+            .catch(() => setErrors((prev) => ({ ...prev, post: 'Unable to create post.' })))
+            .finally(() => setBusy((prev) => ({ ...prev, post: false })));
+        };
+
+        return (
+          <div className="grid">
+            <section className="panel">
+              <h2>Profiles</h2>
+              <p className="status">{profiles.length ? `${profiles.length} profiles tracked` : 'No profiles yet'}</p>
+              <ul>
+                {profiles.map((profile) => (
+                  <li key={profile.id}>
+                    <strong>{profile.platform.toUpperCase()}</strong> · {profile.handle}
+                    <p>{profile.description}</p>
+                  </li>
+                ))}
+              </ul>
+              <h3>Add a profile</h3>
+              <label>Platform</label>
+              <select
+                name="platform"
+                value={profileForm.platform}
+                onChange={(event) => setProfileForm({ ...profileForm, platform: event.target.value })}
+              >
+                <option value="twitter">Twitter</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
+                <option value="other">Other</option>
+              </select>
+              <label>Handle</label>
+              <input
+                name="handle"
+                value={profileForm.handle}
+                onChange={(event) => setProfileForm({ ...profileForm, handle: event.target.value })}
+              />
+              <label>Profile URL</label>
+              <input
+                name="url"
+                value={profileForm.url}
+                onChange={(event) => setProfileForm({ ...profileForm, url: event.target.value })}
+              />
+              <label>Description</label>
+              <textarea
+                name="description"
+                value={profileForm.description}
+                onChange={(event) => setProfileForm({ ...profileForm, description: event.target.value })}
+              />
+              <div className="form-actions">
+                <button type="button" disabled={busy.profile} onClick={handleProfileSave}>
+                  {busy.profile ? 'Tracking…' : 'Track profile'}
+                </button>
+              </div>
+              {errors.profile && <p className="status error">{errors.profile}</p>}
+            </section>
+
+            <section className="panel">
+              <h2>Posts</h2>
+              <p className="status">{posts.length ? `${posts.length} posts logged` : 'No posts yet'}</p>
+              <ul>
+                {posts.map((post) => (
+                  <li key={post.id}>
+                    <strong>{post.caption}</strong>
+                    <p>Scheduled: {post.scheduled_at || '—'}</p>
+                  </li>
+                ))}
+              </ul>
+              <label>Profile</label>
+              <select
+                name="profile_id"
+                value={postForm.profile_id}
+                onChange={(event) => setPostForm({ ...postForm, profile_id: event.target.value })}
+              >
+                <option value="">Choose profile</option>
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.platform} / {profile.handle}
+                  </option>
+                ))}
+              </select>
+              <label>Caption</label>
+              <textarea
+                name="caption"
+                value={postForm.caption}
+                onChange={(event) => setPostForm({ ...postForm, caption: event.target.value })}
+              />
+              <label>Scheduled At</label>
+              <input
+                type="datetime-local"
+                name="scheduled_at"
+                value={postForm.scheduled_at}
+                onChange={(event) => setPostForm({ ...postForm, scheduled_at: event.target.value })}
+              />
+              <div className="form-actions">
+                <button type="button" disabled={busy.post} onClick={handlePostSave}>
+                  {busy.post ? 'Posting…' : 'Log post'}
+                </button>
+              </div>
+              {errors.post && <p className="status error">{errors.post}</p>}
+            </section>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('social-dashboard')).render(<SocialDashboard />);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ASO Intelligence</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      header {
+        background: #111827;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      header a {
+        color: #cbd5f5;
+        text-decoration: none;
+        margin-left: 1rem;
+        font-weight: 600;
+      }
+
+      main {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.2rem;
+      }
+
+      .card {
+        background: #1f2937;
+        border-radius: 1rem;
+        padding: 1.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      h1, h2, h3 {
+        margin-top: 0;
+      }
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      li {
+        padding-bottom: 0.7rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      button {
+        background: #fb923c;
+        color: #0f172a;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.6rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.6rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #0f172a;
+        color: inherit;
+        margin-bottom: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>ASO Intelligence</div>
+      <div>
+        <a href="/seo/dashboard/">SEO</a>
+        <a href="/marketplace/dashboard/">Marketplace</a>
+        <a href="/accounts/social/dashboard/">Social</a>
+      </div>
+    </header>
+    <main>
+      <div id="aso-app"></div>
+    </main>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      const ROOT = '/aso/api/listings/';
+
+      function AsoDashboard() {
+        const [listings, setListings] = useState([]);
+        const [form, setForm] = useState({
+          name: '',
+          store: 'apple',
+          bundle_id: '',
+          description: '',
+          rating: '0.0',
+          downloads: '0',
+          icon_url: '',
+        });
+        const [busy, setBusy] = useState(false);
+        const [status, setStatus] = useState('');
+
+        const loadListings = () =>
+          fetch(ROOT)
+            .then((response) => response.json())
+            .then((data) => setListings(data.listings || []))
+            .catch(() => setStatus('Unable to load listings.'));
+
+        useEffect(() => {
+          loadListings();
+        }, []);
+
+        const handleSubmit = () => {
+          if (!form.name || !form.bundle_id) {
+            setStatus('Name and bundle ID required.');
+            return;
+          }
+          setBusy(true);
+          fetch(ROOT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+            },
+            body: JSON.stringify(form),
+          })
+            .then((response) => {
+              if (!response.ok) throw new Error('Failed');
+              return response.json();
+            })
+            .then(() => {
+              setForm({
+                name: '',
+                store: 'apple',
+                bundle_id: '',
+                description: '',
+                rating: '0.0',
+                downloads: '0',
+                icon_url: '',
+              });
+              loadListings();
+            })
+            .catch(() => setStatus('Unable to save listing.'))
+            .finally(() => setBusy(false));
+        };
+
+        return (
+          <div className="grid">
+            <section className="card">
+              <h2>Create listing</h2>
+              <select value={form.store} onChange={(event) => setForm({ ...form, store: event.target.value })}>
+                <option value="apple">App Store</option>
+                <option value="google">Google Play</option>
+                <option value="amazon">Amazon</option>
+                <option value="other">Other</option>
+              </select>
+              <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="App name" />
+              <input value={form.bundle_id} onChange={(event) => setForm({ ...form, bundle_id: event.target.value })} placeholder="com.example.app" />
+              <textarea
+                value={form.description}
+                onChange={(event) => setForm({ ...form, description: event.target.value })}
+                placeholder="Short marketing copy"
+              />
+              <input value={form.rating} onChange={(event) => setForm({ ...form, rating: event.target.value })} placeholder="Rating" />
+              <input value={form.downloads} onChange={(event) => setForm({ ...form, downloads: event.target.value })} placeholder="Downloads" />
+              <input value={form.icon_url} onChange={(event) => setForm({ ...form, icon_url: event.target.value })} placeholder="Icon URL" />
+              <div className="form-actions">
+                <button disabled={busy} onClick={handleSubmit}>
+                  {busy ? 'Saving…' : 'Save listing'}
+                </button>
+              </div>
+              {status && <p className="status">{status}</p>}
+            </section>
+            <section className="card">
+              <h2>Listings overview</h2>
+              <ul>
+                {listings.map((listing) => (
+                  <li key={listing.id}>
+                    <strong>{listing.name} ({listing.store})</strong>
+                    <p>Rating: {listing.rating} · Downloads: {listing.downloads}</p>
+                    <p>Metrics: {listing.metrics.map((metric) => `${metric.field}:${metric.value}`).join(', ')}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('aso-app')).render(<AsoDashboard />);
+    </script>
+  </body>
+</html>

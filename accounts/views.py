@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.conf import settings
@@ -6,9 +7,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import send_mail
+from django.http import JsonResponse, HttpRequest
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 
-from .forms import SignupForm, SocialMediaForm
+from .forms import ProfileForm, SignupForm, SocialMediaForm
+from .models import Profile, SocialMediaPost, SocialMediaProfile
 
 
 def _redirect_target(request, default='accounts:home'):
@@ -38,6 +43,107 @@ def home(request):
         'user': request.user,
         'social_form': social_form,
         'profiles': profiles,
+    })
+
+
+def _serialize_profile(profile: SocialMediaProfile) -> dict[str, object]:
+    return {
+        'id': profile.id,
+        'platform': profile.platform,
+        'handle': profile.handle,
+        'url': profile.url,
+        'description': profile.description,
+    }
+
+
+def _serialize_post(post: SocialMediaPost) -> dict[str, object]:
+    return {
+        'id': post.id,
+        'profile_id': post.profile_id,
+        'caption': post.caption,
+        'scheduled_at': post.scheduled_at.isoformat() if post.scheduled_at else None,
+        'posted_at': post.posted_at.isoformat() if post.posted_at else None,
+        'created_at': post.created_at.isoformat(),
+    }
+
+
+@require_http_methods(['GET', 'POST'])
+@ensure_csrf_cookie
+def social_profiles_api(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=403)
+
+    if request.method == 'GET':
+        profiles = request.user.social_profiles.order_by('-updated_at')
+        return JsonResponse({'profiles': [ _serialize_profile(profile) for profile in profiles ]})
+
+    try:
+        payload = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+
+    form = SocialMediaForm(payload)
+    if not form.is_valid():
+        return JsonResponse({'error': form.errors.get_json_data()}, status=400)
+
+    profile = form.save(commit=False)
+    profile.user = request.user
+    profile.save()
+    return JsonResponse(_serialize_profile(profile), status=201)
+
+
+@require_http_methods(['GET', 'POST'])
+@ensure_csrf_cookie
+def social_posts_api(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=403)
+
+    if request.method == 'GET':
+        posts = SocialMediaPost.objects.filter(profile__user=request.user).order_by('-created_at')
+        return JsonResponse({'posts': [_serialize_post(post) for post in posts]})
+
+    try:
+        payload = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+
+    profile_id = payload.get('profile_id')
+    caption = payload.get('caption')
+    if not profile_id or not caption:
+        return JsonResponse({'error': 'Profile and caption required'}, status=400)
+
+    try:
+        profile = SocialMediaProfile.objects.get(pk=profile_id, user=request.user)
+    except SocialMediaProfile.DoesNotExist:
+        return JsonResponse({'error': 'Invalid profile'}, status=404)
+
+    scheduled = payload.get('scheduled_at')
+    post = SocialMediaPost.objects.create(
+        profile=profile,
+        caption=caption,
+        scheduled_at=scheduled if scheduled else None,
+    )
+    return JsonResponse(_serialize_post(post), status=201)
+
+
+@login_required
+def social_dashboard(request):
+    return render(request, 'accounts/social_dashboard.html')
+
+
+@login_required
+def profile_view(request):
+    profile = request.user.profile
+    form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Profile updated.')
+        return redirect('accounts:profile')
+
+    return render(request, 'accounts/profile.html', {
+        'user': request.user,
+        'profile': profile,
+        'form': form,
     })
 
 

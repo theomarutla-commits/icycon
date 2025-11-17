@@ -31,6 +31,30 @@
 
   {% if user.is_authenticated %}
   <section>
+    <h2>Jump to your dashboards</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+      <a href="{% url 'seo:dashboard' %}" class="card" style="text-align:center;">
+        <strong>SEO</strong>
+        <p>Metadata & backlink insights</p>
+      </a>
+      <a href="{% url 'marketplace:dashboard' %}" class="card" style="text-align:center;">
+        <strong>Marketplace</strong>
+        <p>Products, sales & interactions</p>
+      </a>
+      <a href="{% url 'aso:dashboard' %}" class="card" style="text-align:center;">
+        <strong>ASO</strong>
+        <p>App listings & metrics</p>
+      </a>
+      <a href="{% url 'accounts:social_dashboard' %}" class="card" style="text-align:center;">
+        <strong>Social</strong>
+        <p>Profiles & scheduled posts</p>
+      </a>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+  <section>
     <h2>Social media service</h2>
     <p>Track accounts across platforms, share updates, and keep everyone aligned.</p>
     {% if profiles %}

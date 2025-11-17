@@ -484,6 +484,7 @@
       function SeoDashboard() {
         const [pages, setPages] = useState([]);
         const [sites, setSites] = useState([]);
+        const [products, setProducts] = useState([]);
         const [selectedSlug, setSelectedSlug] = useState('');
         const [formState, setFormState] = useState({
           slug: '',
@@ -718,7 +719,7 @@
                 busy={backlinkBusy}
                 error={backlinkError}
               />
-            </section>
+              </section>
           </div>
         );
       }

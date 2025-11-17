@@ -2,7 +2,13 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import SocialMediaProfile
+from .models import Profile, SocialMediaProfile
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ('avatar', 'bio')
 
 
 class SignupForm(UserCreationForm):
