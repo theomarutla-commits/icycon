@@ -18,19 +18,29 @@
         margin: 0;
       }
 
-      header {
+      .aso-hero {
         background: #111827;
-        padding: 1rem 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        color: #cbd5f5;
+        padding: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(203, 213, 225, 0.22);
       }
 
-      header a {
+      .aso-hero h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      .aso-hero p {
+        margin: 0.5rem 0 0;
         color: #cbd5f5;
-        text-decoration: none;
-        margin-left: 1rem;
-        font-weight: 600;
+        opacity: 0.9;
+      }
+
+      @media (max-width: 640px) {
+        .aso-hero {
+          text-align: center;
+        }
       }
 
       main {
@@ -91,14 +101,13 @@
     </style>
   </head>
   <body>
-    <header>
-      <div>ASO Intelligence</div>
+    {% include 'shared/dashboard_header.html' %}
+    <section class="aso-hero">
       <div>
-        <a href="/seo/dashboard/">SEO</a>
-        <a href="/marketplace/dashboard/">Marketplace</a>
-        <a href="/accounts/social/dashboard/">Social</a>
+        <h1>ASO Intelligence</h1>
+        <p>Keep your app listings aligned with the SEO workbench.</p>
       </div>
-    </header>
+    </section>
     <main>
       <div id="aso-app"></div>
     </main>

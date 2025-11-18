@@ -1,0 +1,133 @@
+<style>
+.dashboard-header {
+  background: linear-gradient(135deg, #050a2a, #1b1c3b);
+  color: #f8fafc;
+  padding: 1.3rem 2rem;
+  border-bottom: 1px solid rgba(248, 250, 252, 0.15);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard-header__brand {
+  flex: 1;
+  min-width: 220px;
+}
+
+.dashboard-header__title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.dashboard-header__subtitle {
+  margin: 0.3rem 0 0.75rem;
+  color: rgba(248, 250, 252, 0.78);
+  font-size: 0.95rem;
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.45rem;
+}
+
+.summary-card {
+  background: rgba(248, 250, 252, 0.08);
+  border-radius: 0.8rem;
+  border: 1px solid rgba(248, 250, 252, 0.2);
+  padding: 0.5rem 0.9rem;
+  min-width: 120px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.summary-card span {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-card strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.dashboard-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.dashboard-nav a {
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dashboard-nav a:hover,
+.dashboard-nav a.active {
+  background: rgba(248, 250, 252, 0.15);
+  border-color: rgba(248, 250, 252, 0.6);
+}
+
+@media (max-width: 860px) {
+  .dashboard-nav {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
+
+{# Reuse the dashboard header on every page and surface the SEO summary counts #}
+<header class="dashboard-header">
+  <div class="dashboard-header__brand">
+    <p class="dashboard-header__title">Icycon Intelligence</p>
+    <p class="dashboard-header__subtitle">
+      Unified access to SEO, ASO, marketplace, and social automation.
+    </p>
+    <div class="dashboard-summary">
+      {% with summary=seo_summary|default:{} %}
+      <div class="summary-card">
+        <span>Tracked pages</span>
+        <strong>{{ summary.pages_count|default:0 }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Backlinks</span>
+        <strong>{{ summary.backlinks_count|default:0 }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Sites</span>
+        <strong>{{ summary.sites_count|default:0 }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Directories</span>
+        <strong>{{ summary.directories_count|default:0 }}</strong>
+      </div>
+      {% endwith %}
+    </div>
+  </div>
+  <nav class="dashboard-nav">
+    <a href="{% url 'accounts:home' %}">Home</a>
+    <a href="{% url 'accounts:about' %}">About</a>
+    <a href="{% url 'seo:dashboard' %}">SEO</a>
+    <a href="{% url 'aso:dashboard' %}">ASO</a>
+    <a href="{% url 'marketplace:dashboard' %}">Marketplace</a>
+    <a href="{% url 'accounts:social_dashboard' %}">Social</a>
+    <a href="{% url 'accounts:support' %}">Support</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'accounts:profile' %}">Profile</a>
+      <a href="{% url 'accounts:logout' %}">Sign out</a>
+    {% else %}
+      <a href="{% url 'accounts:login' %}">Login</a>
+      <a href="{% url 'accounts:signup' %}">Sign up</a>
+    {% endif %}
+  </nav>
+</header>

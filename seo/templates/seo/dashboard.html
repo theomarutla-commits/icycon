@@ -20,20 +20,20 @@
         background: radial-gradient(circle at top right, #1b1f2c, #0b0f18);
       }
 
-      header {
-        padding: 1.25rem;
+      .seo-hero {
+        padding: 1.25rem 1.75rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         background: linear-gradient(135deg, #131a2a, #1b253f);
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
       }
 
-      header h1 {
+      .seo-hero h1 {
         margin: 0;
         font-size: 1.8rem;
         letter-spacing: 0.05em;
       }
 
-      header p {
+      .seo-hero p {
         margin: 0.25rem 0 0;
         color: #93a2c3;
         font-size: 0.95rem;
@@ -226,20 +226,14 @@
       }
     </style>
   </head>
-  <body>
-    <header>
+<body>
+    {% include 'shared/dashboard_header.html' %}
+    <section class="seo-hero">
       <div>
         <h1>SEO Intelligence</h1>
         <p class="status">Manage metadata, backlinks, and site data from one dashboard.</p>
       </div>
-      <nav style="display:flex; gap:1rem;">
-        <a href="/">Home</a>
-        <a href="/accounts/profile/">Profile</a>
-        <a href="/marketplace/dashboard/">Marketplace</a>
-        <a href="/aso/dashboard/">ASO</a>
-        <a href="/accounts/social/dashboard/">Social</a>
-      </nav>
-    </header>
+    </section>
     <div id="seo-app"></div>
     <script type="text/babel">
       const { useState, useEffect } = React;

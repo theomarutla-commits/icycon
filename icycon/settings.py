@@ -26,11 +26,7 @@ SECRET_KEY = 'django-insecure-rjssro89pmf*1j&8)mi%uju#&%5d8zwgt)s8d*34(n626hg8&)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
-
-vercel = os.environ.get('VERCEL_URL')
-if vercel and vercel not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(vercel)
+ALLOWED_HOSTS =["*"]
 
 
 # Application definition
@@ -74,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'seo.context_processors.seo_dashboard_summary',
             ],
         },
     },
@@ -127,6 +124,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -141,3 +139,4 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
