@@ -14,4 +14,5 @@ urlpatterns = [
     path('api/social-posts/', views.social_posts_api, name='social_posts_api'),
     path('profile/', views.profile_view, name='profile'),
     path('about/', views.about, name='about'),
+    path('support/', views.support_info, name='support'),
 ]

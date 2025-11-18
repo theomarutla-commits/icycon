@@ -151,6 +151,18 @@ def about(request):
     return render(request, 'accounts/about.html')
 
 
+def support_info(request):
+    offerings = [
+        {'name': 'Live chat guidance', 'description': 'Vapi AI follows you through the workspace with contextual suggestions and support links.'},
+        {'name': 'Ticketed support', 'description': 'Open a support request directly through Vapi AI with copies of your SEO dashboard state.'},
+        {'name': 'Feature walk-through', 'description': 'Vapi’s assistant highlights each feature and explains how to use the SEO, ASO, marketplace, and social dashboards.'},
+    ]
+    return render(request, 'accounts/support.html', {
+        'offerings': offerings,
+        'vapi_url': 'https://vapi.ai',
+    })
+
+
 def _send_welcome_email(user):
     if not user.email:
         return

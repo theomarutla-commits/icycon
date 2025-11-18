@@ -1,0 +1,23 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Support{% endblock %}
+
+{% block content %}
+  <section style="margin-bottom:2rem;">
+    <h1>Need assistance?</h1>
+    <p>Vapi AI follows you inside the dashboard, suggesting how each feature fits your goals and giving instant support.</p>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+    {% for item in offerings %}
+    <article class="card">
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.description }}</p>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section style="margin-top:2rem;">
+    <p>Tap the badge in the lower right to open the Vapi AI assistant or visit <a href="{{ vapi_url }}" target="_blank">{{ vapi_url }}</a> to explore the paid concierge.</p>
+  </section>
+{% endblock %}
