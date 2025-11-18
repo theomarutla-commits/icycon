@@ -24,6 +24,7 @@ from seo.sitemaps import PageMetaSitemap
 
 urlpatterns = [
     path('', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('seo/', include('seo.urls')),
     path('marketplace/', include('marketplace.urls')),

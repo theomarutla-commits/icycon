@@ -103,6 +103,7 @@
       <div id="aso-app"></div>
     </main>
 
+    {% verbatim %}
     <script type="text/babel">
       const { useState, useEffect } = React;
       const ROOT = '/aso/api/listings/';
@@ -222,5 +223,6 @@
 
       ReactDOM.createRoot(document.getElementById('aso-app')).render(<AsoDashboard />);
     </script>
+    {% endverbatim %}
   </body>
 </html>
