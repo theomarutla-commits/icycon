@@ -175,8 +175,30 @@
             .finally(() => setBusy(false));
         };
 
+        const totalRevenue = products.reduce((sum, product) => sum + parseFloat(product.revenue || 0), 0);
+        const highest = products.reduce((best, product) => {
+          if (!best || parseFloat(product.revenue || 0) > parseFloat(best.revenue || 0)) {
+            return product;
+          }
+          return best;
+        }, null);
+
         return (
-          <div className="marketplace">
+          <>
+            <section className="card" style={{ margin: '0 0 1rem 0' }}>
+              <h2>Performance recap</h2>
+              <p className="status">
+                {products.length
+                  ? `${products.length} items · $${totalRevenue.toFixed(2)} total revenue`
+                  : 'No products tracked yet.'}
+              </p>
+              {highest && (
+                <p>
+                  Top performer: <strong>{highest.name}</strong> · Revenue: ${highest.revenue} · Sales: {highest.sales_count}
+                </p>
+              )}
+            </section>
+            <div className="marketplace">
             <section className="card">
               <h2>Create product/service</h2>
               <label>Name</label>

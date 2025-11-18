@@ -48,6 +48,18 @@
         background: rgba(255, 255, 255, 0.15);
       }
 
+      @keyframes float {
+        0% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(0, 10px);
+        }
+        100% {
+          transform: translate(0, 0);
+        }
+      }
+
       main {
         padding: 2rem;
         max-width: 960px;
@@ -148,6 +160,7 @@
       <nav>
         <a href="{% url 'accounts:home' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a>
         {% if user.is_authenticated %}
+        <a href="{% url 'accounts:about' %}">About</a>
         <a href="{% url 'accounts:profile' %}">Profile</a>
         <a href="{% url 'marketplace:dashboard' %}">Marketplace</a>
         <a href="/aso/dashboard/">ASO</a>

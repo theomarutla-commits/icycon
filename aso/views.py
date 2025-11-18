@@ -21,10 +21,16 @@ def _serialize_listing(listing: AppListing) -> dict[str, object]:
         'rating': str(listing.rating),
         'downloads': listing.downloads,
         'icon_url': listing.icon_url,
+        'category': listing.category,
+        'primary_keyword': listing.primary_keyword,
         'last_updated': listing.last_updated.isoformat(),
         'metrics': [
             {'field': metric.field, 'value': metric.value, 'recorded_at': metric.recorded_at.isoformat()}
             for metric in listing.metrics.all()[:5]
+        ],
+        'competitors': [
+            {'name': competitor.name, 'rating': str(competitor.rating), 'downloads': competitor.downloads}
+            for competitor in listing.competitors.all()
         ],
     }
 
@@ -73,3 +79,12 @@ def listing_list(request: HttpRequest) -> JsonResponse:
 @login_required
 def aso_dashboard(request: HttpRequest):
     return render(request, 'aso/dashboard.html')
+
+
+@login_required
+def aso_overview(request: HttpRequest):
+    listings = AppListing.objects.prefetch_related('metrics').order_by('-last_updated')
+    context = {
+        'listings': listings,
+    }
+    return render(request, 'aso/overview.html', context)

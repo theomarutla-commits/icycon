@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PageMeta, SiteProfile
+from .models import DirectoryListing, PageMeta, SiteProfile
 
 
 @admin.register(PageMeta)
@@ -14,3 +14,10 @@ class PageMetaAdmin(admin.ModelAdmin):
 class SiteProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'domain', 'created_at')
     search_fields = ('name', 'domain')
+
+
+@admin.register(DirectoryListing)
+class DirectoryListingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'url', 'is_active', 'updated_at')
+    search_fields = ('name', 'url')
+    list_filter = ('is_active',)

@@ -75,6 +75,22 @@ class SiteProfile(models.Model):
         return f'{self.name} ({self.domain})'
 
 
+class DirectoryListing(models.Model):
+    name = models.CharField(max_length=150)
+    url = models.URLField()
+    description = models.TextField(blank=True)
+    contact_email = models.EmailField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Backlink(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),

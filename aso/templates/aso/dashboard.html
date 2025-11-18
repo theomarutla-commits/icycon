@@ -198,8 +198,20 @@
                 {listings.map((listing) => (
                   <li key={listing.id}>
                     <strong>{listing.name} ({listing.store})</strong>
+                    <p>Category: {listing.category || 'Uncategorized'} · Keyword: {listing.primary_keyword || '—'}</p>
                     <p>Rating: {listing.rating} · Downloads: {listing.downloads}</p>
-                    <p>Metrics: {listing.metrics.map((metric) => `${metric.field}:${metric.value}`).join(', ')}</p>
+                    <p>
+                      Metrics: {listing.metrics.length
+                        ? listing.metrics.map((metric) => `${metric.field}:${metric.value}`).join(', ')
+                        : 'No metrics yet.'}
+                    </p>
+                    {listing.competitors.length ? (
+                      <p style={{ color: '#fb923c' }}>
+                        Top competitor: {listing.competitors[0].name} ({listing.competitors[0].downloads} downloads, rating {listing.competitors[0].rating})
+                      </p>
+                    ) : (
+                      <p style={{ color: '#94a3b8' }}>Add competitor info through the API to compare.</p>
+                    )}
                   </li>
                 ))}
               </ul>

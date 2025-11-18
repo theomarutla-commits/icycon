@@ -21,6 +21,8 @@ class AppListing(models.Model):
     description = models.TextField(blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     downloads = models.PositiveIntegerField(default=0)
+    category = models.CharField(max_length=100, blank=True)
+    primary_keyword = models.CharField(max_length=120, blank=True)
     icon_url = models.URLField(blank=True)
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -46,3 +48,21 @@ class AppMetric(models.Model):
 
     def __str__(self) -> str:
         return f'{self.field}: {self.value}'
+
+
+class AppCompetitor(models.Model):
+    listing = models.ForeignKey(
+        AppListing,
+        on_delete=models.CASCADE,
+        related_name='competitors',
+    )
+    name = models.CharField(max_length=150)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    downloads = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self) -> str:
+        return f'{self.name} competitor for {self.listing.name}'

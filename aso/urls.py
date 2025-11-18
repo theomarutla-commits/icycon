@@ -7,4 +7,5 @@ app_name = 'aso'
 urlpatterns = [
     path('dashboard/', views.aso_dashboard, name='dashboard'),
     path('api/listings/', views.listing_list, name='listings'),
+    path('overview/', views.aso_overview, name='overview'),
 ]

@@ -228,8 +228,17 @@
   </head>
   <body>
     <header>
-      <h1>SEO Intelligence</h1>
-      <p class="status">Manage metadata, backlinks, and site data from one dashboard.</p>
+      <div>
+        <h1>SEO Intelligence</h1>
+        <p class="status">Manage metadata, backlinks, and site data from one dashboard.</p>
+      </div>
+      <nav style="display:flex; gap:1rem;">
+        <a href="/">Home</a>
+        <a href="/accounts/profile/">Profile</a>
+        <a href="/marketplace/dashboard/">Marketplace</a>
+        <a href="/aso/dashboard/">ASO</a>
+        <a href="/accounts/social/dashboard/">Social</a>
+      </nav>
     </header>
     <div id="seo-app"></div>
     <script type="text/babel">
@@ -473,6 +482,51 @@
         );
       }
 
+      function DirectoryPanel({ directories, onChange, onSave, busy, error }) {
+        return (
+          <article className="card" style="margin-top:1.5rem;">
+            <h3>Directory listings</h3>
+            <p className="status">{directories.length ? `${directories.length} tracked` : 'No directories yet.'}</p>
+            <ul>
+              {directories.map((directory) => (
+                <li key={directory.url}>
+                  <strong>{directory.name}</strong> · <a href={directory.url} target="_blank" rel="noreferrer">{directory.url}</a>
+                  <p>{directory.description}</p>
+                </li>
+              ))}
+            </ul>
+            <form
+              className="site-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                onSave();
+              }}
+            >
+              <label>
+                Name
+                <input name="name" value={directories.form?.name || ''} onChange={(event) => onChange('name', event.target.value)} />
+              </label>
+              <label>
+                URL
+                <input name="url" value={directories.form?.url || ''} onChange={(event) => onChange('url', event.target.value)} placeholder="https://example.com" />
+              </label>
+              <label>
+                Description
+                <textarea name="description" value={directories.form?.description || ''} onChange={(event) => onChange('description', event.target.value)} />
+              </label>
+              <label>
+                Contact email
+                <input name="contact_email" value={directories.form?.contact_email || ''} onChange={(event) => onChange('contact_email', event.target.value)} />
+              </label>
+              <div className="form-actions">
+                <button type="submit" disabled={busy}> {busy ? 'Saving…' : 'Add directory'} </button>
+              </div>
+              {error && <p className="status error">{error}</p>}
+            </form>
+          </article>
+        );
+      }
+
       const DEFAULT_BACKLINK = {
         url: '',
         anchor_text: '',
@@ -504,6 +558,10 @@
         const [siteForm, setSiteForm] = useState({ name: '', domain: '', description: '' });
         const [siteBusy, setSiteBusy] = useState(false);
         const [siteError, setSiteError] = useState('');
+        const [directories, setDirectories] = useState([]);
+        const [directoryForm, setDirectoryForm] = useState({ name: '', url: '', description: '', contact_email: '' });
+        const [directoryBusy, setDirectoryBusy] = useState(false);
+        const [directoryError, setDirectoryError] = useState('');
 
         const loadPages = () =>
           fetch(API_ROOT)
@@ -528,9 +586,15 @@
             .then((data) => setSites(data.sites || []))
             .catch(() => setSiteError('Unable to fetch sites.'));
 
+        const loadDirectories = () =>
+          fetch('/seo/api/directories/')
+            .then((response) => response.json())
+            .then((data) => setDirectories(data.directories || []));
+
         useEffect(() => {
           loadPages();
           loadSites();
+          loadDirectories();
         }, []);
 
         useEffect(() => {
@@ -632,8 +696,41 @@
               loadBacklinks(targetSlug);
               loadPages();
             })
-            .catch(() => setBacklinkError('Unable to save backlink.'))
-            .finally(() => setBacklinkBusy(false));
+          .catch(() => setBacklinkError('Unable to save backlink.'))
+          .finally(() => setBacklinkBusy(false));
+        };
+
+        const handleDirectoryChange = (name, value) => {
+          setDirectoryForm((prev) => ({ ...prev, [name]: value }));
+        };
+
+        const handleDirectorySave = () => {
+          if (!directoryForm.name || !directoryForm.url) {
+            setDirectoryError('Name and URL required.');
+            return;
+          }
+          setDirectoryBusy(true);
+          setDirectoryError('');
+          fetch('/seo/api/directories/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(directoryForm),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error('Response not OK');
+              }
+              return response.json();
+            })
+            .then(() => {
+              setDirectoryForm({ name: '', url: '', description: '', contact_email: '' });
+              loadDirectories();
+            })
+            .catch(() => setDirectoryError('Unable to save directory.'))
+            .finally(() => setDirectoryBusy(false));
         };
 
         const handleSiteChange = (name, value) => {
@@ -719,7 +816,14 @@
                 busy={backlinkBusy}
                 error={backlinkError}
               />
-              </section>
+              <DirectoryPanel
+                directories={directories}
+                onChange={handleDirectoryChange}
+                onSave={handleDirectorySave}
+                busy={directoryBusy}
+                error={directoryError}
+              />
+            </section>
           </div>
         );
       }

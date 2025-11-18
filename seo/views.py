@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
-from .models import Backlink, PageMeta, SiteProfile
+from .models import Backlink, DirectoryListing, PageMeta, SiteProfile
 
 
 def serialize_page(page: PageMeta) -> dict[str, object]:
@@ -132,6 +132,50 @@ def site_list(request: HttpRequest) -> JsonResponse:
     status_code = 201 if created else 200
     return JsonResponse(serialize_site(site), status=status_code)
 
+
+@require_http_methods(['GET', 'POST'])
+@ensure_csrf_cookie
+def directory_list(request: HttpRequest) -> JsonResponse:
+    if request.method == 'GET':
+        dirs = DirectoryListing.objects.order_by('-updated_at')
+        return JsonResponse({'directories': [
+            {
+                'name': directory.name,
+                'url': directory.url,
+                'description': directory.description,
+                'contact_email': directory.contact_email,
+                'is_active': directory.is_active,
+                'updated_at': directory.updated_at.isoformat(),
+            }
+            for directory in dirs
+        ]})
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode() or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid payload'}, status=400)
+
+    if not payload.get('name') or not payload.get('url'):
+        return JsonResponse({'error': 'Name and URL required'}, status=400)
+
+    directory = DirectoryListing.objects.create(
+        name=payload['name'],
+        url=payload['url'],
+        description=payload.get('description', ''),
+        contact_email=payload.get('contact_email', ''),
+        is_active=payload.get('is_active', True),
+    )
+    return JsonResponse({
+        'name': directory.name,
+        'url': directory.url,
+        'description': directory.description,
+        'contact_email': directory.contact_email,
+        'is_active': directory.is_active,
+        'updated_at': directory.updated_at.isoformat(),
+    }, status=201)
 
 @ensure_csrf_cookie
 def dashboard(request: HttpRequest) -> HttpResponse:

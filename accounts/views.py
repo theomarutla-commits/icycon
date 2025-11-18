@@ -133,7 +133,7 @@ def social_dashboard(request):
 
 @login_required
 def profile_view(request):
-    profile = request.user.profile
+    profile, _ = Profile.objects.get_or_create(user=request.user)
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
     if request.method == 'POST' and form.is_valid():
         form.save()
@@ -145,6 +145,10 @@ def profile_view(request):
         'profile': profile,
         'form': form,
     })
+
+
+def about(request):
+    return render(request, 'accounts/about.html')
 
 
 def _send_welcome_email(user):

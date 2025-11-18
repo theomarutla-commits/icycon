@@ -1,0 +1,31 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}ASO Overview{% endblock %}
+
+{% block content %}
+  <section>
+    <h1>ASO Overview</h1>
+    <p>Track app listings, ratings, downloads, and key metrics in one place.</p>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.5rem;">
+    {% for listing in listings %}
+    <article class="card">
+      <h2>{{ listing.name }}</h2>
+      <p><strong>{{ listing.get_store_display }}</strong> · {{ listing.bundle_id }}</p>
+      <p>{{ listing.description }}</p>
+      <p>Rating: {{ listing.rating }} · Downloads: {{ listing.downloads }}</p>
+      <p>Updated: {{ listing.last_updated }}</p>
+      <ul>
+        {% for metric in listing.metrics.all %}
+        <li>{{ metric.field }}: {{ metric.value }} ({{ metric.recorded_at }})</li>
+        {% empty %}
+        <li>No metrics recorded yet.</li>
+        {% endfor %}
+      </ul>
+    </article>
+    {% empty %}
+    <p>No listings yet. Use the ASO dashboard to add one.</p>
+    {% endfor %}
+  </section>
+{% endblock %}

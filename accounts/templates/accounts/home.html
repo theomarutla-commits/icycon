@@ -9,6 +9,18 @@
     behind authenticated sessions.
   </p>
 
+  <section style="background:#111827;color:#f8fafc;padding:2rem;border-radius:1rem;position:relative;overflow:hidden;margin-bottom:2rem;">
+    <div style="max-width:600px;">
+      <h1 style="font-size:2.8rem;margin-top:0;">Command your digital presence</h1>
+      <p style="color:#cbd5f5;font-size:1.1rem;">Use SEO, marketplace, ASO, and social dashboards from one cockpit. Build authority with data, not guesswork.</p>
+      <div style="margin-top:1.5rem;">
+        <a href="{% url 'seo:dashboard' %}" style="background:#f97316;color:#111827;padding:0.75rem 1.5rem;border-radius:999px;font-weight:700;text-decoration:none;margin-right:1rem;">Launch dashboards</a>
+        <a href="{% url 'accounts:profile' %}" style="border:1px solid #f97316;color:#f97316;padding:0.75rem 1.5rem;border-radius:999px;font-weight:700;text-decoration:none;">View profile</a>
+      </div>
+    </div>
+    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,#fb923c,#f97316);animation:float 7s ease-in-out infinite;"></div>
+  </section>
+
   {% if user.is_authenticated %}
   <p>You’re signed in as <strong>{{ user.username }}</strong>. Head over to the SEO dashboard to continue tuning your pages.</p>
   {% else %}

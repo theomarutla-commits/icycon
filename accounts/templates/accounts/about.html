@@ -1,0 +1,34 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+  <h1>About Icycon Intelligence</h1>
+  <div class="card">
+    <p>We unify SEO, marketplace, social, ASO, and analytics into a single control room. Our modern stack lets teams track metadata, product launches, conversions, and content calendars from one secure lane.</p>
+    <p>Every dashboard shares identity and data so you can pivot from optimizing snippets to launching campaigns without context switching.</p>
+    <p>Need help? Reach out through support@icycon.dev.</p>
+  </div>
+
+  <section style="margin-top:2rem;">
+    <h2>Feature highlights</h2>
+    <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;list-style:none;padding:0;">
+      <li class="card">
+        <h3>SEO</h3>
+        <p>Meta data, backlink watch, and sitemap generation.</p>
+      </li>
+      <li class="card">
+        <h3>Market+</h3>
+        <p>Products/services, sales, interactions tracking.</p>
+      </li>
+      <li class="card">
+        <h3>ASO</h3>
+        <p>App listings, ratings, and metric logs for stores.</p>
+      </li>
+      <li class="card">
+        <h3>Social</h3>
+        <p>Profile management, post scheduling, engagement logs.</p>
+      </li>
+    </ul>
+  </section>
+{% endblock %}
