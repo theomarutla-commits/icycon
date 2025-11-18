@@ -23,8 +23,8 @@ from django.urls import include, path
 from seo.sitemaps import PageMetaSitemap
 
 urlpatterns = [
-    path('', include('accounts.urls')),
-    path('accounts/', include('accounts.urls')),
+    path('', include(('accounts.urls','accounts'), namespace='accounts')),
+    path('accounts/', include(('accounts.urls','accounts'), namespace='accounts_alias')),
     path('admin/', admin.site.urls),
     path('seo/', include('seo.urls')),
     path('marketplace/', include('marketplace.urls')),
