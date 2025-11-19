@@ -1,281 +1,257 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Marketplace</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      :root {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        background: #f1f5f9;
-        color: #0f172a;
-      }
+{% extends 'accounts/base.html' %}
+{% load static %}
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
-      }
+{% block title %}Marketplace Intelligence{% endblock %}
 
-      .marketplace-hero {
-        background: linear-gradient(135deg, #0f172a, #1e1b4b);
-        color: #f8fafc;
-        padding: 2rem;
-        border-bottom: 1px solid rgba(248, 250, 252, 0.15);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
+{% block extra_css %}
+<style>
+  .marketplace-hero {
+    background: linear-gradient(135deg, #0f172a, #131a2a 70%);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    color: #f8fafc;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.6);
+    margin-bottom: 2rem;
+  }
 
-      .marketplace-hero h1 {
-        margin: 0;
-        font-size: 2.1rem;
-      }
+  .marketplace-hero h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+  }
 
-      .marketplace-hero p {
-        margin: 0.75rem 0 0;
-        color: #dbe4ff;
-        max-width: 600px;
-      }
+  .marketplace-hero p {
+    color: rgba(248, 250, 252, 0.7);
+    max-width: 640px;
+    margin-top: 0.9rem;
+  }
 
-      @media (max-width: 720px) {
-        .marketplace-hero {
-          justify-content: center;
-          text-align: center;
+  .cta-row {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .cta-row .cta-btn {
+    border-radius: 999px;
+    padding: 0.85rem 1.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+
+  .cta-primary {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+  }
+
+  .cta-secondary {
+    border-color: rgba(248, 250, 252, 0.5);
+    color: #f8fafc;
+  }
+
+  .panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .panel {
+    background: #fff;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+  }
+
+  .panel h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .panel input,
+  .panel textarea,
+  .panel select {
+    width: 100%;
+    border-radius: 0.8rem;
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .panel textarea {
+    min-height: 100px;
+  }
+
+  .panel button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.5rem;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .listing-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .listing-feed li {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    background: rgba(244, 248, 255, 0.75);
+  }
+
+  .listing-feed strong {
+    display: block;
+  }
+
+  .status {
+    font-size: 0.9rem;
+    color: #0f172a;
+  }
+
+  .status.error {
+    color: #ef4444;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="marketplace-hero">
+  <p class="eyebrow">Marketplace intelligence</p>
+  <h1>Sell with the same high-contrast polish as the home page</h1>
+  <p>Every product/service entry now lives inside the unified workspace. Track listings, publish assets, and surface analytics while keeping the same hero/CTA styling found across your other dashboards.</p>
+  <div class="cta-row">
+    <a href="{% url 'accounts:services' %}" class="cta-btn cta-secondary">Explore services</a>
+    <a href="{% url 'accounts:home' %}" class="cta-btn cta-primary">Return home</a>
+  </div>
+</section>
+
+<div class="panel-grid">
+  <section class="panel">
+    <h2>Add marketplace listing</h2>
+    <label for="listing-name">Name</label>
+    <input id="listing-name" type="text" placeholder="Product or service name" />
+    <label for="listing-kind">Kind</label>
+    <select id="listing-kind">
+      <option value="product">Product</option>
+      <option value="service">Service</option>
+    </select>
+    <label for="listing-price">Price</label>
+    <input id="listing-price" type="text" placeholder="49.00" />
+    <label for="listing-description">Description</label>
+    <textarea id="listing-description" placeholder="Describe the value proposition"></textarea>
+    <button id="save-listing-btn">Save listing</button>
+    <p class="status" id="listing-status"></p>
+  </section>
+  <section class="panel">
+    <h2>Listing activity</h2>
+    <ul class="listing-feed" id="listing-feed"></ul>
+    <p class="status" id="feed-status"></p>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Revenue snapshot</h2>
+  <p>Monthly revenue, conversion lift, and listing coverage metrics display here once you seed the dummy data.</p>
+  <div class="cta-row">
+    <a href="{% url 'ico:dashboard' %}" class="cta-btn cta-secondary">Launch SEO dashboard</a>
+    <a href="{% url 'aso:dashboard' %}" class="cta-btn cta-primary">Open ASO overview</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const ROOT = '/marketplace/api/products/';
+
+  const listingStatus = document.getElementById('listing-status');
+  const feedStatus = document.getElementById('feed-status');
+  const listingFeed = document.getElementById('listing-feed');
+  const listingBtn = document.getElementById('save-listing-btn');
+
+  const fetchListings = () =>
+    fetch(ROOT)
+      .then((res) => res.json())
+      .then((data) => {
+        const products = data.products || [];
+        if (!products.length) {
+          listingFeed.innerHTML = '<li>No listings yet.</li>';
+          feedStatus.textContent = '';
+          return;
         }
-      }
-      main {
-        padding: 2rem;
-      }
+        listingFeed.innerHTML = products
+          .map(
+            (product) => `
+              <li>
+                <strong>${product.name}</strong>
+                <span>${product.kind} · $${product.price}</span>
+              </li>
+            `,
+          )
+          .join('');
+        feedStatus.textContent = `${products.length} listing${products.length === 1 ? '' : 's'} available`;
+      })
+      .catch(() => {
+        listingFeed.innerHTML = '<li>Unable to load listings.</li>';
+        feedStatus.textContent = 'Refresh the page to try again.';
+      });
 
-      .marketplace {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
-      }
+  const getCsrf = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 
-      .card {
-        background: #ffffff;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-      }
+  listingBtn.addEventListener('click', () => {
+    listingStatus.textContent = '';
+    const payload = {
+      name: document.getElementById('listing-name').value,
+      kind: document.getElementById('listing-kind').value,
+      price: document.getElementById('listing-price').value,
+      description: document.getElementById('listing-description').value,
+    };
+    if (!payload.name || !payload.price) {
+      listingStatus.textContent = 'Name and price are required.';
+      return;
+    }
+    listingBtn.disabled = true;
+    fetch(ROOT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrf(),
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to save listing.');
+        return res.json();
+      })
+      .then(() => {
+        document.getElementById('listing-name').value = '';
+        document.getElementById('listing-price').value = '';
+        document.getElementById('listing-description').value = '';
+        listingStatus.textContent = 'Listing saved.';
+        fetchListings();
+      })
+      .catch(() => {
+        listingStatus.textContent = 'Unable to save listing.';
+      })
+      .finally(() => {
+        listingBtn.disabled = false;
+      });
+  });
 
-      h2 {
-        margin-top: 0;
-      }
-
-      label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.3rem;
-        display: block;
-      }
-
-      input,
-      textarea,
-      select {
-        width: 100%;
-        border-radius: 0.65rem;
-        border: 1px solid #cbd5f5;
-        padding: 0.65rem;
-        margin-bottom: 0.8rem;
-        background: #f8fafc;
-      }
-
-      textarea {
-        min-height: 90px;
-      }
-
-      button {
-        background: #6366f1;
-        color: white;
-        border: none;
-        padding: 0.7rem 1.3rem;
-        border-radius: 0.75rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      li {
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e2e8f0;
-      }
-
-      .status {
-        color: #0f172a;
-        font-size: 0.85rem;
-      }
-    </style>
-  </head>
-  <body>
-    {% include 'shared/dashboard_header.html' %}
-    <section class="marketplace-hero">
-      <div>
-        <h1>Marketplace</h1>
-        <p>Turn product/service data into revenue intelligence.</p>
-      </div>
-    </section>
-    <section style="margin:2rem auto;max-width:1100px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
-      <article class="card" style="background:linear-gradient(135deg,#0f172a,#1e1b4b);color:#fff;position:relative;overflow:hidden;">
-        <div style="position:absolute;right:-40px;top:-20px;width:140px;height:140px;border-radius:50%;background:rgba(248,250,252,0.15);"></div>
-        <div>
-          <h2>Face of the marketplace</h2>
-          <p>Add a brand face by uploading a campaign cover image and hero copy that markets your offerings inside the dashboard.</p>
-        </div>
-        <div style="margin-top:1.5rem;">
-          <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=400&q=80" alt="Campaign hero" style="width:100%;border-radius:0.85rem;box-shadow:0 10px 25px rgba(15,23,42,0.35);" />
-        </div>
-      </article>
-    </section>
-    <main>
-      <div id="marketplace-app"></div>
-    </main>
-
-    {% verbatim %}
-    <script type="text/babel">
-      const { useState, useEffect } = React;
-      const ROOT = '/marketplace/api/products/';
-
-      function MarketplaceApp() {
-        const [products, setProducts] = useState([]);
-        const [form, setForm] = useState({
-          name: '',
-          kind: 'product',
-          price: '',
-          description: '',
-        });
-        const [status, setStatus] = useState('');
-        const [busy, setBusy] = useState(false);
-
-        const loadProducts = () =>
-          fetch(ROOT)
-            .then((response) => response.json())
-            .then((data) => setProducts(data.products || []))
-            .catch(() => setStatus('Unable to load entries.'));
-
-        useEffect(() => {
-          loadProducts();
-        }, []);
-
-        const handleCreate = () => {
-          if (!form.name || !form.price) {
-            setStatus('Name and price are required.');
-            return;
-          }
-          setBusy(true);
-          fetch(ROOT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
-            },
-            body: JSON.stringify(form),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error('Failed');
-              return response.json();
-            })
-            .then(() => {
-              setForm({ name: '', kind: 'product', price: '', description: '' });
-              loadProducts();
-            })
-            .catch(() => setStatus('Unable to save item.'))
-            .finally(() => setBusy(false));
-        };
-
-        const totalRevenue = products.reduce((sum, product) => sum + parseFloat(product.revenue || 0), 0);
-        const highest = products.reduce((best, product) => {
-          if (!best || parseFloat(product.revenue || 0) > parseFloat(best.revenue || 0)) {
-            return product;
-          }
-          return best;
-        }, null);
-
-        return (
-          <>
-            <section className="card" style={{ margin: '0 0 1rem 0' }}>
-              <h2>Performance recap</h2>
-              <p className="status">
-                {products.length
-                  ? `${products.length} items · $${totalRevenue.toFixed(2)} total revenue`
-                  : 'No products tracked yet.'}
-              </p>
-              {highest && (
-                <p>
-                  Top performer: <strong>{highest.name}</strong> · Revenue: ${highest.revenue} · Sales: {highest.sales_count}
-                </p>
-              )}
-            </section>
-            <div className="marketplace">
-            <section className="card">
-              <h2>Create product/service</h2>
-              <label>Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <label>Kind</label>
-              <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
-                <option value="product">Product</option>
-                <option value="service">Service</option>
-              </select>
-              <label>Price</label>
-              <input
-                type="number"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-              />
-              <label>Description</label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-              <div className="form-actions">
-                <button disabled={busy} onClick={handleCreate}>
-                  {busy ? 'Saving…' : 'Create'}
-                </button>
-              </div>
-              {status && <p className="status">{status}</p>}
-            </section>
-            <section className="card">
-              <h2>Products & services</h2>
-              <p className="status">{products.length ? `${products.length} tracked` : 'No items yet'}</p>
-              <ul>
-                {products.map((product) => (
-                  <li key={product.id}>
-                    <strong>{product.name}</strong> · {product.kind}
-                    <div>
-                      Price: ${product.price} · Sales: {product.sales_count} · Revenue: ${product.revenue}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-        );
-      }
-
-      ReactDOM.createRoot(document.getElementById('marketplace-app')).render(<MarketplaceApp />);
-    </script>
-    {% endverbatim %}
-  </body>
-</html>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchListings();
+  });
+</script>
+{% endblock %}
