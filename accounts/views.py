@@ -163,6 +163,14 @@ def support_info(request):
     })
 
 
+def services_page(request):
+    return render(request, 'accounts/services.html')
+
+
+def pricing_page(request):
+    return render(request, 'accounts/pricing.html')
+
+
 def _send_welcome_email(user):
     if not user.email:
         return

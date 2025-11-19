@@ -4,143 +4,93 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Icycon{% endblock %}</title>
-    <style>
-      :root {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        color: #0f172a;
-        background: #f5f7fb;
-      }
-
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background-color: #f5f7fb;
-      }
-
-
-      .chat-badge {
-        position: fixed;
-        right: 1.5rem;
-        bottom: 1.5rem;
-        background: linear-gradient(135deg, #3b82f6, #6366f1);
-        color: #fff;
-        padding: 0.75rem 1rem;
-        border-radius: 999px;
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .chat-badge small {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.8);
-      }
-
-      .chat-badge:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 30px 50px rgba(15, 23, 42, 0.4);
-      }
-
-      @keyframes float {
-        0% {
-          transform: translate(0, 0);
-        }
-        50% {
-          transform: translate(0, 10px);
-        }
-        100% {
-          transform: translate(0, 0);
-        }
-      }
-
-      main {
-        padding: 2rem;
-        max-width: 960px;
-        margin: 0 auto;
-      }
-
-      .card {
-        background: #fff;
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1);
-      }
-
-      .messages {
-        margin-bottom: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .messages p {
-        margin: 0;
-        padding: 0.75rem 1rem;
-        border-radius: 0.6rem;
-      }
-
-      .messages .success {
-        background: #d1fae5;
-        color: #0f5132;
-      }
-
-      .messages .info {
-        background: #e0f2fe;
-        color: #0f172a;
-      }
-
-      .messages .error {
-        background: #fee2e2;
-        color: #7f1d1d;
-      }
-
-      footer {
-        text-align: center;
-        padding: 1rem;
-        color: #475569;
-        font-size: 0.85rem;
-      }
-
-      .form-grid {
-        display: grid;
-        gap: 1rem;
-      }
-
-      label {
-        font-weight: 600;
-        display: block;
-        margin-bottom: 0.25rem;
-      }
-
-      input {
-        width: 100%;
-        padding: 0.75rem;
-        border-radius: 0.6rem;
-        border: 1px solid #cbd5f5;
-        font-size: 1rem;
-      }
-
-      button {
-        background: #0d3b8f;
-        border: none;
-        color: #fff;
-        padding: 0.85rem 1.5rem;
-        border-radius: 0.75rem;
-        font-size: 1rem;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: #15227c;
-      }
-
-    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/base.css' %}">
+    {% block extra_css %}{% endblock %}
   </head>
   <body>
-    {% include 'shared/dashboard_header.html' %}
+    <header>
+      <div class="header-container">
+        <nav class="nav-main">
+          <!-- Brand -->
+          <a href="/" class="brand">
+            <div class="brand-logo">IC</div>
+            Icycon
+          </a>
+
+          <!-- Mobile Menu Button -->
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            ☰
+          </button>
+
+          <!-- Center Navigation -->
+          <div class="nav-center" id="navCenter">
+            <!-- SEO Dropdown -->
+            <div class="nav-item">
+              <a href="#" class="nav-link">
+                SEO
+                <span style="font-size: 0.75rem;">▼</span>
+              </a>
+              <div class="dropdown">
+                <a href="#" class="dropdown-item">Keyword Research</a>
+                <a href="#" class="dropdown-item">On-Page Optimization</a>
+                <a href="#" class="dropdown-item">Technical SEO</a>
+                <a href="#" class="dropdown-item">Local SEO</a>
+                <a href="#" class="dropdown-item">SEO Analytics</a>
+              </div>
+            </div>
+
+            <!-- Social Media Dropdown -->
+            <div class="nav-item">
+              <a href="#" class="nav-link">
+                Social Media
+                <span style="font-size: 0.75rem;">▼</span>
+              </a>
+              <div class="dropdown">
+                <a href="#" class="dropdown-item">Social Media Management</a>
+                <a href="#" class="dropdown-item">Content Scheduling</a>
+                <a href="#" class="dropdown-item">Social Analytics</a>
+                <a href="#" class="dropdown-item">Influencer Marketing</a>
+                <a href="#" class="dropdown-item">Social Listening</a>
+              </div>
+            </div>
+
+            <!-- E-Mail Marketing Dropdown -->
+            <div class="nav-item">
+              <a href="#" class="nav-link">
+                E-Mail Marketing
+                <span style="font-size: 0.75rem;">▼</span>
+              </a>
+              <div class="dropdown">
+                <a href="#" class="dropdown-item">Email Campaigns</a>
+                <a href="#" class="dropdown-item">Automation Workflows</a>
+                <a href="#" class="dropdown-item">List Management</a>
+                <a href="#" class="dropdown-item">Email Templates</a>
+                <a href="#" class="dropdown-item">Performance Analytics</a>
+              </div>
+            </div>
+
+            <div class="nav-item">
+              <a href="{% url 'accounts:services' %}" class="nav-link">Services</a>
+            </div>
+            <!-- Pricing (No dropdown) -->
+            <div class="nav-item">
+              <a href="{% url 'accounts:pricing' %}" class="nav-link">Pricing</a>
+            </div>
+        </div>
+
+          <!-- Auth Links -->
+          <div class="nav-auth">
+            {% if user.is_authenticated %}
+              <a href="{% url 'accounts:logout' %}" class="auth-link login">Sign out</a>
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="auth-link login">Log In</a>
+              <a href="{% url 'accounts:signup' %}" class="auth-link signup">Sign Up</a>
+            {% endif %}
+          </div>
+        </nav>
+      </div>
+    </header>
 
     <main>
       {% if messages %}
@@ -151,13 +101,146 @@
       </div>
       {% endif %}
 
-      <div class="card">{% block content %}{% endblock %}</div>
+      {% block content %}{% endblock %}
     </main>
 
-    <footer>Built on Django’s auth + React SEO tooling.</footer>
-    <a href="https://vapi.ai" target="_blank" class="chat-badge">
-      <span>Vapi AI</span>
-      <small>Chat support</small>
-    </a>
+    <!-- Footer Section -->
+    <!-- Footer Section -->
+<footer class="footer">
+  <div class="footer-container">
+    <!-- Top gradient line -->
+    <div class="footer-top-line"></div>
+
+    <div class="footer-content">
+      <!-- Brand Section -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"/>
+            <circle cx="16" cy="16" r="6" fill="currentColor"/>
+            <path d="M10 10L22 22" stroke="currentColor" stroke-width="2"/>
+            <path d="M22 10L10 22" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <p class="footer-copyright">© {% now "Y" %} Icycon. All rights reserved.</p>
+      </div>
+
+      <!-- Links Grid -->
+      <div class="footer-links-grid">
+        <!-- Product Links -->
+        <div class="footer-link-group">
+          <h3 class="footer-group-title">Product</h3>
+          <ul class="footer-links">
+            <li><a href="#features" class="footer-link">Features</a></li>
+            <li><a href="#pricing" class="footer-link">Pricing</a></li>
+            <li><a href="#testimonials" class="footer-link">Testimonials</a></li>
+            <li><a href="/integrations" class="footer-link">Integration</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Links -->
+        <div class="footer-link-group">
+          <h3 class="footer-group-title">Company</h3>
+          <ul class="footer-links">
+            <li><a href="/faqs" class="footer-link">FAQs</a></li>
+            <li><a href="/about" class="footer-link">About Us</a></li>
+            <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
+            <li><a href="/terms" class="footer-link">Terms of Services</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources Links -->
+        <div class="footer-link-group">
+          <h3 class="footer-group-title">Resources</h3>
+          <ul class="footer-links">
+            <li><a href="/blog" class="footer-link">Blog</a></li>
+            <li><a href="/changelog" class="footer-link">Changelog</a></li>
+            <li><a href="/brand" class="footer-link">Brand</a></li>
+            <li><a href="/help" class="footer-link">Help</a></li>
+          </ul>
+        </div>
+
+        <!-- Social Links -->
+        <div class="footer-link-group">
+          <h3 class="footer-group-title">Social Links</h3>
+          <ul class="footer-links">
+            <li>
+              <a href="#" class="footer-link social-link">
+                <svg class="social-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Facebook
+              </a>
+            </li>
+            <li>
+              <a href="#" class="footer-link social-link">
+                <svg class="social-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="18" cy="6" r="1" fill="currentColor"/>
+                </svg>
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a href="#" class="footer-link social-link">
+                <svg class="social-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22.54 6.42C22.4212 5.94541 22.1792 5.51057 21.8387 5.15941C21.4982 4.80824 21.0717 4.55318 20.6 4.42C18.88 4 12 4 12 4C12 4 5.12 4 3.4 4.46C2.9283 4.59318 2.5018 4.84824 2.1613 5.19941C1.8208 5.55057 1.5788 5.98541 1.46 6.46C1.1452 8.20556 0.991236 9.97631 1 11.75C0.991236 13.5237 1.1452 15.2944 1.46 17.04C1.59096 17.5158 1.8384 17.9507 2.17814 18.3003C2.51787 18.6499 2.93884 18.9022 3.4 19.04C5.12 19.5 12 19.5 12 19.5C12 19.5 18.88 19.5 20.6 19.04C21.0717 18.9068 21.4982 18.6518 21.8387 18.3006C22.1792 17.9494 22.4212 17.5146 22.54 17.04C22.8524 15.2976 23.0063 13.5299 23 11.76C23.02 9.98 22.86 8.18 22.54 6.42Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M9.75 15.02L15.5 11.75L9.75 8.48V15.02Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                YouTube
+              </a>
+            </li>
+            <li>
+              <a href="#" class="footer-link social-link">
+                <svg class="social-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                LinkedIn
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <!-- JavaScript for mobile menu -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navCenter = document.getElementById('navCenter');
+
+        if (mobileMenuBtn && navCenter) {
+          mobileMenuBtn.addEventListener('click', function() {
+            navCenter.classList.toggle('active');
+            // Change menu icon
+            const isActive = navCenter.classList.contains('active');
+            mobileMenuBtn.innerHTML = isActive ? '✕' : '☰';
+          });
+
+          // Close mobile menu when clicking outside
+          document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-center') && !event.target.closest('.mobile-menu-btn')) {
+              navCenter.classList.remove('active');
+              mobileMenuBtn.innerHTML = '☰';
+            }
+          });
+
+          // Close mobile menu when clicking on a link
+          const navLinks = document.querySelectorAll('.nav-link, .dropdown-item');
+          navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+              navCenter.classList.remove('active');
+              mobileMenuBtn.innerHTML = '☰';
+            });
+          });
+        }
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
   </body>
 </html>

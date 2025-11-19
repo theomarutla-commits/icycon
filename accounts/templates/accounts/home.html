@@ -1,102 +1,552 @@
 {% extends 'accounts/base.html' %}
+{% load static %}
 
-{% block title %}Welcome to Icycon{% endblock %}
+{% block title %}Icycon - Rank Higher{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/home.css' %}">
+<link rel="stylesheet" href="{% static 'accounts/css/home2.css' %}">
+{% endblock %}
+
 
 {% block content %}
-  <h1>Welcome to the Icycon experience</h1>
-  <p>
-    Manage your metadata, monitor ranking pages, and keep sensitive content gated
-    behind authenticated sessions.
-  </p>
+<!------------------------------------------            Hero Section            ---------------------------------------->
+<div class="hero-shader-section">
+  <div id="three-container" class="three-container"></div>
+  
+  <!-- Aurora effect overlay -->
+  <div class="aurora-overlay absolute inset-0"></div>
+  
+  <!-- Updated Hero Content with Two Columns -->
+  <div class="hero-shader-content two-column-layout">
+    <!-- Left Column: Text Content -->
+    <div class="hero-text-column">
+      <!-- Trust Badge -->
+      <div class="trust-badge">
+        <div class="trust-badge-inner">
+          <span class="trust-text">Trusted by 10,000+ SEO professionals worldwide</span>
+        </div>
+      </div>
 
-  <section style="background:#111827;color:#f8fafc;padding:2rem;border-radius:1rem;position:relative;overflow:hidden;margin-bottom:2rem;">
-    <div style="max-width:600px;">
-      <h1 style="font-size:2.8rem;margin-top:0;">Command your digital presence</h1>
-      <p style="color:#cbd5f5;font-size:1.1rem;">Use SEO, marketplace, ASO, and social dashboards from one cockpit. Build authority with data, not guesswork.</p>
-      <div style="margin-top:1.5rem;">
-        <a href="{% url 'seo:dashboard' %}" style="background:#f97316;color:#111827;padding:0.75rem 1.5rem;border-radius:999px;font-weight:700;text-decoration:none;margin-right:1rem;">Launch dashboards</a>
-        <a href="{% url 'accounts:profile' %}" style="border:1px solid #f97316;color:#f97316;padding:0.75rem 1.5rem;border-radius:999px;font-weight:700;text-decoration:none;">View profile</a>
+      <!-- Main Heading -->
+      <div class="hero-heading">
+        <h1 class="headline-line1">RANK HIGHER AND DOMINATE</h1>
+        <h1 class="headline-line2">SEARCH RESULTS</h1>
+      </div>
+      
+      <!-- Subtitle -->
+      <div class="hero-subtitle">
+        <p>Icycon gives you the tools to optimize every page. Watch your traffic climb while competitors wonder what happened.</p>
+      </div>
+      
+      <!-- CTA Buttons -->
+      <div class="hero-buttons">
+        <a href="{% url 'accounts:signup' %}" class="btn-primary">Start free</a>
+        <a href="#features" class="btn-secondary">See features</a>
       </div>
     </div>
-    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,#fb923c,#f97316);animation:float 7s ease-in-out infinite;"></div>
-  </section>
-
-  {% if user.is_authenticated %}
-  <p>You’re signed in as <strong>{{ user.username }}</strong>. Head over to the SEO dashboard to continue tuning your pages.</p>
-  {% else %}
-  <p>
-    Create an account or log in to start managing SEO metadata on this project.
-    <a href="{% url 'accounts:login' %}">Login</a>
-    or
-    <a href="{% url 'accounts:signup' %}">Sign up</a> below.
-  </p>
-  {% endif %}
-
-  <section>
-    <h2>Why authenticate?</h2>
-    <ul>
-      <li>Ensure only team members adjust canonical URLs or indexability flags.</li>
-      <li>Leverage Django’s auth helpers to keep sessions secured.</li>
-      <li>Use the React SEO dashboard alongside a known identity.</li>
-    </ul>
-  </section>
-
-  {% if user.is_authenticated %}
-  <section>
-    <h2>Jump to your dashboards</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
-      <a href="{% url 'seo:dashboard' %}" class="card" style="text-align:center;">
-        <strong>SEO</strong>
-        <p>Metadata & backlink insights</p>
-      </a>
-      <a href="{% url 'marketplace:dashboard' %}" class="card" style="text-align:center;">
-        <strong>Marketplace</strong>
-        <p>Products, sales & interactions</p>
-      </a>
-      <a href="{% url 'aso:dashboard' %}" class="card" style="text-align:center;">
-        <strong>ASO</strong>
-        <p>App listings & metrics</p>
-      </a>
-      <a href="{% url 'accounts:social_dashboard' %}" class="card" style="text-align:center;">
-        <strong>Social</strong>
-        <p>Profiles & scheduled posts</p>
-      </a>
+    
+    <!-- Right Column: Orbiting Services Timeline -->
+    <div class="hero-chart-column">
+      <div id="servicesOrbitalTimeline" class="services-orbital-timeline"></div>
     </div>
-  </section>
-  {% endif %}
+  </div>
+</div>
 
-  {% if user.is_authenticated %}
-  <section>
-    <h2>Social media service</h2>
-    <p>Track accounts across platforms, share updates, and keep everyone aligned.</p>
-    {% if profiles %}
-    <ul>
-      {% for profile in profiles %}
-      <li>
-        <strong>{{ profile.platform|title }}:</strong> {{ profile.handle }}
-        {% if profile.url %}
-        (<a href="{{ profile.url }}" target="_blank" rel="noopener noreferrer">link</a>)
-        {% endif %}
-        <p>{{ profile.description }}</p>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>No social profiles yet.</p>
-    {% endif %}
-    <form method="post" class="form-grid">
-      {% csrf_token %}
-      {% for field in social_form %}
-      <div>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-        <p class="error">{{ field.errors|join:', ' }}</p>
-        {% endif %}
+<!-- Full Screen Scroll FX Section -->
+<div class="fx" id="features">
+  <div class="fx-scroll">
+    <div class="fx-fixed-section">
+      <div class="fx-fixed">
+        <!-- Gradient Background -->
+        <div class="fx-bgs" aria-hidden="true">
+          <div class="fx-bg-gradient"></div>
+        </div>
+
+        <!-- Grid -->
+        <div class="fx-grid">
+          <!-- Header -->
+          <div class="fx-header">
+            <div>Our Core Services</div>
+            <div></div>
+          </div>
+
+          <!-- Content (lists + center) -->
+          <div class="fx-content">
+            <!-- Left list -->
+            <div class="fx-left" role="list">
+              <div class="fx-track">
+                <div class="fx-item fx-left-item active">SEO Optimisation</div>
+                <div class="fx-item fx-left-item">Social Media</div>
+                <div class="fx-item fx-left-item">Email Marketing</div>
+              </div>
+            </div>
+
+            <!-- Center cards with glass effect -->
+            <div class="fx-center">
+              <!-- SEO Card -->
+              <div class="fx-featured active">
+                <div class="glass-card">
+                  <div class="card-header">
+                    <h3 class="card-title">SEO Optimisation</h3>
+                    <div class="card-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L13.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L10.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="card-content">
+                    <p>Boost your website's visibility in search engines with our comprehensive SEO strategies. We optimize content, technical structure, and authority signals to drive organic traffic.</p>
+                    <ul class="card-features">
+                      <li>Keyword research & strategy</li>
+                      <li>On-page optimization</li>
+                      <li>Technical SEO audits</li>
+                      <li>Link building & authority</li>
+                    </ul>
+                  </div>
+                  <div class="card-footer">
+                    <button class="card-btn">Learn More</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Social Media Card -->
+              <div class="fx-featured">
+                <div class="glass-card">
+                  <div class="card-header">
+                    <h3 class="card-title">Social Media Marketing</h3>
+                    <div class="card-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 4.01C21 4.5 20.02 4.72 19 5C17.879 3.735 16.217 3.665 14.62 4.263C13.023 4.861 12 6.283 12 8V10C8 10 5 9 2 6C2 6 4 11 9 13.5C7.5 14.5 5.5 15 3 15C6 17 9.5 18.5 14.5 18.5C19.5 18.5 22.5 15 22.5 11C22.5 10.5 22.5 10 22.4 9.5C23.4 8.7 24 7.5 24 6C24 5.3 23.7 4.6 23.2 4C22.8 4 22.4 4 22 4.01Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="card-content">
+                    <p>Engage your audience and build brand presence across social platforms. Our social media strategies drive awareness, engagement, and conversions.</p>
+                    <ul class="card-features">
+                      <li>Content strategy & creation</li>
+                      <li>Community management</li>
+                      <li>Paid social advertising</li>
+                      <li>Analytics & performance tracking</li>
+                    </ul>
+                  </div>
+                  <div class="card-footer">
+                    <button class="card-btn">Learn More</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Email Marketing Card -->
+              <div class="fx-featured">
+                <div class="glass-card">
+                  <div class="card-header">
+                    <h3 class="card-title">Email Marketing</h3>
+                    <div class="card-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="card-content">
+                    <p>Nurture leads and retain customers with targeted email campaigns. Our email marketing solutions drive conversions and build lasting customer relationships.</p>
+                    <ul class="card-features">
+                      <li>Automated email sequences</li>
+                      <li>Segmentation & personalization</li>
+                      <li>A/B testing & optimization</li>
+                      <li>Performance analytics</li>
+                    </ul>
+                  </div>
+                  <div class="card-footer">
+                    <button class="card-btn">Learn More</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right list -->
+            <div class="fx-right" role="list">
+              <div class="fx-track">
+                <div class="fx-item fx-right-item active">SEO Optimisation</div>
+                <div class="fx-item fx-right-item">Social Media</div>
+                <div class="fx-item fx-right-item">Email Marketing</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer + progress -->
+          <div class="fx-footer">
+            <div class="fx-progress">
+              <div class="fx-progress-numbers">
+                <span>01</span>
+                <span>03</span>
+              </div>
+              <div class="fx-progress-bar">
+                <div class="fx-progress-fill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      {% endfor %}
-      <button type="submit">Track profile</button>
-    </form>
+    </div>
+  </div>
+</div>
+
+    <!-- End spacer -->
+    
+    <!------------------------------------------            Category List Section            ---------------------------------------->
+    <section class="category-section">
+      <div class="category-container">
+        <!-- Header Section -->
+        <div class="category-header">
+          <div class="category-header-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="category-title">Our Approach</h1>
+          <h2 class="category-subtitle">Strategic Digital Growth</h2>
+        </div>
+    
+        <!-- Categories List - Single Column for Better Focus -->
+        <div class="categories-grid" style="grid-template-columns: 1fr; max-width: 900px;">
+          <!-- Comprehensive Strategy -->
+          <div class="category-item featured" data-id="1">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Comprehensive & Integrated Strategy</h3>
+                  <p class="category-desc">Orchestrating 11 interconnected pillars for unified growth</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> You get a unified growth strategy that maximizes reach and reinforces your message across all relevant digital touchpoints, preventing siloed and inefficient efforts.
+                  </div>
+                  <p>Instead of focusing on a single channel, Icycon orchestrates 11 interconnected pillars. This ensures that efforts in one area (e.g., a blog post) amplify results in others (e.g., social media, email, link-building).</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">See Our Framework</button>
+                    <button class="accordion-btn secondary">Case Studies</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Future-Proof Approach -->
+          <div class="category-item" data-id="2">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Future-Proof & Adaptable Approach</h3>
+                  <p class="category-desc">Built for the evolving digital landscape</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> It proactively positions your business for new trends like AI Answer Engines (AEO) and shifting platform algorithms, ensuring your visibility isn't wiped out by a single Google update.
+                  </div>
+                  <p>Icycon is built for the evolving digital landscape, not just the current state of Google. The "Plan → Build → Run → Learn" loop ensures continuous adaptation.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">Adaptation Strategies</button>
+                    <button class="accordion-btn secondary">Get Future-Ready</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Ethical Growth -->
+          <div class="category-item" data-id="3">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Ethical & Durable Growth</h3>
+                  <p class="category-desc">The "Anti-Spam" Model for sustainable results</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> Reduced Risk & Built Trust. You avoid penalties from Google, Reddit, and regulators while building genuine trust with your audience.
+                  </div>
+                  <p>This is a foundational benefit. Icycon explicitly rejects short-term, high-risk tactics like fake reviews, AI-generated spam, and ban evasion. More importantly, you build genuine trust with your audience and platforms, which is the cornerstone of sustainable brand reputation and customer loyalty.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">Our Ethics Policy</button>
+                    <button class="accordion-btn secondary">Trust Building</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Data Clarity -->
+          <div class="category-item" data-id="4">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Clarity & Actionable Data</h3>
+                  <p class="category-desc">Transparent insights for informed decision-making</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> You are never in the dark. Get clear views of what's working to make informed business decisions based on tangible outcomes.
+                  </div>
+                  <p>Icycon translates complex data into plain-English dashboards, scorecards, and clear deliverables. This empowers you to make informed business decisions about where to invest further, based on tangible outcomes like revenue and qualified traffic, not just vanity metrics.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">View Dashboard</button>
+                    <button class="accordion-btn secondary">Data Insights</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Operational Efficiency -->
+          <div class="category-item" data-id="5">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Operational Efficiency</h3>
+                  <p class="category-desc">"Force Multiplication" for your team</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> Saves Time and Resources. Get the output of a full-stack growth team without the overhead of hiring and managing multiple specialists.
+                  </div>
+                  <p>The platform acts as an extension of your team, handling the planning, creation, execution, and measurement across multiple complex channels. The "Free Zone" concept, in particular, is designed to maximize the ROI from a single piece of content.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">Efficiency Calculator</button>
+                    <button class="accordion-btn secondary">Team Integration</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Market Expansion -->
+          <div class="category-item" data-id="6">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Targeted & Scalable Expansion</h3>
+                  <p class="category-desc">Strategic growth for your specific market</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> Efforts are focused on what actually works for your specific industry and goals, with clear paths to expand into new markets.
+                  </div>
+                  <p>Icycon isn't a one-size-fits-all solution. It uses targeted playbooks for different business types (SaaS, Local, E-commerce) and includes multilingual SEO. This allows for efficient initial growth and provides a clear, structured path to expand into new markets and languages when you're ready.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">Industry Playbooks</button>
+                    <button class="accordion-btn secondary">Expansion Planning</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Conversion Focus -->
+          <div class="category-item" data-id="7">
+            <div class="category-item-inner">
+              <div class="corner-bracket top-left">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+              <div class="corner-bracket bottom-right">
+                <div class="corner-line horizontal"></div>
+                <div class="corner-line vertical"></div>
+              </div>
+    
+              <div class="category-content">
+                <div class="category-text">
+                  <h3 class="category-name">Conversion & Revenue Focus</h3>
+                  <p class="category-desc">Engineered for bottom-line results</p>
+                </div>
+                <div class="category-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+    
+              <!-- Accordion Content -->
+              <div class="accordion-content">
+                <div class="accordion-inner">
+                  <div class="benefit-highlight">
+                    <strong>Benefit:</strong> The platform is engineered to drive bottom-line results, not just top-of-funnel awareness. It ensures that increased visibility translates into actual business growth.
+                  </div>
+                  <p>Every pillar is ultimately tied to business outcomes. The metrics consistently track "qualified traffic," "leads," "revenue per recipient," and "assisted revenue." This ensures that increased visibility translates into actual business growth.</p>
+                  <div class="accordion-actions">
+                    <button class="accordion-btn primary">ROI Calculator</button>
+                    <button class="accordion-btn secondary">Success Metrics</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
   </section>
-  {% endif %}
+
+<!-- Stats Section -->
+<section class="stats-section">
+  <div class="stats-container">
+    <div class="stats-header">
+      <h2 class="stats-title">Icycon in numbers</h2>
+      <p class="stats-description">Icycon is evolving to be more than just the tools. It supports an entire ecosystem of APIs and platforms helping developers and businesses innovate.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number">+1200</div>
+        <p class="stat-label">Stars on GitHub</p>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">22 Million</div>
+        <p class="stat-label">Active Users</p>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">+500</div>
+        <p class="stat-label">Powered Apps</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section with Dotted Background -->
+<section class="cta-section">
+  <div id="dotted-surface" class="dotted-surface-container"></div>
+  <div class="cta-content">
+    <div class="cta-glow"></div>
+    <h1 class="cta-title">Ready to Dominate Search Results?</h1>
+    <p class="cta-description">Join thousands of SEO professionals using Icycon to boost their rankings</p>
+    <div class="cta-buttons">
+      <a href="{% url 'accounts:signup' %}" class="cta-btn primary">Get Started Free</a>
+      <a href="#features" class="cta-btn secondary">View Demo</a>
+    </div>
+  </div>
+  </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.icyconRoutes = {
+    signup: "{% url 'accounts:signup' %}",
+    pricing: "{% url 'accounts:pricing' %}",
+    services: "{% url 'accounts:services' %}",
+  };
+</script>
+<script src="https://unpkg.com/lucide@1.0.2/dist/lucide.min.js"></script>
+<script src="{% static 'accounts/js/services-timeline.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{% static 'accounts/js/three-hero.js' %}"></script>
+<script src="{% static 'accounts/js/script.js' %}"></script>
 {% endblock %}

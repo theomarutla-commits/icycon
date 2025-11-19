@@ -1,0 +1,709 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Icycon - Pricing Plans{% endblock %}
+
+{% block content %}
+
+<style>
+/* Updated Color Scheme */
+:root {
+    --main-blue: #4092ef;
+    --secondary-blue: #0079d2;
+    --dark-blue: #003683;
+    --darker-blue: #001358;
+    --light-blue: #e6f2ff;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+body {
+    background: linear-gradient(135deg, #001358 0%, #003683 50%, #0079d2 100%);
+    min-height: 100vh;
+}
+
+main {
+    padding: 20px;
+    max-width: 80%;
+    margin: 0 auto;
+    background: transparent; /* Remove the background */
+    border-radius: 20px;
+    box-shadow: none; /* Remove shadow since background is transparent */
+    backdrop-filter: none; /* Remove backdrop filter */
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Moving Gradient Header */
+.pricing-header {
+    background: linear-gradient(-45deg, #4092ef, #0079d2, #003683, #001358);
+    background-size: 400% 400%;
+    animation: gradientShift 4s ease infinite;
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+    border-radius: 15px 15px 0 0;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.pricing-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.pricing-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pricing-subtitle {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+/* Pricing Plans Styles */
+.pricing-plans {
+    padding: 4rem 0;
+    background: transparent;
+}
+
+.pricing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.pricing-card {
+    background: linear-gradient(135deg, var(--darker-blue) 0%, var(--dark-blue) 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: white;
+    min-height: 550px;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-grid:hover .pricing-card {
+    transform: scale(0.75);
+    opacity: 0.7;
+}
+
+.pricing-card:hover {
+    transform: scale(1.1) !important;
+    opacity: 1 !important;
+    z-index: 10;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.pricing-card.featured {
+    border: 2px solid var(--main-blue);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--main-blue);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(64, 146, 239, 0.4);
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.plan-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.plan-price {
+    margin-bottom: 1rem;
+}
+
+.price-amount {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--main-blue);
+}
+
+.price-period {
+    font-size: 1rem;
+    color: #a0c8ff;
+}
+
+.plan-description {
+    text-align: center;
+    color: #a0c8ff;
+    margin-bottom: 2rem;
+}
+
+.plan-actions {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.plan-button {
+    display: block;
+    width: 50%; /* 50% of card width */
+    padding: 1rem 2rem;
+    background: var(--main-blue);
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(64, 146, 239, 0.3);
+}
+
+.plan-button:hover {
+    background: var(--secondary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(64, 146, 239, 0.4);
+}
+
+.plan-button.primary {
+    background: #00d4aa;
+}
+
+.plan-button.primary:hover {
+    background: #00b894;
+}
+
+.plan-features {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.features-title {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #a0c8ff;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    flex-grow: 1;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    color: white;
+}
+
+.feature-icon {
+    color: #00d4aa;
+    margin-right: 0.5rem;
+    font-weight: bold;
+}
+
+/* FAQ Styles with Accordion */
+.faq-section {
+    padding: 4rem 0;
+    background: transparent;
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.faq-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.faq-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--dark-blue);
+    margin-bottom: 1rem;
+}
+
+.faq-subtitle {
+    font-size: 1.125rem;
+    color: var(--secondary-blue);
+}
+
+.faq-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.faq-item {
+    border: 1px solid var(--secondary-blue);
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.faq-item.active {
+    background: var(--light-blue);
+    border-color: var(--main-blue);
+    box-shadow: 0 5px 15px rgba(64, 146, 239, 0.2);
+}
+
+.faq-question {
+    padding: 1.5rem;
+    background: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.faq-item.active .faq-question {
+    background: var(--secondary-blue);
+    color: white;
+}
+
+.faq-question h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: inherit;
+}
+
+.faq-toggle {
+    font-size: 1.5rem;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+.faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+    color: white;
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    background: transparent;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 1.5rem;
+    background: rgba(64, 146, 239, 0.05);
+}
+
+.faq-answer p {
+    margin: 0;
+    color: var(--dark-blue);
+    line-height: 1.6;
+}
+
+.faq-cta {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: var(--glass-bg);
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+}
+
+.faq-cta a {
+    color: var(--main-blue);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.faq-cta a:hover {
+    color: var(--dark-blue);
+    text-decoration: underline;
+}
+
+/* CTA Section */
+.pricing-cta {
+    background: linear-gradient(135deg, var(--dark-blue) 0%, var(--darker-blue) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+    border-radius: 0 0 15px 15px;
+}
+
+.pricing-cta-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.pricing-cta-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.pricing-cta-content p {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.pricing-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--main-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--secondary-blue);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background: white;
+    color: var(--dark-blue);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    main {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .pricing-grid:hover .pricing-card {
+        transform: none;
+        opacity: 1;
+    }
+    
+    .pricing-card:hover {
+        transform: scale(1.05) !important;
+    }
+    
+    .pricing-cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .pricing-title {
+        font-size: 2rem;
+    }
+    
+    .plan-button {
+        width: 70%; /* Slightly wider on mobile */
+    }
+}
+</style>
+
+<!-- Pricing Header Section -->
+<section class="pricing-header">
+    <div class="pricing-header-container">
+        <div class="pricing-header-content">
+            <h1 class="pricing-title">Simple and Affordable</h1>
+            <p class="pricing-subtitle">Start tracking and improving your finance management</p>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Plans Section -->
+<section class="pricing-plans">
+    <div class="pricing-container">
+        <div class="pricing-grid" id="pricingGrid">
+            <!-- Free Plan -->
+            <div class="pricing-card" data-plan="free">
+                <div class="plan-header">
+                    <h3 class="plan-name">Free</h3>
+                    <div class="plan-price">
+                        <span class="price-amount">$0,00</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                </div>
+                
+                <div class="plan-description">
+                    <p>Great for trying out Finament and for personal use</p>
+                </div>
+                
+                <div class="plan-actions">
+                    <a href="{% url 'accounts:signup' %}" class="plan-button">Get Started</a>
+                </div>
+                
+                <div class="plan-features">
+                    <h4 class="features-title">FEATURES</h4>
+                    <ul class="features-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Account Aggregation
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Expense Tracking
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Budgeting Tools
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Transaction Insights
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Basic Security
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Professional Plan -->
+            <div class="pricing-card featured" data-plan="professional">
+                <div class="plan-badge">Most Popular</div>
+                <div class="plan-header">
+                    <h3 class="plan-name">Professional</h3>
+                    <div class="plan-price">
+                        <span class="price-amount">$98,00</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                </div>
+                
+                <div class="plan-description">
+                    <p>Best for growing startups and growth businesses</p>
+                </div>
+                
+                <div class="plan-actions">
+                    <a href="{% url 'accounts:signup' %}" class="plan-button primary">Sign Up with Professional</a>
+                </div>
+                
+                <div class="plan-features">
+                    <h4 class="features-title">FEATURES</h4>
+                    <ul class="features-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Everything in Free
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Financial Planning Tools
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Customizable Dashboards
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Advanced Budgeting
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Investment Tracking
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Enhanced Security
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="pricing-card" data-plan="enterprise">
+                <div class="plan-header">
+                    <h3 class="plan-name">Enterprise</h3>
+                    <div class="plan-price">
+                        <span class="price-amount">$160,00</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                </div>
+                
+                <div class="plan-description">
+                    <p>Best for large companies and teams</p>
+                </div>
+                
+                <div class="plan-actions">
+                    <a href="{% url 'accounts:signup' %}" class="plan-button">Sign Up with Enterprise</a>
+                </div>
+                
+                <div class="plan-features">
+                    <h4 class="features-title">FEATURES</h4>
+                    <ul class="features-list">
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Everything in Professional
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Priority Support
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Premium Widgets
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Advanced Security
+                        </li>
+                        <li class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            Integration with 3rd-Party Services
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="faq-container">
+        <div class="faq-header">
+            <h2 class="faq-title">Frequently Asked Questions</h2>
+            <p class="faq-subtitle">Everything you need to know about our pricing and plans</p>
+        </div>
+        
+        <div class="faq-grid">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Can I change plans anytime?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, you can upgrade or downgrade your plan at any time through your account dashboard. Changes take effect immediately, and we automatically prorate any billing differences. If you upgrade mid-cycle, you'll only pay the difference for the remaining days. Downgrades will credit your account for the unused portion.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Is there a free trial?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>All paid plans include a full 14-day free trial with access to all features. No credit card is required to start your trial. The Free plan remains completely free forever with no trial period or hidden limitations. You can explore all features risk-free before committing to a paid plan.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>What payment methods do you accept?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We accept all major credit cards including Visa, MasterCard, American Express, and Discover. We also support PayPal, Apple Pay, Google Pay, and bank transfers for annual plans. All payments are securely processed through our PCI-compliant payment gateway with 256-bit encryption.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Can I cancel my subscription?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Absolutely. You can cancel your subscription at any time with no cancellation fees. After cancellation, you'll maintain access to all paid features until the end of your current billing period. We never lock you into long-term contracts, and you can re-subscribe anytime without losing your data.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Do you offer discounts for non-profits?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, we provide a 25% discount for registered non-profit organizations and educational institutions. To qualify, simply contact our support team with your valid non-profit registration number or educational credentials. We also offer special pricing for startups and enterprise customers with custom needs.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Is my financial data secure?</h3>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Security is our top priority. We use bank-level 256-bit SSL encryption for all data transmission and AES-256 encryption for data at rest. Our platform undergoes regular security audits, complies with GDPR and CCPA regulations, and is hosted on SOC 2 certified infrastructure. We never store your banking credentials and use read-only access for account aggregation.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq-cta">
+            <p>Still have questions? <a href="mailto:support@icycon.com">Contact our team</a> - we're happy to help!</p>
+        </div>
+    </div>
+</section>
+
+<!-- Additional CTA Section -->
+<section class="pricing-cta">
+    <div class="pricing-cta-container">
+        <div class="pricing-cta-content">
+            <h2>Ready to get started?</h2>
+            <p>Join thousands of businesses using Icycon to manage their finances</p>
+            <div class="pricing-cta-buttons">
+                <a href="{% url 'accounts:signup' %}" class="btn-primary">Start Free Trial</a>
+                <a href="mailto:sales@icycon.com" class="btn-secondary">Schedule a Demo</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+  {% comment %} Extra scripts load via extra_js block. {% endcomment %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/pricing.js' %}"></script>
+{% endblock %}
