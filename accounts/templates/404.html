@@ -1,0 +1,66 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block extra_css %}
+<style>
+  .error-hero {
+    background: linear-gradient(135deg, #0f172a, #111827 70%);
+    border-radius: 1.25rem;
+    padding: 3rem;
+    color: #f8fafc;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.5);
+  }
+
+  .error-hero h1 {
+    font-size: 3rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .error-hero p {
+    color: rgba(248, 250, 252, 0.8);
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+  }
+
+  .error-hero .cta-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .error-hero .cta-btn {
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+
+  .error-hero .cta-primary {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+  }
+
+  .error-hero .cta-secondary {
+    border-color: rgba(248, 250, 252, 0.6);
+    color: #f8fafc;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="error-hero">
+  <p class="eyebrow">Oops</p>
+  <h1>Page not found</h1>
+  <p>The address you requested does not exist. Try returning to the dashboard or explore another section.</p>
+  <div class="cta-row">
+    <a href="{% url 'accounts:home' %}" class="cta-btn cta-primary">Return home</a>
+    <a href="{% url 'accounts:services' %}" class="cta-btn cta-secondary">Explore services</a>
+  </div>
+</section>
+{% endblock %}

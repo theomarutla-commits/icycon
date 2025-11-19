@@ -260,3 +260,7 @@ def logout_view(request):
         logout(request)
         messages.info(request, 'You have been signed out.')
     return redirect('accounts:home')
+
+
+def handler404(request, exception=None):
+    return render(request, '404.html', status=404)
