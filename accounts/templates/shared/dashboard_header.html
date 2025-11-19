@@ -94,7 +94,7 @@
       Unified access to SEO, ASO, marketplace, and social automation.
     </p>
     <div class="dashboard-summary">
-      {% with summary=seo_summary|default:{} %}
+      {% with summary=seo_summary|default:seo_summary_default %}
       <div class="summary-card">
         <span>Tracked pages</span>
         <strong>{{ summary.pages_count|default:0 }}</strong>

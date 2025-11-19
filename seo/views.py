@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
+from .forms import BacklinkForm
 from .models import Backlink, DirectoryListing, PageMeta, SiteProfile
 
 
@@ -176,6 +177,18 @@ def directory_list(request: HttpRequest) -> JsonResponse:
         'is_active': directory.is_active,
         'updated_at': directory.updated_at.isoformat(),
     }, status=201)
+
+
+@require_http_methods(['GET', 'POST'])
+@ensure_csrf_cookie
+def add_backlink(request: HttpRequest) -> HttpResponse:
+    form = BacklinkForm(request.POST or None)
+    success = False
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        success = True
+        form = BacklinkForm()
+    return render(request, 'seo/add_backlink.html', {'form': form, 'success': success})
 
 @ensure_csrf_cookie
 def dashboard(request: HttpRequest) -> HttpResponse:
