@@ -6,9 +6,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.http import JsonResponse, HttpRequest
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
@@ -171,27 +172,53 @@ def pricing_page(request):
     return render(request, 'accounts/pricing.html')
 
 
-def _send_welcome_email(user):
+def _send_welcome_email(request, user):
     if not user.email:
         return
 
-    subject = 'Welcome to Icycon SEO Intelligence'
+    subject = 'Welcome to Icycon Intelligence'
+    context = {
+        'user': user,
+        'request': request,
+    }
+    text_body = render_to_string('accounts/emails/welcome_email.txt', context)
+    html_body = render_to_string('accounts/emails/welcome_email.html', context)
+
+    message = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    )
+    message.attach_alternative(html_body, 'text/html')
+    try:
+        message.send(fail_silently=False)
+    except Exception as exc:
+        logger.exception('Unable to send welcome email', exc_info=exc)
+
+
+def _send_signup_notification(user):
+    recipients = getattr(settings, 'SIGNUP_NOTIFICATION_RECIPIENTS', [])
+    if not recipients:
+        return
+
+    subject = f'New user signed up: {user.get_full_name() or user.username}'
     body = (
-        f'Hi {user.get_full_name() or user.username},\n\n'
-        'Thanks for signing up for the Icycon SEO dashboard. '
-        'You can now manage metadata and backlinks centrally.\n\n'
-        'If you need help, just reply to this email.'
+        f'New user registration details:\n\n'
+        f'Username: {user.username}\n'
+        f'Email: {user.email or "not provided"}\n'
+        f'Joined at: {user.date_joined.isoformat()}'
     )
     try:
         send_mail(
             subject,
             body,
             settings.DEFAULT_FROM_EMAIL,
-            [user.email],
+            recipients,
             fail_silently=False,
         )
     except Exception as exc:
-        logger.exception('Unable to send welcome email', exc_info=exc)
+        logger.exception('Unable to send signup notification', exc_info=exc)
 
 
 def signup_view(request):
@@ -202,7 +229,8 @@ def signup_view(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user)
-        _send_welcome_email(user)
+        _send_welcome_email(request, user)
+        _send_signup_notification(user)
         messages.success(request, 'Account created! You are now signed in.')
         return redirect('accounts:home')
 

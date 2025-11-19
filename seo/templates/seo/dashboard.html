@@ -1,828 +1,306 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SEO Dashboard</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      :root {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        background-color: #0c111b;
-        color: #f5f7fb;
-      }
+{% extends 'accounts/base.html' %}
+{% load static %}
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: radial-gradient(circle at top right, #1b1f2c, #0b0f18);
-      }
+{% block title %}SEO Dashboard{% endblock %}
 
-      .seo-hero {
-        padding: 1.25rem 1.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: linear-gradient(135deg, #131a2a, #1b253f);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      }
+{% block extra_css %}
+<style>
+  .seo-hero {
+    background: linear-gradient(135deg, #0f172a, #111827 70%);
+    color: #f8fafc;
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.5);
+  }
 
-      .seo-hero h1 {
-        margin: 0;
-        font-size: 1.8rem;
-        letter-spacing: 0.05em;
-      }
+  .seo-hero h1 {
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+  }
 
-      .seo-hero p {
-        margin: 0.25rem 0 0;
-        color: #93a2c3;
-        font-size: 0.95rem;
-      }
+  .seo-hero p {
+    margin-top: 0.75rem;
+    max-width: 640px;
+    color: rgba(248, 250, 252, 0.8);
+  }
 
-      #seo-app {
-        padding: 2rem;
-        max-width: 1200px;
-        margin: 0 auto 2rem;
-      }
+  .seo-hero .eyebrow {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #a5b4fc;
+    letter-spacing: 0.25em;
+    margin-bottom: 0.5rem;
+  }
 
-      .app-content {
-        display: grid;
-        grid-template-columns: 1fr 1.25fr;
-        gap: 1.2rem;
-      }
+  .seo-app-shell {
+    background: transparent;
+    width: 100%;
+  }
 
-      .side-column {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
+  .seo-hero .cta-row {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 
-      .panel {
-        background: #161d2f;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.45);
-      }
+  .seo-hero .cta-row a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-      .panel h2 {
-        margin-top: 0;
-        font-size: 1.35rem;
-        margin-bottom: 0.35rem;
-      }
+  .seo-hero .primary-cta {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    box-shadow: 0 15px 25px rgba(59, 130, 246, 0.4);
+  }
 
-      .status {
-        font-size: 0.9rem;
-        color: #8ea4ff;
-      }
+  .seo-hero .secondary-cta {
+    border-color: rgba(248, 250, 252, 0.6);
+    color: #f8fafc;
+  }
 
-      .status.error {
-        color: #ff7777;
-      }
+  .panel {
+    background: #111827;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+  }
 
-      .site-list,
-      .page-list,
-      .backlink-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        max-height: 280px;
-        overflow-y: auto;
-      }
+  .panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
 
-      .site-card,
-      .page-card,
-      .backlink-list li {
-        border-radius: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 0.9rem 1rem;
-        background: rgba(255, 255, 255, 0.02);
-      }
+  .panel h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+  }
 
-      .site-card.active,
-      .page-card.active {
-        border-color: rgba(74, 153, 255, 0.8);
-        background: rgba(74, 153, 255, 0.08);
-      }
+  .panel input,
+  .panel textarea {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
 
-      .site-card strong,
-      .page-card strong,
-      .backlink-url {
-        display: block;
-        font-weight: 600;
-      }
+  .panel textarea {
+    min-height: 80px;
+  }
 
-      .site-card span,
-      .site-card small,
-      .backlink-source {
-        color: #cfd2e1;
-        font-size: 0.85rem;
-      }
+  .panel button {
+    margin-top: 0.5rem;
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    cursor: pointer;
+  }
 
-      .form-grid,
-      .site-form {
-        display: grid;
-        gap: 0.8rem;
-        margin-top: 1rem;
-      }
+  .panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-      label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        display: block;
-        margin-bottom: 0.25rem;
-      }
+  .panel li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.8rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+  }
 
-      input,
-      textarea,
-      select {
-        width: 100%;
-        padding: 0.75rem;
-        border-radius: 0.65rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: #0f1622;
-        color: inherit;
-        font-size: 0.95rem;
-      }
+  .panel strong {
+    font-size: 1rem;
+  }
 
-      textarea {
-        min-height: 90px;
-        resize: vertical;
-      }
+  .panel span {
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.7);
+  }
 
-      .form-actions {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
+  .status {
+    font-size: 0.9rem;
+    color: #8ea4ff;
+    margin: 0;
+  }
 
-      button {
-        border-radius: 0.75rem;
-        border: none;
-        padding: 0.75rem 1.25rem;
-        font-weight: 700;
-        cursor: pointer;
-        background: #009ffd;
-        color: #0a0a0a;
-      }
+  .status.error {
+    color: #f87171;
+  }
+</style>
+{% endblock %}
 
-      button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
+{% block content %}
+<section class="seo-hero">
+  <div>
+    <p class="eyebrow">SEO cockpit</p>
+    <h1>Manage metadata, backlinks, and directories in one place</h1>
+    <p>
+      Sync your SEO insights with the same design system used across the rest of the workspace.
+      Track pages, add backlinks, and keep directories updated without leaving the dashboard.
+    </p>
+    <div class="cta-row">
+      <a href="{% url 'seo:page_detail' slug='home' %}" class="primary-cta">Edit metadata</a>
+      <a href="{% url 'seo:add_backlink' %}" class="secondary-cta">Add backlink</a>
+    </div>
+  </div>
+</section>
 
-      .backlink-area {
-        margin-top: 1.75rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        padding-top: 1.5rem;
-      }
+<div class="seo-app-shell">
+  <div id="seo-app"></div>
+</div>
+{% endblock %}
 
-      .backlink-grid {
-        display: grid;
-        grid-template-columns: 1fr 0.95fr;
-        gap: 1rem;
-      }
+{% block extra_js %}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+  const { useEffect, useState } = React;
 
-      .backlink-list li {
-        background: rgba(255, 255, 255, 0.01);
-      }
+  const BACKLINKS_ROOT = '/seo/api/pages/';
+  const DIRECTORIES_ROOT = '/seo/api/directories/';
+  const SITES_ROOT = '/seo/api/sites/';
 
-      .backlink-badge {
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        display: inline-block;
-        margin-bottom: 0.35rem;
-      }
+  const getCSRFToken = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 
-      .backlink-badge.active {
-        background: rgba(41, 209, 145, 0.15);
-        color: #6af2c0;
-      }
-
-      .backlink-badge.pending {
-        background: rgba(253, 186, 116, 0.15);
-        color: #ffd387;
-      }
-
-      .backlink-badge.lost {
-        background: rgba(255, 126, 117, 0.15);
-        color: #ff9c90;
-      }
-
-      @media (max-width: 960px) {
-        .app-content {
-          grid-template-columns: 1fr;
-        }
-
-        .backlink-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-<body>
-    {% include 'shared/dashboard_header.html' %}
-    <section class="seo-hero">
-      <div>
-        <h1>SEO Intelligence</h1>
-        <p class="status">Manage metadata, backlinks, and site data from one dashboard.</p>
+  function ApiList({ items, title, empty }) {
+    if (!items.length) {
+      return (
+        <div className="panel">
+          <h3>{title}</h3>
+          <p className="status">{empty}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="panel">
+        <h3>{title}</h3>
+        <ul className="site-list">
+          {items.map((item) => (
+            <li key={item.slug || item.id}>
+              <strong>{item.title || item.name}</strong>
+              <span>{item.description || item.domain}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </section>
-    <div id="seo-app"></div>
-    <script type="text/babel">
-      const { useState, useEffect } = React;
-      const API_ROOT = '/seo/api/pages/';
-      const SITES_ROOT = '/seo/api/sites/';
-      const BACKLINK_STATUSES = [
-        { value: 'active', label: 'Active' },
-        { value: 'pending', label: 'Pending' },
-        { value: 'lost', label: 'Lost' },
-      ];
+    );
+  }
 
-      function getCSRFToken() {
-        const match = document.cookie.match(/csrftoken=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : '';
-      }
+  function SeoDashboard() {
+    const [sites, setSites] = useState([]);
+    const [pages, setPages] = useState([]);
+    const [siteForm, setSiteForm] = useState({ name: '', domain: '', description: '' });
+    const [siteBusy, setSiteBusy] = useState(false);
+    const [siteError, setSiteError] = useState('');
 
-      function SeoEditor({ page, sites, onChange, onSave, busy, error }) {
-        if (!page) {
-          return <p>Select a page to load its metadata.</p>;
-        }
+    useEffect(() => {
+      loadSites();
+      loadPages();
+    }, []);
 
-        const handleChange = (event) => {
-          const { name, value, type, checked } = event.target;
-          const payload = type === 'checkbox' ? checked : value;
-          onChange(name, payload);
-        };
+    const loadSites = () =>
+      fetch(SITES_ROOT)
+        .then((res) => res.json())
+        .then((data) => setSites(data.sites || []));
 
-        return (
-          <div className="form-grid">
-            <label>
-              Slug
-              <input name="slug" value={page.slug} onChange={handleChange} />
-            </label>
-            <label>
-              Title
-              <input name="title" value={page.title} onChange={handleChange} />
-            </label>
-            <label>
-              Description
-              <textarea name="description" value={page.description} onChange={handleChange} />
-            </label>
-            <label>
-              Keywords (comma separated)
-              <input name="keywords" value={page.keywords} onChange={handleChange} />
-            </label>
-            <label>
-              Canonical URL
-              <input name="canonical_url" value={page.canonical_url} onChange={handleChange} />
-            </label>
-            <label>
-              Site
-              <select
-                name="site_id"
-                value={page.site_id || ''}
-                onChange={(event) => onChange('site_id', event.target.value)}
-              >
-                <option value="">No site</option>
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.name} · {site.domain}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="is_indexable"
-                checked={page.is_indexable}
-                onChange={handleChange}
-              />
-              {' '}Allow indexing
-            </label>
-            <div className="form-actions">
-              <button type="button" disabled={busy} onClick={onSave}>
-                {busy ? 'Saving…' : 'Save metadata'}
-              </button>
-              {error && <span className="status error">{error}</span>}
-            </div>
-          </div>
-        );
-      }
-
-      function SiteManager({ sites, formState, onChange, onSave, busy, error }) {
-        return (
-          <div>
-            <h2>Sites</h2>
-            <p className="status">Define sites and tie pages to domains for better governance.</p>
-            <ul className="site-list">
-              {sites.length ? (
-                sites.map((site) => (
-                  <li key={site.id} className="site-card">
-                    <strong>{site.name}</strong>
-                    <span>{site.domain}</span>
-                    {site.description && <small>{site.description}</small>}
-                  </li>
-                ))
-              ) : (
-                <li className="site-card">
-                  <p>No sites tracked yet.</p>
-                </li>
-              )}
-            </ul>
-            <form
-              className="site-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                onSave();
-              }}
-            >
-              <label>
-                Name
-                <input
-                  name="name"
-                  value={formState.name}
-                  onChange={(event) => onChange('name', event.target.value)}
-                />
-              </label>
-              <label>
-                Domain
-                <input
-                  name="domain"
-                  value={formState.domain}
-                  onChange={(event) => onChange('domain', event.target.value)}
-                  placeholder="https://example.com"
-                />
-              </label>
-              <label>
-                Description
-                <textarea
-                  name="description"
-                  value={formState.description}
-                  onChange={(event) => onChange('description', event.target.value)}
-                />
-              </label>
-              <div className="form-actions">
-                <button type="submit" disabled={busy}>
-                  {busy ? 'Saving…' : 'Track site'}
-                </button>
-              </div>
-              {error && <p className="status error">{error}</p>}
-            </form>
-          </div>
-        );
-      }
-
-      function BacklinkPanel({ backlinks, formState, onChange, onSave, busy, error }) {
-        return (
-          <div className="backlink-area">
-            <h3>Backlinks</h3>
-            <p className="status">
-              {backlinks.length
-                ? backlinks.length + ' backlink' + (backlinks.length > 1 ? 's' : '')
-                : 'No backlinks traced yet'}
-            </p>
-            <div className="backlink-grid">
-              <ul className="backlink-list">
-                {backlinks.length ? (
-                  backlinks.map((link) => (
-                    <li key={link.id}>
-                      <span className={"backlink-badge " + link.status}>{link.status}</span>
-                      <div className="backlink-url">
-                        <a href={link.url} target="_blank" rel="noreferrer">{link.url}</a>
-                      </div>
-                      {link.anchor_text && <p>{link.anchor_text}</p>}
-                      {link.source && <p className="backlink-source">Source: {link.source}</p>}
-                    </li>
-                  ))
-                ) : (
-                  <li>
-                    <p>Backlinks populate once you save the first record.</p>
-                  </li>
-                )}
-              </ul>
-              <form
-                className="backlink-form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  onSave();
-                }}
-              >
-                <label>
-                  URL
-                  <input
-                    name="url"
-                    value={formState.url}
-                    onChange={(event) => onChange('url', event.target.value)}
-                    placeholder="https://partner.example.com/post"
-                  />
-                </label>
-                <label>
-                  Anchor text
-                  <input
-                    name="anchor_text"
-                    value={formState.anchor_text}
-                    onChange={(event) => onChange('anchor_text', event.target.value)}
-                  />
-                </label>
-                <label>
-                  Source
-                  <input
-                    name="source"
-                    value={formState.source}
-                    onChange={(event) => onChange('source', event.target.value)}
-                    placeholder="Partner.com"
-                  />
-                </label>
-                <label>
-                  Status
-                  <select
-                    name="status"
-                    value={formState.status}
-                    onChange={(event) => onChange('status', event.target.value)}
-                  >
-                    {BACKLINK_STATUSES.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    name="is_follow"
-                    checked={formState.is_follow}
-                    onChange={(event) => onChange('is_follow', event.target.checked)}
-                  />
-                  {' '}Follow link
-                </label>
-                <div className="form-actions">
-                  <button type="submit" disabled={busy}>
-                    {busy ? 'Saving…' : 'Track backlink'}
-                  </button>
-                </div>
-                {error && <p className="status error">{error}</p>}
-              </form>
-            </div>
-          </div>
-        );
-      }
-
-      function DirectoryPanel({ directories, onChange, onSave, busy, error }) {
-        return (
-          <article className="card" style="margin-top:1.5rem;">
-            <h3>Directory listings</h3>
-            <p className="status">{directories.length ? `${directories.length} tracked` : 'No directories yet.'}</p>
-            <ul>
-              {directories.map((directory) => (
-                <li key={directory.url}>
-                  <strong>{directory.name}</strong> · <a href={directory.url} target="_blank" rel="noreferrer">{directory.url}</a>
-                  <p>{directory.description}</p>
-                </li>
-              ))}
-            </ul>
-            <form
-              className="site-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                onSave();
-              }}
-            >
-              <label>
-                Name
-                <input name="name" value={directories.form?.name || ''} onChange={(event) => onChange('name', event.target.value)} />
-              </label>
-              <label>
-                URL
-                <input name="url" value={directories.form?.url || ''} onChange={(event) => onChange('url', event.target.value)} placeholder="https://example.com" />
-              </label>
-              <label>
-                Description
-                <textarea name="description" value={directories.form?.description || ''} onChange={(event) => onChange('description', event.target.value)} />
-              </label>
-              <label>
-                Contact email
-                <input name="contact_email" value={directories.form?.contact_email || ''} onChange={(event) => onChange('contact_email', event.target.value)} />
-              </label>
-              <div className="form-actions">
-                <button type="submit" disabled={busy}> {busy ? 'Saving…' : 'Add directory'} </button>
-              </div>
-              {error && <p className="status error">{error}</p>}
-            </form>
-          </article>
-        );
-      }
-
-      const DEFAULT_BACKLINK = {
-        url: '',
-        anchor_text: '',
-        source: '',
-        status: 'active',
-        is_follow: true,
-      };
-
-      function SeoDashboard() {
-        const [pages, setPages] = useState([]);
-        const [sites, setSites] = useState([]);
-        const [products, setProducts] = useState([]);
-        const [selectedSlug, setSelectedSlug] = useState('');
-        const [formState, setFormState] = useState({
-          slug: '',
-          title: '',
-          description: '',
-          keywords: '',
-          canonical_url: '',
-          is_indexable: true,
-          site_id: '',
+    const loadPages = () =>
+      fetch(BACKLINKS_ROOT)
+        .then((res) => res.json())
+        .then((data) => {
+          const pagesList = data.pages || [];
+          setPages(pagesList);
+          if (!selectedSlug && pagesList.length) {
+            setSelectedSlug(pagesList[0].slug);
+          }
         });
-        const [busy, setBusy] = useState(false);
-        const [error, setError] = useState('');
-        const [backlinks, setBacklinks] = useState([]);
-        const [backlinkForm, setBacklinkForm] = useState(DEFAULT_BACKLINK);
-        const [backlinkBusy, setBacklinkBusy] = useState(false);
-        const [backlinkError, setBacklinkError] = useState('');
-        const [siteForm, setSiteForm] = useState({ name: '', domain: '', description: '' });
-        const [siteBusy, setSiteBusy] = useState(false);
-        const [siteError, setSiteError] = useState('');
-        const [directories, setDirectories] = useState([]);
-        const [directoryForm, setDirectoryForm] = useState({ name: '', url: '', description: '', contact_email: '' });
-        const [directoryBusy, setDirectoryBusy] = useState(false);
-        const [directoryError, setDirectoryError] = useState('');
 
-        const loadPages = () =>
-          fetch(API_ROOT)
-            .then((response) => response.json())
-            .then((data) => setPages(data.pages || []))
-            .catch(() => setError('Unable to fetch SEO pages.'));
-
-        const loadBacklinks = (slug) => {
-          if (!slug) {
-            setBacklinks([]);
-            return;
-          }
-          fetch(API_ROOT + slug + '/backlinks/')
-            .then((response) => (response.ok ? response.json() : Promise.reject()))
-            .then((data) => setBacklinks(data.backlinks || []))
-            .catch(() => setBacklinkError('Unable to load backlinks.'));
-        };
-
-        const loadSites = () =>
-          fetch(SITES_ROOT)
-            .then((response) => response.json())
-            .then((data) => setSites(data.sites || []))
-            .catch(() => setSiteError('Unable to fetch sites.'));
-
-        const loadDirectories = () =>
-          fetch('/seo/api/directories/')
-            .then((response) => response.json())
-            .then((data) => setDirectories(data.directories || []));
-
-        useEffect(() => {
-          loadPages();
-          loadSites();
-          loadDirectories();
-        }, []);
-
-        useEffect(() => {
-          if (!selectedSlug) {
-            return;
-          }
-          const existing = pages.find((p) => p.slug === selectedSlug);
-          if (existing) {
-            setFormState({ ...existing, site_id: existing.site?.id || '' });
-          }
-        }, [selectedSlug, pages]);
-
-        useEffect(() => {
-          loadBacklinks(selectedSlug);
-        }, [selectedSlug]);
-
-        const page = selectedSlug
-          ? pages.find((item) => item.slug === selectedSlug) || formState
-          : formState;
-
-        const handlePageSelect = (slug) => {
-          setSelectedSlug(slug);
-          setError('');
-        };
-
-        const handleChange = (name, value) => {
-          setFormState((prev) => ({ ...prev, [name]: value }));
-          if (name === 'slug') {
-            setSelectedSlug(value);
-          }
-        };
-
-        const handleSave = () => {
-          if (!formState.slug) {
-            setError('Slug is required.');
-            return;
-          }
-          setBusy(true);
-          setError('');
-          fetch(API_ROOT + formState.slug + '/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify(formState),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error('Response not OK');
-              }
-              return response.json();
-            })
-            .then((data) => {
-              setFormState({ ...data, site_id: data.site?.id || '' });
-              setSelectedSlug(data.slug);
-              loadPages();
-            })
-            .catch(() => setError('Unable to save metadata.'))
-            .finally(() => setBusy(false));
-        };
-
-        const handleBacklinkChange = (name, value) => {
-          setBacklinkForm((prev) => ({ ...prev, [name]: value }));
-        };
-
-        const handleBacklinkSave = () => {
-          if (!selectedSlug && !formState.slug) {
-            setBacklinkError('Select or create a slug first.');
-            return;
-          }
-          const targetSlug = selectedSlug || formState.slug;
-          if (!targetSlug) {
-            setBacklinkError('Slug is required for creating backlinks.');
-            return;
-          }
-          if (!backlinkForm.url) {
-            setBacklinkError('Backlink URL is required.');
-            return;
-          }
-          setBacklinkBusy(true);
-          setBacklinkError('');
-          fetch(API_ROOT + targetSlug + '/backlinks/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify(backlinkForm),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error('Response not OK');
-              }
-              return response.json();
-            })
-            .then(() => {
-              setBacklinkForm(DEFAULT_BACKLINK);
-              loadBacklinks(targetSlug);
-              loadPages();
-            })
-          .catch(() => setBacklinkError('Unable to save backlink.'))
-          .finally(() => setBacklinkBusy(false));
-        };
-
-        const handleDirectoryChange = (name, value) => {
-          setDirectoryForm((prev) => ({ ...prev, [name]: value }));
-        };
-
-        const handleDirectorySave = () => {
-          if (!directoryForm.name || !directoryForm.url) {
-            setDirectoryError('Name and URL required.');
-            return;
-          }
-          setDirectoryBusy(true);
-          setDirectoryError('');
-          fetch('/seo/api/directories/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify(directoryForm),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error('Response not OK');
-              }
-              return response.json();
-            })
-            .then(() => {
-              setDirectoryForm({ name: '', url: '', description: '', contact_email: '' });
-              loadDirectories();
-            })
-            .catch(() => setDirectoryError('Unable to save directory.'))
-            .finally(() => setDirectoryBusy(false));
-        };
-
-        const handleSiteChange = (name, value) => {
-          setSiteForm((prev) => ({ ...prev, [name]: value }));
-        };
-
-        const handleSiteCreate = () => {
-          if (!siteForm.name || !siteForm.domain) {
-            setSiteError('Name and domain are required.');
-            return;
-          }
-          setSiteBusy(true);
-          setSiteError('');
-          fetch(SITES_ROOT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify(siteForm),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error('Response not OK');
-              }
-              return response.json();
-            })
-            .then(() => {
-              setSiteForm({ name: '', domain: '', description: '' });
-              loadSites();
-            })
-            .catch(() => setSiteError('Unable to save site.'))
-            .finally(() => setSiteBusy(false));
-        };
-
-        return (
-          <div className="app-content">
-            <div className="side-column">
-              <section className="panel">
-                <SiteManager
-                  sites={sites}
-                  formState={siteForm}
-                  onChange={handleSiteChange}
-                  onSave={handleSiteCreate}
-                  busy={siteBusy}
-                  error={siteError}
-                />
-              </section>
-              <section className="panel">
-                <h2>Tracked pages</h2>
-                <p className="status">{pages.length ? pages.length + ' page' + (pages.length > 1 ? 's' : '') : 'No metadata stored yet.'}</p>
-                <ul className="page-list">
-                  {pages.map((item) => (
-                    <li key={item.slug}>
-                      <div
-                        className={"page-card " + (item.slug === selectedSlug ? 'active' : '')}
-                        onClick={() => handlePageSelect(item.slug)}
-                      >
-                        <strong>{item.title || item.slug}</strong>
-                        <span>{item.description?.slice(0, 80)}</span>
-                        {item.site && <small>{item.site.name} · {item.site.domain}</small>}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </div>
-            <section className="panel">
-              <h2>Page metadata</h2>
-              <SeoEditor
-                page={page}
-                sites={sites}
-                onChange={handleChange}
-                onSave={handleSave}
-                busy={busy}
-                error={error}
-              />
-              <BacklinkPanel
-                backlinks={backlinks}
-                formState={backlinkForm}
-                onChange={handleBacklinkChange}
-                onSave={handleBacklinkSave}
-                busy={backlinkBusy}
-                error={backlinkError}
-              />
-              <DirectoryPanel
-                directories={directories}
-                onChange={handleDirectoryChange}
-                onSave={handleDirectorySave}
-                busy={directoryBusy}
-                error={directoryError}
-              />
-            </section>
-          </div>
-        );
+    const handleSiteSave = () => {
+      if (!siteForm.name || !siteForm.domain) {
+        setSiteError('Name and domain required.');
+        return;
       }
+      setSiteBusy(true);
+      setSiteError('');
+      fetch(SITES_ROOT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(siteForm),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed');
+          return res.json();
+        })
+        .then(() => {
+          setSiteForm({ name: '', domain: '', description: '' });
+          loadSites();
+        })
+        .catch(() => setSiteError('Unable to save site.'))
+        .finally(() => setSiteBusy(false));
+    };
 
-      ReactDOM.createRoot(document.getElementById('seo-app')).render(<SeoDashboard />);
-    </script>
-  </body>
-</html>
+    return (
+      <div className="panel-grid">
+        <ApiList items={sites} title="Tracked sites" empty="No sites yet." />
+        <ApiList items={pages} title="Tracked pages" empty="No metadata stored yet." />
+        <div className="panel">
+          <h3>Add new site</h3>
+          <input
+            placeholder="Site name"
+            value={siteForm.name}
+            onChange={(e) => setSiteForm((prev) => ({ ...prev, name: e.target.value }))}
+          />
+          <input
+            placeholder="https://example.com"
+            value={siteForm.domain}
+            onChange={(e) => setSiteForm((prev) => ({ ...prev, domain: e.target.value }))}
+          />
+          <textarea
+            placeholder="Brief description"
+            value={siteForm.description}
+            onChange={(e) => setSiteForm((prev) => ({ ...prev, description: e.target.value }))}
+          />
+          <button onClick={handleSiteSave} disabled={siteBusy}>
+            {siteBusy ? 'Saving…' : 'Save site'}
+          </button>
+          {siteError && <p className="status error">{siteError}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ReactDOM.createRoot(document.getElementById('seo-app')).render(<SeoDashboard />);
+  });
+</script>
+{% endblock %}

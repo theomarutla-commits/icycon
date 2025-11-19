@@ -1,318 +1,300 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Social Publishing</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      :root {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        background: #f8fafc;
-        color: #0f172a;
-      }
+{% extends 'accounts/base.html' %}
+{% load static %}
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #f8fafc, #e0e7ff);
-      }
+{% block title %}Social Publishing{% endblock %}
 
-      header {
-        padding: 1rem 2rem;
-        background: #0f172a;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
+{% block extra_css %}
+<style>
+  .social-hero {
+    background: linear-gradient(135deg, #0f172a, #111827 70%);
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    color: #f8fafc;
+    box-shadow: 0 25px 55px rgba(15, 23, 42, 0.6);
+    margin-bottom: 2rem;
+  }
 
-      header a {
-        color: #e0e7ff;
-        text-decoration: none;
-        font-weight: 600;
-      }
+  .social-hero h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+  }
 
-      main {
-        padding: 2rem;
-      }
+  .social-hero p {
+    max-width: 700px;
+    margin-top: 0.75rem;
+    color: rgba(248, 250, 252, 0.75);
+  }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-        gap: 1rem;
-      }
+  .social-hero .cta-row {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 
-      .panel {
-        background: #fff;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-      }
+  .social-hero .cta-btn {
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
 
-      .panel h2 {
-        margin-top: 0;
-      }
+  .social-hero .cta-primary {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+  }
 
-      label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 0.3rem;
-      }
+  .social-hero .cta-secondary {
+    border-color: rgba(248, 250, 252, 0.6);
+    color: #f8fafc;
+  }
 
-      input,
-      textarea,
-      select {
-        width: 100%;
-        padding: 0.6rem;
-        border-radius: 0.65rem;
-        border: 1px solid #cbd5f5;
-        font-size: 0.95rem;
-        margin-bottom: 0.85rem;
-      }
+  .social-shell {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
 
-      textarea {
-        min-height: 100px;
-        resize: vertical;
-      }
+  .social-panel {
+    background: #fff;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+  }
 
-      button {
-        background: #6366f1;
-        color: #fff;
-        border: none;
-        padding: 0.7rem 1.2rem;
-        border-radius: 0.75rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
+  .social-panel h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
 
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+  .social-panel label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
 
-      .status {
-        font-size: 0.85rem;
-        color: #6366f1;
-      }
+  .social-panel input,
+  .social-panel textarea,
+  .social-panel select {
+    width: 100%;
+    border-radius: 0.8rem;
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.95rem;
+  }
 
-      .status.error {
-        color: #ef4444;
-      }
+  .social-panel button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
 
-      ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
+  .social-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
 
-      li {
-        padding: 0.65rem 0;
-        border-bottom: 1px solid #e2e8f0;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Social Publisher</h1>
-      <a href="{% url 'accounts:home' %}">Home</a>
-      <a href="{% url 'accounts:logout' %}">Logout</a>
-    </header>
-    <main>
-      <div id="social-dashboard"></div>
-    </main>
+  .social-feed li {
+    padding: 0.9rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(248, 250, 252, 0.8);
+  }
 
-    <script type="text/babel">
-      const { useState, useEffect } = React;
-      const PROFILES_ROOT = '/accounts/api/social-profiles/';
-      const POSTS_ROOT = '/accounts/api/social-posts/';
+  .social-feed strong {
+    display: block;
+  }
 
-      function SocialDashboard() {
-        const [profiles, setProfiles] = useState([]);
-        const [posts, setPosts] = useState([]);
-        const [profileForm, setProfileForm] = useState({ platform: 'twitter', handle: '', url: '', description: '' });
-        const [postForm, setPostForm] = useState({ profile_id: '', caption: '', scheduled_at: '' });
-        const [busy, setBusy] = useState({ profile: false, post: false });
-        const [errors, setErrors] = useState({ profile: '', post: '' });
+  .status {
+    font-size: 0.85rem;
+    color: #0f172a;
+  }
 
-        const fetchProfiles = () =>
-          fetch(PROFILES_ROOT)
-            .then((response) => response.json())
-            .then((data) => setProfiles(data.profiles || []))
-            .catch(() => setErrors((prev) => ({ ...prev, profile: 'Unable to load profiles.' })));
+  .status.error {
+    color: #ef4444;
+  }
+</style>
+{% endblock %}
 
-        const fetchPosts = () =>
-          fetch(POSTS_ROOT)
-            .then((response) => response.json())
-            .then((data) => setPosts(data.posts || []))
-            .catch(() => setErrors((prev) => ({ ...prev, post: 'Unable to load posts.' })));
+{% block content %}
+<section class="social-hero">
+  <p class="eyebrow">Social automation</p>
+  <h1>Publish with the same modern energy as the home experience</h1>
+  <p>Schedule posts, track profiles, and keep your team in sync from this single page—every element now mirrors the gradients, cards, and CTAs from the marketing home.</p>
+  <div class="cta-row">
+    <a href="{% url 'accounts:home' %}" class="cta-btn cta-secondary">Visit homepage</a>
+    <a href="{% url 'accounts:profile' %}" class="cta-btn cta-primary">Update profile</a>
+  </div>
+</section>
 
-        useEffect(() => {
-          fetchProfiles();
-          fetchPosts();
-        }, []);
+<div class="social-shell">
+  <section class="social-panel">
+    <h2>Track a profile</h2>
+    <label for="platform">Platform</label>
+    <select id="platform">
+      <option value="twitter">Twitter</option>
+      <option value="linkedin">LinkedIn</option>
+      <option value="instagram">Instagram</option>
+      <option value="facebook">Facebook</option>
+    </select>
+    <label for="handle">Handle</label>
+    <input id="handle" placeholder="@example" />
+    <label for="url">URL</label>
+    <input id="url" placeholder="https://social.com/profile" />
+    <label for="description">Description</label>
+    <textarea id="description"></textarea>
+    <button id="save-profile-btn">Track profile</button>
+    <p class="status" id="profile-status"></p>
+  </section>
 
-        const handleProfileSave = () => {
-          if (!profileForm.handle) {
-            setErrors((prev) => ({ ...prev, profile: 'Handle is required.' }));
-            return;
-          }
-          setBusy((prev) => ({ ...prev, profile: true }));
-          fetch(PROFILES_ROOT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
-            },
-            body: JSON.stringify(profileForm),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error('Failed');
-              return response.json();
-            })
-            .then(() => {
-              setProfileForm({ platform: 'twitter', handle: '', url: '', description: '' });
-              fetchProfiles();
-            })
-            .catch(() => setErrors((prev) => ({ ...prev, profile: 'Unable to save profile.' })))
-            .finally(() => setBusy((prev) => ({ ...prev, profile: false })));
-        };
+  <section class="social-panel">
+    <h2>Schedule a post</h2>
+    <label for="profile-select">Profile</label>
+    <select id="profile-select"></select>
+    <label for="caption">Caption</label>
+    <textarea id="caption" maxlength="280"></textarea>
+    <label for="scheduled">Scheduled at</label>
+    <input id="scheduled" type="datetime-local" />
+    <button id="save-post-btn">Schedule post</button>
+    <p class="status" id="post-status"></p>
+  </section>
 
-        const handlePostSave = () => {
-          if (!postForm.profile_id || !postForm.caption) {
-            setErrors((prev) => ({ ...prev, post: 'Profile and caption are required.' }));
-            return;
-          }
-          setBusy((prev) => ({ ...prev, post: true }));
-          fetch(POSTS_ROOT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
-            },
-            body: JSON.stringify(postForm),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error('Failed');
-              return response.json();
-            })
-            .then(() => {
-              setPostForm({ profile_id: '', caption: '', scheduled_at: '' });
-              fetchPosts();
-            })
-            .catch(() => setErrors((prev) => ({ ...prev, post: 'Unable to create post.' })))
-            .finally(() => setBusy((prev) => ({ ...prev, post: false })));
-        };
+  <section class="social-panel">
+    <h2>Upcoming posts</h2>
+    <ul class="social-feed" id="posts-feed"></ul>
+  </section>
+</div>
+{% endblock %}
 
-        return (
-          <div className="grid">
-            <section className="panel">
-              <h2>Profiles</h2>
-              <p className="status">{profiles.length ? `${profiles.length} profiles tracked` : 'No profiles yet'}</p>
-              <ul>
-                {profiles.map((profile) => (
-                  <li key={profile.id}>
-                    <strong>{profile.platform.toUpperCase()}</strong> · {profile.handle}
-                    <p>{profile.description}</p>
-                  </li>
-                ))}
-              </ul>
-              <h3>Add a profile</h3>
-              <label>Platform</label>
-              <select
-                name="platform"
-                value={profileForm.platform}
-                onChange={(event) => setProfileForm({ ...profileForm, platform: event.target.value })}
-              >
-                <option value="twitter">Twitter</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="facebook">Facebook</option>
-                <option value="instagram">Instagram</option>
-                <option value="tiktok">TikTok</option>
-                <option value="youtube">YouTube</option>
-                <option value="other">Other</option>
-              </select>
-              <label>Handle</label>
-              <input
-                name="handle"
-                value={profileForm.handle}
-                onChange={(event) => setProfileForm({ ...profileForm, handle: event.target.value })}
-              />
-              <label>Profile URL</label>
-              <input
-                name="url"
-                value={profileForm.url}
-                onChange={(event) => setProfileForm({ ...profileForm, url: event.target.value })}
-              />
-              <label>Description</label>
-              <textarea
-                name="description"
-                value={profileForm.description}
-                onChange={(event) => setProfileForm({ ...profileForm, description: event.target.value })}
-              />
-              <div className="form-actions">
-                <button type="button" disabled={busy.profile} onClick={handleProfileSave}>
-                  {busy.profile ? 'Tracking…' : 'Track profile'}
-                </button>
-              </div>
-              {errors.profile && <p className="status error">{errors.profile}</p>}
-            </section>
+{% block extra_js %}
+<script>
+  const PROFILES_ROOT = '/accounts/api/social-profiles/';
+  const POSTS_ROOT = '/accounts/api/social-posts/';
 
-            <section className="panel">
-              <h2>Posts</h2>
-              <p className="status">{posts.length ? `${posts.length} posts logged` : 'No posts yet'}</p>
-              <ul>
-                {posts.map((post) => (
-                  <li key={post.id}>
-                    <strong>{post.caption}</strong>
-                    <p>Scheduled: {post.scheduled_at || '—'}</p>
-                  </li>
-                ))}
-              </ul>
-              <label>Profile</label>
-              <select
-                name="profile_id"
-                value={postForm.profile_id}
-                onChange={(event) => setPostForm({ ...postForm, profile_id: event.target.value })}
-              >
-                <option value="">Choose profile</option>
-                {profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.platform} / {profile.handle}
-                  </option>
-                ))}
-              </select>
-              <label>Caption</label>
-              <textarea
-                name="caption"
-                value={postForm.caption}
-                onChange={(event) => setPostForm({ ...postForm, caption: event.target.value })}
-              />
-              <label>Scheduled At</label>
-              <input
-                type="datetime-local"
-                name="scheduled_at"
-                value={postForm.scheduled_at}
-                onChange={(event) => setPostForm({ ...postForm, scheduled_at: event.target.value })}
-              />
-              <div className="form-actions">
-                <button type="button" disabled={busy.post} onClick={handlePostSave}>
-                  {busy.post ? 'Posting…' : 'Log post'}
-                </button>
-              </div>
-              {errors.post && <p className="status error">{errors.post}</p>}
-            </section>
-          </div>
-        );
-      }
+  const csrfToken = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 
-      ReactDOM.createRoot(document.getElementById('social-dashboard')).render(<SocialDashboard />);
-    </script>
-  </body>
-</html>
+  const get = (url) => fetch(url).then((res) => res.json());
+  const post = (url, payload) =>
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken(),
+      },
+      body: JSON.stringify(payload),
+    });
+
+  const profileSelect = document.getElementById('profile-select');
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+  const savePostBtn = document.getElementById('save-post-btn');
+  const postsFeed = document.getElementById('posts-feed');
+  const profileStatus = document.getElementById('profile-status');
+  const postStatus = document.getElementById('post-status');
+
+  const formFields = {
+    platform: document.getElementById('platform'),
+    handle: document.getElementById('handle'),
+    url: document.getElementById('url'),
+    description: document.getElementById('description'),
+  };
+
+  const postFields = {
+    profile_id: profileSelect,
+    caption: document.getElementById('caption'),
+    scheduled_at: document.getElementById('scheduled'),
+  };
+
+  const refreshProfiles = () =>
+    get(PROFILES_ROOT).then((data) => {
+      const profiles = data.profiles || [];
+      profileSelect.innerHTML = profiles
+        .map((profile) => `<option value="${profile.id}">${profile.platform} · ${profile.handle}</option>`)
+        .join('');
+      return profiles;
+    });
+
+  const refreshPosts = () =>
+    get(POSTS_ROOT).then((data) => {
+      const posts = data.posts || [];
+      postsFeed.innerHTML = posts.length
+        ? posts
+            .map(
+              (post) => `
+                <li>
+                  <strong>${post.caption.slice(0, 60)}${post.caption.length > 60 ? '…' : ''}</strong>
+                  <span>${new Date(post.created_at).toLocaleString()}</span>
+                </li>
+              `,
+            )
+            .join('')
+        : '<li>No posts yet.</li>';
+    });
+
+  saveProfileBtn.addEventListener('click', () => {
+    profileStatus.textContent = '';
+    const payload = Object.fromEntries(Object.entries(formFields).map(([key, el]) => [key, el.value]));
+    if (!payload.handle) {
+      profileStatus.textContent = 'Handle is required.';
+      return;
+    }
+    saveProfileBtn.disabled = true;
+    post(PROFILES_ROOT, payload)
+      .then(() => refreshProfiles())
+      .then(() => {
+        Object.values(formFields).forEach((field) => (field.value = field === formFields.platform ? 'twitter' : ''));
+        profileStatus.textContent = 'Profile tracked.';
+      })
+      .catch(() => {
+        profileStatus.textContent = 'Unable to save profile.';
+      })
+      .finally(() => {
+        saveProfileBtn.disabled = false;
+      });
+  });
+
+  savePostBtn.addEventListener('click', () => {
+    postStatus.textContent = '';
+    if (!postFields.profile_id.value || !postFields.caption.value) {
+      postStatus.textContent = 'Profile and caption are required.';
+      return;
+    }
+    savePostBtn.disabled = true;
+    const payload = {
+      profile_id: postFields.profile_id.value,
+      caption: postFields.caption.value,
+      scheduled_at: postFields.scheduled_at.value || null,
+    };
+    post(POSTS_ROOT, payload)
+      .then(() => {
+        postFields.caption.value = '';
+        postFields.scheduled_at.value = '';
+        postStatus.textContent = 'Post scheduled.';
+        refreshPosts();
+      })
+      .catch(() => {
+        postStatus.textContent = 'Unable to schedule post.';
+      })
+      .finally(() => {
+        savePostBtn.disabled = false;
+      });
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshProfiles();
+    refreshPosts();
+  });
+</script>
+{% endblock %}

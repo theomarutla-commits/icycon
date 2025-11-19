@@ -2,22 +2,84 @@
 
 {% block title %}Add Backlink{% endblock %}
 
+{% block extra_css %}
+<style>
+  .backlink-hero {
+    background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.8));
+    padding: 2rem;
+    border-radius: 1.2rem;
+    box-shadow: 0 25px 45px rgba(15, 23, 42, 0.45);
+    color: #f1f5f9;
+    margin-bottom: 1.5rem;
+  }
+
+  .backlink-hero h1 {
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+  }
+
+  .backlink-hero p {
+    margin-top: 0.75rem;
+    color: rgba(248, 250, 252, 0.7);
+  }
+
+  .backlink-form-shell {
+    background: #fff;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 25px 40px rgba(15, 23, 42, 0.08);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .success-banner {
+    background: #d1fae5;
+    color: #0f5132;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .backlink-form-shell form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .backlink-form-shell button {
+    align-self: flex-start;
+    border: none;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: white;
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .helper-text {
+    margin-top: 1rem;
+    color: rgba(15, 23, 42, 0.7);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-  <h1>Add Backlink</h1>
+  <section class="backlink-hero">
+    <p class="eyebrow">SEO helpers</p>
+    <h1>Register backlinks faster</h1>
+    <p>Use this streamlined entry point to add working backlinks without switching to the JSON API—every link lands directly in the page record for reporting.</p>
+  </section>
 
-  {% if success %}
-    <div class="alert alert-success">
-      Backlink saved successfully.
-    </div>
-  {% endif %}
-
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save backlink</button>
-  </form>
-
-  <p class="mt-3">
-    Use the form above to register a backlink for any registered page.
-  </p>
+  <div class="backlink-form-shell">
+    {% if success %}
+      <div class="success-banner">Backlink saved successfully.</div>
+    {% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Save backlink</button>
+    </form>
+    <p class="helper-text">Need to edit metadata instead? <a href="{% url 'seo:page_detail' slug='home' %}">Go back to the SEO editors</a>.</p>
+  </div>
 {% endblock %}

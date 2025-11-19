@@ -25,6 +25,14 @@ def pages_list(request: HttpRequest) -> JsonResponse:
     return JsonResponse({'pages': [serialize_page(page) for page in pages]})
 
 
+def _get_or_create_page(slug: str) -> PageMeta:
+    page, _ = PageMeta.objects.get_or_create(
+        slug=slug,
+        defaults={'title': slug},
+    )
+    return page
+
+
 def _get_page_or_404(slug: str) -> PageMeta:
     try:
         return PageMeta.objects.get(slug=slug)
@@ -36,7 +44,7 @@ def _get_page_or_404(slug: str) -> PageMeta:
 @ensure_csrf_cookie
 def page_detail(request: HttpRequest, slug: str) -> JsonResponse:
     if request.method == 'GET':
-        page = _get_page_or_404(slug)
+        page = _get_or_create_page(slug)
         return JsonResponse(serialize_page(page))
 
     try:

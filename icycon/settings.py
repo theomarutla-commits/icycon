@@ -134,6 +134,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@icycon.local'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+SIGNUP_NOTIFICATION_RECIPIENTS = ['theosknowledge@gmail.com']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

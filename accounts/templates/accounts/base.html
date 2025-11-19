@@ -27,51 +27,59 @@
           <div class="nav-center" id="navCenter">
             <!-- SEO Dropdown -->
             <div class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{% url 'seo:dashboard' %}" class="nav-link">
                 SEO
                 <span style="font-size: 0.75rem;">▼</span>
               </a>
               <div class="dropdown">
-                <a href="#" class="dropdown-item">Keyword Research</a>
-                <a href="#" class="dropdown-item">On-Page Optimization</a>
-                <a href="#" class="dropdown-item">Technical SEO</a>
-                <a href="#" class="dropdown-item">Local SEO</a>
-                <a href="#" class="dropdown-item">SEO Analytics</a>
+                <a href="{% url 'seo:dashboard' %}" class="dropdown-item">SEO dashboard</a>
+                <a href="{% url 'seo:add_backlink' %}" class="dropdown-item">Add backlink</a>
+                <a href="{% url 'seo:page_detail' slug='home' %}" class="dropdown-item">Meta editor</a>
               </div>
             </div>
 
             <!-- Social Media Dropdown -->
             <div class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{% url 'accounts:social_dashboard' %}" class="nav-link">
                 Social Media
                 <span style="font-size: 0.75rem;">▼</span>
               </a>
               <div class="dropdown">
-                <a href="#" class="dropdown-item">Social Media Management</a>
-                <a href="#" class="dropdown-item">Content Scheduling</a>
-                <a href="#" class="dropdown-item">Social Analytics</a>
-                <a href="#" class="dropdown-item">Influencer Marketing</a>
-                <a href="#" class="dropdown-item">Social Listening</a>
+                <a href="{% url 'accounts:social_dashboard' %}" class="dropdown-item">Social dashboard</a>
+                <a href="{% url 'accounts:home' %}" class="dropdown-item">Home dashboard</a>
               </div>
             </div>
 
-            <!-- E-Mail Marketing Dropdown -->
+            <!-- Marketplace Dropdown -->
             <div class="nav-item">
-              <a href="#" class="nav-link">
-                E-Mail Marketing
+              <a href="{% url 'marketplace:dashboard' %}" class="nav-link">
+                Marketplace
                 <span style="font-size: 0.75rem;">▼</span>
               </a>
               <div class="dropdown">
-                <a href="#" class="dropdown-item">Email Campaigns</a>
-                <a href="#" class="dropdown-item">Automation Workflows</a>
-                <a href="#" class="dropdown-item">List Management</a>
-                <a href="#" class="dropdown-item">Email Templates</a>
-                <a href="#" class="dropdown-item">Performance Analytics</a>
+                <a href="{% url 'marketplace:dashboard' %}" class="dropdown-item">Marketplace dashboard</a>
+                <a href="{% url 'accounts:services' %}" class="dropdown-item">Services overview</a>
+              </div>
+            </div>
+
+            <!-- ASO Dropdown -->
+            <div class="nav-item">
+              <a href="{% url 'aso:overview' %}" class="nav-link">
+                ASO
+                <span style="font-size: 0.75rem;">▼</span>
+              </a>
+              <div class="dropdown">
+                <a href="{% url 'aso:overview' %}" class="dropdown-item">ASO overview</a>
+                <a href="{% url 'aso:dashboard' %}" class="dropdown-item">ASO dashboard</a>
+                <a href="{% url 'accounts:services' %}" class="dropdown-item">Services resilience</a>
               </div>
             </div>
 
             <div class="nav-item">
               <a href="{% url 'accounts:services' %}" class="nav-link">Services</a>
+            </div>
+            <div class="nav-item">
+              <a href="{% url 'accounts:profile' %}" class="nav-link">Profile</a>
             </div>
             <!-- Pricing (No dropdown) -->
             <div class="nav-item">

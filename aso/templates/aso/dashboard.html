@@ -1,237 +1,219 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ASO Intelligence</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      :root {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        background: #0f172a;
-        color: #e2e8f0;
-      }
+{% extends 'accounts/base.html' %}
+{% load static %}
 
-      body {
-        margin: 0;
-      }
+{% block title %}ASO Intelligence{% endblock %}
 
-      .aso-hero {
-        background: #111827;
-        color: #cbd5f5;
-        padding: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgba(203, 213, 225, 0.22);
-      }
+{% block extra_css %}
+<style>
+  .aso-hero {
+    background: linear-gradient(135deg, #050b25 0%, #0f172a 100%);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    color: #f8fafc;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.6);
+    margin-bottom: 2rem;
+  }
 
-      .aso-hero h1 {
-        margin: 0;
-        font-size: 2rem;
-      }
+  .aso-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
 
-      .aso-hero p {
-        margin: 0.5rem 0 0;
-        color: #cbd5f5;
-        opacity: 0.9;
-      }
+  .aso-hero p {
+    max-width: 620px;
+    color: rgba(248, 250, 252, 0.75);
+    font-size: 1.05rem;
+  }
 
-      @media (max-width: 640px) {
-        .aso-hero {
-          text-align: center;
-        }
-      }
+  .aso-hero .cta-row {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
 
-      main {
-        padding: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+  .aso-hero .cta-btn {
+    border-radius: 999px;
+    padding: 0.85rem 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.2rem;
-      }
+  .aso-hero .cta-primary {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    box-shadow: 0 15px 30px rgba(56, 189, 248, 0.25);
+  }
 
-      .card {
-        background: #1f2937;
-        border-radius: 1rem;
-        padding: 1.2rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
+  .aso-hero .cta-secondary {
+    border-color: rgba(248, 250, 252, 0.45);
+    color: #f8fafc;
+  }
 
-      h1, h2, h3 {
-        margin-top: 0;
-      }
+  .aso-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
 
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
+  .aso-card {
+    background: #fff;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    box-shadow: 0 20px 35px rgba(15, 23, 42, 0.1);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+  }
 
-      li {
-        padding-bottom: 0.7rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-      }
+  .aso-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
 
-      button {
-        background: #fb923c;
-        color: #0f172a;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0.6rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
+  .aso-card p {
+    color: #475569;
+    margin-bottom: 0.75rem;
+  }
 
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 0.6rem;
-        border-radius: 0.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: #0f172a;
-        color: inherit;
-        margin-bottom: 0.8rem;
-      }
-    </style>
-  </head>
-  <body>
-    {% include 'shared/dashboard_header.html' %}
-    <section class="aso-hero">
-      <div>
-        <h1>ASO Intelligence</h1>
-        <p>Keep your app listings aligned with the SEO workbench.</p>
-      </div>
-    </section>
-    <main>
-      <div id="aso-app"></div>
-    </main>
+  .aso-card ul {
+    padding-left: 1rem;
+    color: #0f172a;
+  }
 
-    {% verbatim %}
-    <script type="text/babel">
-      const { useState, useEffect } = React;
-      const ROOT = '/aso/api/listings/';
+  .aso-panel {
+    margin-bottom: 2rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 55px rgba(15, 23, 42, 0.45);
+  }
 
-      function AsoDashboard() {
-        const [listings, setListings] = useState([]);
-        const [form, setForm] = useState({
-          name: '',
-          store: 'apple',
-          bundle_id: '',
-          description: '',
-          rating: '0.0',
-          downloads: '0',
-          icon_url: '',
-        });
-        const [busy, setBusy] = useState(false);
-        const [status, setStatus] = useState('');
+  .aso-panel h2 {
+    margin-top: 0;
+    margin-bottom: 0.65rem;
+  }
 
-        const loadListings = () =>
-          fetch(ROOT)
-            .then((response) => response.json())
-            .then((data) => setListings(data.listings || []))
-            .catch(() => setStatus('Unable to load listings.'));
+  .aso-panel p {
+    color: rgba(226, 232, 240, 0.8);
+  }
 
-        useEffect(() => {
-          loadListings();
-        }, []);
+  .aso-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
 
-        const handleSubmit = () => {
-          if (!form.name || !form.bundle_id) {
-            setStatus('Name and bundle ID required.');
-            return;
-          }
-          setBusy(true);
-          fetch(ROOT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
-            },
-            body: JSON.stringify(form),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error('Failed');
-              return response.json();
-            })
-            .then(() => {
-              setForm({
-                name: '',
-                store: 'apple',
-                bundle_id: '',
-                description: '',
-                rating: '0.0',
-                downloads: '0',
-                icon_url: '',
-              });
-              loadListings();
-            })
-            .catch(() => setStatus('Unable to save listing.'))
-            .finally(() => setBusy(false));
-        };
+  .aso-stat {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 0.9rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
 
-        return (
-          <div className="grid">
-            <section className="card">
-              <h2>Create listing</h2>
-              <select value={form.store} onChange={(event) => setForm({ ...form, store: event.target.value })}>
-                <option value="apple">App Store</option>
-                <option value="google">Google Play</option>
-                <option value="amazon">Amazon</option>
-                <option value="other">Other</option>
-              </select>
-              <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="App name" />
-              <input value={form.bundle_id} onChange={(event) => setForm({ ...form, bundle_id: event.target.value })} placeholder="com.example.app" />
-              <textarea
-                value={form.description}
-                onChange={(event) => setForm({ ...form, description: event.target.value })}
-                placeholder="Short marketing copy"
-              />
-              <input value={form.rating} onChange={(event) => setForm({ ...form, rating: event.target.value })} placeholder="Rating" />
-              <input value={form.downloads} onChange={(event) => setForm({ ...form, downloads: event.target.value })} placeholder="Downloads" />
-              <input value={form.icon_url} onChange={(event) => setForm({ ...form, icon_url: event.target.value })} placeholder="Icon URL" />
-              <div className="form-actions">
-                <button disabled={busy} onClick={handleSubmit}>
-                  {busy ? 'Saving…' : 'Save listing'}
-                </button>
-              </div>
-              {status && <p className="status">{status}</p>}
-            </section>
-            <section className="card">
-              <h2>Listings overview</h2>
-              <ul>
-                {listings.map((listing) => (
-                  <li key={listing.id}>
-                    <strong>{listing.name} ({listing.store})</strong>
-                    <p>Category: {listing.category || 'Uncategorized'} · Keyword: {listing.primary_keyword || '—'}</p>
-                    <p>Rating: {listing.rating} · Downloads: {listing.downloads}</p>
-                    <p>
-                      Metrics: {listing.metrics.length
-                        ? listing.metrics.map((metric) => `${metric.field}:${metric.value}`).join(', ')
-                        : 'No metrics yet.'}
-                    </p>
-                    {listing.competitors.length ? (
-                      <p style={{ color: '#fb923c' }}>
-                        Top competitor: {listing.competitors[0].name} ({listing.competitors[0].downloads} downloads, rating {listing.competitors[0].rating})
-                      </p>
-                    ) : (
-                      <p style={{ color: '#94a3b8' }}>Add competitor info through the API to compare.</p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-        );
-      }
+  .aso-stat strong {
+    display: block;
+    font-size: 1.75rem;
+  }
 
-      ReactDOM.createRoot(document.getElementById('aso-app')).render(<AsoDashboard />);
-    </script>
-    {% endverbatim %}
-  </body>
-</html>
+  .aso-services {
+    margin-bottom: 3rem;
+  }
+
+  .aso-services img {
+    width: 100%;
+    border-radius: 1rem;
+    object-fit: cover;
+    height: 220px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="aso-hero">
+  <p class="eyebrow">App Store Optimization</p>
+  <h1>Plan listings with the same bold aesthetic as the home experience</h1>
+  <p>
+    Every ASO insight now sits inside the same workspace: hero gradient, CTA buttons,
+    and responsive sections keep the experience cohesive while you manage keywords,
+    creatives, and analytics.
+  </p>
+  <div class="cta-row">
+    <a href="{% url 'aso:overview' %}" class="cta-btn cta-primary">View listing overview</a>
+    <a href="{% url 'accounts:services' %}" class="cta-btn cta-secondary">Explore services</a>
+  </div>
+</section>
+
+<section class="aso-panel">
+  <h2>ASO signals in context</h2>
+  <p>
+    Use this dashboard to keep your app metadata aligned with the SEO framework.
+    Track ratings, downloads, and visibility signals while editorial assets mirror the brand atmosphere from the homepage.
+  </p>
+  <div class="aso-stats">
+    <div class="aso-stat">
+      <strong>+48%</strong>
+      <span>Boost in search impressions</span>
+    </div>
+    <div class="aso-stat">
+      <strong>12</strong>
+      <span>Live app listings</span>
+    </div>
+    <div class="aso-stat">
+      <strong>3.9</strong>
+      <span>Average rating (App Store)</span>
+    </div>
+    <div class="aso-stat">
+      <strong>24</strong>
+      <span>Keyword clusters tracked</span>
+    </div>
+  </div>
+</section>
+
+<section class="aso-services">
+  <div class="aso-grid">
+    <div class="aso-card">
+      <h3>Keyword orchestration</h3>
+      <p>Pair keyword research with your SEO strategy, feeding results back into page metadata and title experimentation.</p>
+      <ul>
+        <li>Golden keyword syndication across SEO and ASO</li>
+        <li>Store-specific ranking timelines</li>
+        <li>Automated title + subtitle suggestions</li>
+      </ul>
+    </div>
+    <div class="aso-card">
+      <h3>Creative review board</h3>
+      <p>Preview hero graphics, screenshots, and videos with the same artistry you use on the homepage.</p>
+      <ul>
+        <li>Component-based creative checklist</li>
+        <li>Localized preview across stores</li>
+        <li>Growth-ready template library</li>
+      </ul>
+    </div>
+    <div class="aso-card">
+      <h3>Intelligent monitoring</h3>
+      <p>Never miss a drop in installs: alerts feed into the central dashboard so SEO, ASO, and marketplace teams stay synchronized.</p>
+      <ul>
+        <li>Download trend predictions</li>
+        <li>Competitor watchlists with alerts</li>
+        <li>React-ready reporting exports</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="aso-panel">
+  <h2>Ready to publish or refresh a listing?</h2>
+  <p>
+    Click through to the ASO overview for story-driven documentation or schedule a live creative review with your marketing team.
+  </p>
+  <div class="cta-row">
+    <a href="{% url 'aso:overview' %}" class="cta-btn cta-primary">Open overview</a>
+    <a href="{% url 'accounts:pricing' %}" class="cta-btn cta-secondary">See pricing</a>
+  </div>
+</section>
+{% endblock %}
