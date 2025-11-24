@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}ASO Dashboard - Icycon{% endblock %}
+
+{% block breadcrumb %} / <a href="/aso-ui/">ASO</a> / Dashboard {% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Performance Overview -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Performance Overview</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary">Last 7 days</button>
+                    <button class="btn btn-sm btn-outline-secondary">Last 30 days</button>
+                    <button class="btn btn-sm btn-outline-secondary">Last 90 days</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Total Installs</h6>
+                            <h3 id="totalInstalls">Loading...</h3>
+                            <small class="text-success">+5.2% vs last period</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Conversion Rate</h6>
+                            <h3 id="conversionRate">Loading...</h3>
+                            <small class="text-danger">-1.1% vs last period</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Average Rating</h6>
+                            <h3 id="avgRating">Loading...</h3>
+                            <small class="text-success">+0.2 vs last period</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Keyword Rankings</h6>
+                            <h3 id="keywordRankings">Loading...</h3>
+                            <small class="text-success">+12 positions avg</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container mt-4">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyword Rankings -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Keyword Rankings</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="keywordTable">
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th>Rank</th>
+                                <th>Change</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Review Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <canvas id="reviewsChart"></canvas>
+                </div>
+                <div class="review-sentiment">
+                    <h6>Sentiment Breakdown</h6>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 65%">Positive (65%)</div>
+                        <div class="progress-bar bg-warning" style="width: 25%">Neutral (25%)</div>
+                        <div class="progress-bar bg-danger" style="width: 10%">Negative (10%)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competitors Analysis -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Competitor Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="competitorTable">
+                        <thead>
+                            <tr>
+                                <th>App</th>
+                                <th>Rating</th>
+                                <th>Reviews</th>
+                                <th>Installs</th>
+                                <th>Common Keywords</th>
+                                <th>Ranking Diff</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .metric-card h6 {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    .metric-card h3 {
+        margin-bottom: 0.25rem;
+    }
+    .chart-container {
+        height: 300px;
+    }
+    .review-sentiment {
+        margin-top: 1rem;
+    }
+    .review-sentiment h6 {
+        margin-bottom: 0.5rem;
+    }
+    .progress {
+        height: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Installs',
+                data: [1200, 1900, 3000, 5000, 6000, 7500],
+                borderColor: '#0ea5e9',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Reviews Chart
+    const reviewsCtx = document.getElementById('reviewsChart').getContext('2d');
+    new Chart(reviewsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['★★★★★', '★★★★', '★★★', '★★', '★'],
+            datasets: [{
+                label: 'Reviews',
+                data: [500, 300, 150, 50, 30],
+                backgroundColor: ['#10b981', '#34d399', '#fbbf24', '#f59e0b', '#ef4444']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Load data
+    function loadData() {
+        // Simulated data loading
+        setTimeout(() => {
+            document.getElementById('totalInstalls').textContent = '25,432';
+            document.getElementById('conversionRate').textContent = '3.2%';
+            document.getElementById('avgRating').textContent = '4.7';
+            document.getElementById('keywordRankings').textContent = '32';
+
+            // Update keyword table
+            document.getElementById('keywordTable').querySelector('tbody').innerHTML = `
+                <tr>
+                    <td>fitness app</td>
+                    <td>#3</td>
+                    <td class="text-success">↑2</td>
+                    <td>12.5K</td>
+                </tr>
+                <tr>
+                    <td>workout tracker</td>
+                    <td>#5</td>
+                    <td class="text-danger">↓1</td>
+                    <td>8.2K</td>
+                </tr>
+                <!-- Add more rows as needed -->
+            `;
+
+            // Update competitor table
+            document.getElementById('competitorTable').querySelector('tbody').innerHTML = `
+                <tr>
+                    <td>FitTrack Pro</td>
+                    <td>4.6</td>
+                    <td>15,234</td>
+                    <td>1.2M</td>
+                    <td>65%</td>
+                    <td class="text-success">+2.3</td>
+                </tr>
+                <tr>
+                    <td>GymBuddy</td>
+                    <td>4.4</td>
+                    <td>12,432</td>
+                    <td>980K</td>
+                    <td>45%</td>
+                    <td class="text-danger">-1.5</td>
+                </tr>
+                <!-- Add more rows as needed -->
+            `;
+        }, 1000);
+    }
+
+    // Load data on page load
+    loadData();
+</script>
+{% endblock %}

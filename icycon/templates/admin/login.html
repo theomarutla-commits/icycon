@@ -1,0 +1,80 @@
+{% extends "admin/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    body.login {
+        background: #f5f5f5;
+    }
+    
+    .login #container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin: 100px auto;
+        max-width: 400px;
+    }
+
+    .login #header {
+        background: #1a73e8;
+        padding: 20px;
+        margin: -20px -20px 20px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .login #branding h1 {
+        color: white;
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .login .form-row {
+        padding: 15px 0;
+    }
+
+    .login .form-row label {
+        color: #666;
+        font-size: 14px;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .login .form-row input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .login .submit-row {
+        padding: 20px 0 0;
+        text-align: center;
+    }
+
+    .login .submit-row input {
+        background: #1a73e8;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    .login .submit-row input:hover {
+        background: #4285f4;
+    }
+
+    .login .errornote {
+        background: #d93025;
+        color: white;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}

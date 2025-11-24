@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Account Dashboard — Icycon{% endblock %}
+{% block breadcrumb %}/ Account / Dashboard{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="card">
+      <h2>Account Settings</h2>
+      <p>Manage your account here. Use the forms below to update your password, email, and other settings.</p>
+      <p><a href="/account/">Account settings</a> (this page)</p>
+
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <form method="post" style="margin-top:12px">
+        {% csrf_token %}
+        {{ profile_form.as_p }}
+        <button type="submit" name="save_profile">Save profile</button>
+      </form>
+
+      <hr style="margin:16px 0">
+
+      <h3>Change password</h3>
+      <form method="post">
+        {% csrf_token %}
+        {{ password_form.as_p }}
+        <button type="submit" name="change_password">Change password</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Your Profile</h2>
+      <ul>
+        <li><strong>Username:</strong> {{ user.username }}</li>
+        <li><strong>Email:</strong> {{ user.email }}</li>
+        <li><strong>First name:</strong> {{ user.first_name }}</li>
+        <li><strong>Last name:</strong> {{ user.last_name }}</li>
+        <li><strong>Is staff:</strong> {{ user.is_staff }}</li>
+        <li><strong>Is superuser:</strong> {{ user.is_superuser }}</li>
+      </ul>
+      <p><a href="/accounts/profile/">Profile (this page)</a></p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Quick actions</h3>
+    <p>
+      <a href="/admin/">Open admin</a> ·
+      <a href="/logout/">Logout</a>
+    </p>
+  </div>
+
+{% endblock %}

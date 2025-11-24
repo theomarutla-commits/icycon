@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Your organizations</h1>
+<ul>
+{% for org in orgs %}
+  <li><a href="/users/organization/{{ org.id }}/">{{ org.organization_name }}</a></li>
+{% empty %}
+  <li>No organizations found.</li>
+{% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Site Details — Icycon{% endblock %}
+
+{% block content %}
+<div class="header-actions">
+  <h1>{{ site.domain }}</h1>
+  <a href="{% url 'site_edit' site.id %}" class="button">Edit Site</a>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Site Information</h3>
+    <p><strong>Domain:</strong> {{ site.domain }}</p>
+    <p><strong>Default Locale:</strong> {{ site.default_locale }}</p>
+    <p><strong>Created:</strong> {{ site.created_at|date }}</p>
+    {% if site.sitemaps_url %}
+      <p><strong>Sitemap:</strong> <a href="{{ site.sitemaps_url }}">View Sitemap</a></p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Keywords & Content</h3>
+    <p>{{ keyword_clusters.count }} Keyword Clusters</p>
+    <p>{{ content_items.count }} Content Items</p>
+    <p>{{ faqs.count }} FAQs</p>
+  </div>
+
+  <div class="card">
+    <h3>Recent Analytics</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Views</th>
+          <th>Avg Duration</th>
+          <th>Bounce Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pageview in pageviews %}
+        <tr>
+          <td>{{ pageview.url }}</td>
+          <td>1</td>
+          <td>{{ pageview.duration }}s</td>
+          <td>{% if pageview.bounce %}Yes{% else %}No{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

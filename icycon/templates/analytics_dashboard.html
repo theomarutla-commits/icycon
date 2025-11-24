@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Analytics Dashboard — Icycon{% endblock %}
+{% block breadcrumb %}/ Analytics Dashboard{% endblock %}
+{% block content %}
+  <h1>Analytics Dashboard</h1>
+
+  <!-- Overview Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Views</h5>
+          <h2 class="display-4" id="totalViews">0</h2>
+          <p class="card-text"><span id="viewsChange">0%</span> from last month</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">Conversions</h5>
+          <h2 class="display-4" id="totalConversions">0</h2>
+          <p class="card-text"><span id="conversionsChange">0%</span> from last month</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">Avg. Time</h5>
+          <h2 class="display-4" id="avgTime">0m</h2>
+          <p class="card-text"><span id="timeChange">0%</span> from last month</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5 class="card-title">Bounce Rate</h5>
+          <h2 class="display-4" id="bounceRate">0%</h2>
+          <p class="card-text"><span id="bounceChange">0%</span> from last month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Traffic Overview</h5>
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Traffic Sources</h5>
+          <canvas id="sourcesChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Section -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Real-time Activity</h5>
+      <div class="table-responsive">
+        <table class="table" id="realTimeTable">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>Active Users</th>
+              <th>Avg. Time</th>
+              <th>Bounce Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Traffic Chart
+const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+new Chart(trafficCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Page Views',
+            data: [12000, 19000, 15000, 25000, 22000, 30000],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    }
+});
+
+// Sources Chart
+const sourcesCtx = document.getElementById('sourcesChart').getContext('2d');
+new Chart(sourcesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Direct', 'Search', 'Social', 'Referral'],
+        datasets: [{
+            data: [30, 40, 20, 10],
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 206, 86)',
+                'rgb(75, 192, 192)'
+            ]
+        }]
+    }
+});
+
+// Real-time data update simulation
+function updateRealTimeData() {
+    const pages = [
+        '/home',
+        '/products',
+        '/about',
+        '/contact',
+        '/blog'
+    ];
+    
+    const tbody = document.querySelector('#realTimeTable tbody');
+    tbody.innerHTML = '';
+    
+    pages.forEach(page => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${page}</td>
+            <td>${Math.floor(Math.random() * 100)}</td>
+            <td>${Math.floor(Math.random() * 10)}m ${Math.floor(Math.random() * 60)}s</td>
+            <td>${Math.floor(Math.random() * 100)}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Update real-time data every 5 seconds
+setInterval(updateRealTimeData, 5000);
+updateRealTimeData(); // Initial call
+</script>
+{% endblock %}

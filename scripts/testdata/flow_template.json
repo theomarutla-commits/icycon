@@ -1,0 +1,35 @@
+{
+  "tenants": [
+    {
+      "name": "Demo Tenant",
+      "domain": "demo.example",
+      "users": [
+        { "username": "alice", "email": "alice@example.com", "is_superuser": false },
+        { "username": "bob", "email": "bob@example.com", "is_superuser": false }
+      ]
+    }
+  ],
+  "social_media": {
+    "accounts": [
+      { "tenant": "Demo Tenant", "platform": "x", "handle": "@demo_x" }
+    ],
+    "posts": [
+      {
+        "tenant": "Demo Tenant",
+        "author": "alice",
+        "title": "Welcome to Demo Tenant",
+        "content": "This is a test post created from the flow template.",
+        "platforms": ["x", "linkedin"],
+        "status": "published"
+      }
+    ]
+  },
+  "social": {
+    "accounts": [
+      { "tenant": "Demo Tenant", "platform": "x", "handle": "@demo_x_legacy" }
+    ],
+    "posts": [
+      { "tenant": "Demo Tenant", "body": "Legacy short post body", "platform": "x", "status": "posted" }
+    ]
+  }
+}

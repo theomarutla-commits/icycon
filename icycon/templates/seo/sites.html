@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Sites — {{ tenant.name }}{% endblock %}
+
+{% block breadcrumb %} / <a href="/seo/">SEO</a> / Sites {% endblock %}
+
+{% block content %}
+<h3>Sites for {{ tenant.name }}</h3>
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>Sitemap</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for site in sites %}
+      <tr>
+        <td><a href="/seo/sites/{{ site.id }}/">{{ site.domain }}</a></td>
+        <td>{{ site.sitemaps_url|default:"-" }}</td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary" href="/seo/sites/{{ site.id }}/">Open</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3">No sites configured for this tenant.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-3">
+  <a href="/seo/sites/create/" class="btn btn-primary">Add Site</a>
+</div>
+{% endblock %}

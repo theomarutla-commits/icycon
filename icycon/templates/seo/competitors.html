@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Competitor Analysis - Icycon{% endblock %}
+
+{% block breadcrumb %} / <a href="/backlinks-ui/">Backlinks</a> / Competitors {% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Competitor Selection -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Monitored Competitors</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompetitorModal">
+                        Add Competitor
+                    </button>
+                </div>
+                <div class="row g-3" id="competitorCards">
+                    <!-- Competitor cards will be loaded here -->
+                    <div class="col-md-4">
+                        <div class="competitor-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6>competitor1.com</h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">View Details</a></li>
+                                        <li><a class="dropdown-item" href="#">Edit</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="stats-row">
+                                <div>
+                                    <small>Total Backlinks</small>
+                                    <h5>5,234</h5>
+                                </div>
+                                <div>
+                                    <small>Domain Rating</small>
+                                    <h5>67</h5>
+                                </div>
+                                <div>
+                                    <small>Referring Domains</small>
+                                    <h5>892</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competitor Comparison -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Backlink Comparison</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <canvas id="backlinkComparisonChart" height="300"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <canvas id="domainRatingChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Backlink Sources -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Common Backlink Sources</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary active">All Sources</button>
+                    <button class="btn btn-sm btn-outline-secondary">High Authority Only</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="commonSourcesTable">
+                        <thead>
+                            <tr>
+                                <th>Source Domain</th>
+                                <th>DA</th>
+                                <th>Links to You</th>
+                                <th>Links to Competitors</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table content will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Acquisition Opportunities -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Link Acquisition Opportunities</h5>
+                <button class="btn btn-sm btn-outline-primary">Export List</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="opportunitiesTable">
+                        <thead>
+                            <tr>
+                                <th>Domain</th>
+                                <th>DA</th>
+                                <th>Linked Competitors</th>
+                                <th>Traffic</th>
+                                <th>Contact Info</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table content will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Competitor Modal -->
+<div class="modal fade" id="addCompetitorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Competitor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCompetitorForm">
+                    <div class="mb-3">
+                        <label class="form-label">Domain Name</label>
+                        <input type="text" class="form-control" placeholder="Enter competitor's domain">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" rows="3" placeholder="Add any relevant notes"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Add Competitor</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .competitor-card {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .stats-row small {
+        color: #6c757d;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    .stats-row h5 {
+        margin: 0;
+    }
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function initializeCharts() {
+        // Backlink Comparison Chart
+        const comparisonCtx = document.getElementById('backlinkComparisonChart').getContext('2d');
+        new Chart(comparisonCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Your Site',
+                        data: [500, 800, 1200, 1800, 2200, 2500],
+                        borderColor: '#0ea5e9',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Competitor 1',
+                        data: [1000, 1500, 1800, 2000, 2400, 2800],
+                        borderColor: '#f59e0b',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Total Backlinks Over Time'
+                    }
+                }
+            }
+        });
+
+        // Domain Rating Chart
+        const ratingCtx = document.getElementById('domainRatingChart').getContext('2d');
+        new Chart(ratingCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Your Site', 'Competitor 1', 'Competitor 2', 'Competitor 3'],
+                datasets: [{
+                    label: 'Domain Rating',
+                    data: [45, 67, 52, 58],
+                    backgroundColor: '#0ea5e9'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Domain Rating Comparison'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    function loadCommonSources() {
+        const tbody = document.getElementById('commonSourcesTable').querySelector('tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://www.google.com/s2/favicons?domain=example.com" class="me-2">
+                        <a href="#" class="text-decoration-none">example.com</a>
+                    </div>
+                </td>
+                <td>78</td>
+                <td>3</td>
+                <td>5</td>
+                <td><span class="status-badge status-active">Linked</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary">View Links</button>
+                </td>
+            </tr>
+        `;
+    }
+
+    function loadOpportunities() {
+        const tbody = document.getElementById('opportunitiesTable').querySelector('tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://www.google.com/s2/favicons?domain=opportunity.com" class="me-2">
+                        <a href="#" class="text-decoration-none">opportunity.com</a>
+                    </div>
+                </td>
+                <td>65</td>
+                <td>3/4</td>
+                <td>25K/mo</td>
+                <td>
+                    <button class="btn btn-sm btn-link">View Contact</button>
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary">Outreach</button>
+                        <button class="btn btn-sm btn-outline-secondary">Save</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Initialize page
+    initializeCharts();
+    loadCommonSources();
+    loadOpportunities();
+</script>
+{% endblock %}

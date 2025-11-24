@@ -1,0 +1,100 @@
+{% extends "social/base_social.html" %}
+
+{% block social_content %}
+<div class="action-bar">
+  <div class="search-bar">
+    <input type="text" placeholder="Search accounts..." class="form-control">
+    <button class="btn btn-primary">Search</button>
+  </div>
+  <div class="filters">
+    <select class="form-control">
+      <option>All Platforms</option>
+      <option>Twitter</option>
+      <option>LinkedIn</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+    </select>
+    <select class="form-control">
+      <option>All Status</option>
+      <option>Active</option>
+      <option>Pending</option>
+      <option>Disconnected</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" onclick="window.location.href='{% url 'social_accounts' %}?action=add'">
+    <i class='bx bx-plus'></i> Add Account
+  </button>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <h3>{{ stats.total_accounts|default:"0" }}</h3>
+    <p>Total Accounts</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ stats.active_accounts|default:"0" }}</h3>
+    <p>Active Accounts</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ stats.total_followers|default:"0" }}</h3>
+    <p>Total Followers</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ stats.engagement_rate|default:"0" }}%</h3>
+    <p>Avg. Engagement Rate</p>
+  </div>
+</div>
+
+<div class="social-grid">
+  {% for account in accounts %}
+  <div class="social-card">
+    <div style="display:flex;gap:1rem;align-items:center">
+      <img src="{{ account.profile_image|default:'https://via.placeholder.com/50' }}" 
+           alt="{{ account.username }}" 
+           style="width:50px;height:50px;border-radius:50%;object-fit:cover">
+      <div>
+        <h3 style="margin:0">{{ account.display_name }}</h3>
+        <p style="margin:0;color:var(--text-light)">@{{ account.username }}</p>
+      </div>
+      <span class="badge" style="margin-left:auto;
+                               background:{% if account.status == 'active' %}#22c55e{% elif account.status == 'pending' %}#eab308{% else %}#ef4444{% endif %};
+                               color:white;
+                               padding:0.25rem 0.5rem;
+                               border-radius:9999px;
+                               font-size:0.75rem">
+        {{ account.status|title }}
+      </span>
+    </div>
+    <div style="margin-top:1rem">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;text-align:center">
+        <div>
+          <div style="font-size:1.25rem;font-weight:500">{{ account.followers|default:"0" }}</div>
+          <div style="color:var(--text-light);font-size:0.875rem">Followers</div>
+        </div>
+        <div>
+          <div style="font-size:1.25rem;font-weight:500">{{ account.posts|default:"0" }}</div>
+          <div style="color:var(--text-light);font-size:0.875rem">Posts</div>
+        </div>
+        <div>
+          <div style="font-size:1.25rem;font-weight:500">{{ account.engagement|default:"0" }}%</div>
+          <div style="color:var(--text-light);font-size:0.875rem">Engagement</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:flex-end">
+      <button class="btn btn-sm btn-secondary">View Analytics</button>
+      <button class="btn btn-sm btn-primary">Manage</button>
+    </div>
+  </div>
+  {% empty %}
+  <div class="social-card" style="grid-column:1/-1;text-align:center">
+    <i class='bx bx-broadcast' style="font-size:3rem;color:var(--text-light)"></i>
+    <h3>No Social Accounts Yet</h3>
+    <p>Connect your social media accounts to start managing them.</p>
+    <button class="btn btn-primary" onclick="window.location.href='{% url 'social_accounts' %}?action=add'">
+      <i class='bx bx-plus'></i> Add Account
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

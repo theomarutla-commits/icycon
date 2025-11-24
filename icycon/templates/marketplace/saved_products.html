@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Products — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'marketplace-home' %}">Home</a> / Saved Products{% endblock %}
+
+{% block head %}
+<style>
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 20px;
+  }
+  .card { 
+    padding: 20px; 
+    border-radius: 8px; 
+    background: var(--card-bg);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Saved Products</h1>
+<p style="color: var(--text-light);">{{ saved_count }} saved product{{ saved_count|pluralize }}</p>
+
+{% if products %}
+  <div class="grid">
+    {% for product in products %}
+      <a href="{% url 'product-detail' product.id %}" style="text-decoration: none; color: inherit;">
+        <div class="card">
+          {% if product.featured_image %}
+            <img src="{{ product.featured_image }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;">
+          {% else %}
+            <div style="width: 100%; height: 150px; background: var(--bg); border-radius: 6px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 2em;">📦</div>
+          {% endif %}
+          
+          <h3 style="margin: 0 0 8px 0; font-size: 1.1em;">{{ product.title }}</h3>
+          <p style="margin: 0 0 12px 0; color: var(--text-light); font-size: 0.95em;">{{ product.tenant.name }}</p>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+            <div>
+              {% if product.avg_rating %}
+                ★<strong>{{ product.avg_rating|floatformat:1 }}</strong>
+              {% endif %}
+            </div>
+            <div style="font-weight: bold; color: var(--primary);">
+              {% if product.pricing_type == 'free' %}
+                Free
+              {% elif product.pricing_type == 'fixed' %}
+                ${{ product.price }}
+              {% else %}
+                Custom
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p style="font-size: 1.2em;">No saved products yet</p>
+    <p>Save products you're interested in to find them later easily.</p>
+    <a href="{% url 'product-list' %}" class="button" style="display: inline-block; margin-top: 16px;">Browse Products</a>
+  </div>
+{% endif %}
+
+{% endblock %}

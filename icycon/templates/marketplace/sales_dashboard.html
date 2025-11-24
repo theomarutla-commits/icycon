@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sales Dashboard — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'marketplace-home' %}">Home</a> / Sales Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-container {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+  }
+  
+  .dashboard-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2.5em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .dashboard-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1em;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, currentColor, transparent);
+    opacity: 0.1;
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .stat-card.active { border-left-color: #10b981; }
+  .stat-card.sales { border-left-color: #667eea; }
+  .stat-card.revenue { border-left-color: #f093fb; }
+  .stat-card.pending { border-left-color: #fbbf24; }
+
+  .stat-icon {
+    font-size: 1.8em;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat-icon.active { color: #10b981; }
+  .stat-icon.sales { color: #667eea; }
+  .stat-icon.revenue { color: #f093fb; }
+  .stat-icon.pending { color: #fbbf24; }
+
+  .stat-label {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat-number {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+
+  .content-section {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--card-bg);
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.4em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-header i {
+    font-size: 1.5em;
+    color: #667eea;
+  }
+
+  .section-header a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.95em;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .section-header a:hover {
+    background: var(--card-bg);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+
+  table thead {
+    background: var(--card-bg);
+  }
+
+  table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  table td {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  table tbody tr {
+    transition: background-color 0.2s;
+  }
+
+  table tbody tr:hover {
+    background-color: var(--card-bg);
+  }
+
+  .order-number {
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .order-number:hover {
+    text-decoration: underline;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  .status-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-completed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .status-cancelled {
+    background: #fee2e2;
+    color: #7f1d1d;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .product-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+  }
+
+  .product-title {
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 8px;
+    text-decoration: none;
+    display: block;
+  }
+
+  .product-title:hover {
+    text-decoration: underline;
+  }
+
+  .product-description {
+    color: var(--text-light);
+    font-size: 0.9em;
+    margin-bottom: 12px;
+    flex: 1;
+  }
+
+  .product-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .product-orders {
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  .product-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 1px solid #667eea;
+  }
+
+  .btn-secondary:hover {
+    background: #f8f9ff;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-state i {
+    font-size: 3em;
+    color: #ddd;
+    margin-bottom: 16px;
+  }
+
+  .empty-state p {
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+
+  .amount {
+    color: #10b981;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-container">
+
+  <div class="dashboard-header">
+    <h1><i class="bx bxs-chart"></i> Sales Dashboard</h1>
+    <p>Track your marketplace sales, revenue, and performance metrics</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card active">
+      <div class="stat-icon active"><i class="bx bxs-package"></i></div>
+      <div class="stat-label">Active Listings</div>
+      <div class="stat-number">{{ products_count }}</div>
+    </div>
+    <div class="stat-card sales">
+      <div class="stat-icon sales"><i class="bx bxs-receipt"></i></div>
+      <div class="stat-label">Total Sales</div>
+      <div class="stat-number">{{ total_sales }}</div>
+    </div>
+    <div class="stat-card revenue">
+      <div class="stat-icon revenue"><i class="bx bxs-wallet"></i></div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-number" style="color: #10b981;">${{ total_revenue }}</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-icon pending"><i class="bx bxs-time"></i></div>
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-number">{{ pending_orders }}</div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="content-section">
+    <div class="section-header">
+      <h2><i class="bx bxs-receipt"></i> Recent Orders</h2>
+      <a href="{% url 'marketplace-home' %}" class="btn-secondary">View All Orders</a>
+    </div>
+    
+    {% if recent_orders %}
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th><i class="bx bxs-hash"></i> Order #</th>
+              <th><i class="bx bxs-package"></i> Product</th>
+              <th><i class="bx bxs-user"></i> Buyer</th>
+              <th style="text-align: right;"><i class="bx bxs-dollar"></i> Amount</th>
+              <th style="text-align: center;"><i class="bx bxs-info-circle"></i> Status</th>
+              <th><i class="bx bxs-calendar"></i> Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in recent_orders %}
+              <tr>
+                <td>
+                  <a href="{% url 'order-detail' order.id %}" class="order-number">{{ order.order_number }}</a>
+                </td>
+                <td>{{ order.product.title }}</td>
+                <td>{{ order.buyer_tenant.name }}</td>
+                <td style="text-align: right; font-weight: 600;" class="amount">${{ order.total_price }}</td>
+                <td style="text-align: center;">
+                  <span class="status-badge status-{{ order.status|lower }}">
+                    {{ order.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ order.created_at|date:"M d, Y" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="bx bxs-inbox"></i>
+        <p>No orders yet. Start promoting your products to get your first sale!</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Your Products -->
+  <div class="content-section">
+    <div class="section-header">
+      <h2><i class="bx bxs-store"></i> Your Products</h2>
+      <a href="{% url 'product-create' %}" class="btn-primary">
+        <i class="bx bxs-plus-circle"></i> Create Product
+      </a>
+    </div>
+    
+    {% if products %}
+      <div class="products-grid">
+        {% for product in products %}
+          <div class="product-card">
+            <a href="{% url 'product-detail' product.id %}" class="product-title">{{ product.title }}</a>
+            <p class="product-description">{{ product.description|truncatewords:15 }}</p>
+            
+            <div class="product-stats">
+              <span class="product-orders">
+                <i class="bx bxs-chart"></i> {{ product.order_count }} orders
+              </span>
+              <div class="product-actions">
+                <a href="{% url 'product-edit' product.id %}" class="btn-action btn-secondary">
+                  <i class="bx bxs-edit"></i> Edit
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="bx bxs-package"></i>
+        <p>You haven't created any products yet.</p>
+        <a href="{% url 'product-create' %}" class="btn-primary">
+          <i class="bx bxs-plus-circle"></i> Create Your First Product
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

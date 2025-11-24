@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Social Media — {{ tenant.name|default:"Icycon" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.social-nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--bg);
+  padding-bottom: 1rem;
+}
+
+.social-nav a {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.social-nav a:hover {
+  background: var(--bg);
+}
+
+.social-nav a.active {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.social-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px var(--shadow);
+  margin-bottom: 1rem;
+}
+
+.social-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.social-header h2 {
+  margin: 0;
+}
+
+.social-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-card {
+  background: var(--bg);
+  padding: 1rem;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.stat-card p {
+  margin: 0.5rem 0 0 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 400px;
+}
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="social-nav">
+  <a href="{% url 'social_accounts' %}" {% if request.resolver_match.url_name == 'social_accounts' %}class="active"{% endif %}>
+    <i class='bx bx-broadcast'></i> Accounts
+  </a>
+  <a href="{% url 'social_posts' %}" {% if request.resolver_match.url_name == 'social_posts' %}class="active"{% endif %}>
+    <i class='bx bx-message-square-detail'></i> Posts
+  </a>
+  <a href="{% url 'social_logs' %}" {% if request.resolver_match.url_name == 'social_logs' %}class="active"{% endif %}>
+    <i class='bx bx-history'></i> Activity Logs
+  </a>
+</div>
+
+{% block social_content %}{% endblock %}
+{% endblock %}

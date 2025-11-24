@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Create Product Listing — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'marketplace-home' %}">Home</a> / Create Product{% endblock %}
+
+{% block head %}
+<style>
+  .form-section {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .form-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .form-hint {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .pricing-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .pricing-option {
+    border: 2px solid #ddd;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pricing-option input {
+    display: none;
+  }
+  .pricing-option input:checked + label {
+    color: var(--primary);
+  }
+  .pricing-option:has(input:checked) {
+    border-color: var(--primary);
+    background: rgba(14, 165, 233, 0.05);
+  }
+  .pricing-option label {
+    margin: 0;
+    cursor: pointer;
+  }
+  .dynamic-pricing {
+    display: none;
+    margin-top: 12px;
+  }
+  .dynamic-pricing.active {
+    display: block;
+  }
+  .button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .button-group button, .button-group a {
+    flex: 1;
+    padding: 12px 20px;
+    font-size: 1em;
+  }
+  .button-secondary {
+    background: var(--text-light);
+    color: white;
+  }
+  .button-secondary:hover {
+    background: var(--text);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Create a Product Listing</h1>
+<p style="color: var(--text-light);">Start selling your products or services to the community.</p>
+
+<form method="post" id="productForm">
+  {% csrf_token %}
+
+  <!-- Basic Information -->
+  <div class="form-section">
+    <h3>Basic Information</h3>
+    
+    <div class="form-group">
+      <label for="title">Product Title *</label>
+      <input type="text" id="title" name="title" required placeholder="e.g., Advanced Analytics Dashboard">
+      <div class="form-hint">Give your product a clear, descriptive name</div>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea id="description" name="description" required placeholder="Describe what your product is, what it does, and who should buy it..."></textarea>
+      <div class="form-hint">Be detailed and highlight key benefits</div>
+    </div>
+
+    <div class="form-group">
+      <label for="category">Category *</label>
+      <select id="category" name="category" required>
+        <option value="">Select a category</option>
+        {% for value, label in categories %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="featured_image">Featured Image URL</label>
+      <input type="url" id="featured_image" name="featured_image" placeholder="https://example.com/image.jpg">
+      <div class="form-hint">URL to a product image (JPG, PNG recommended)</div>
+    </div>
+  </div>
+
+  <!-- Pricing -->
+  <div class="form-section">
+    <h3>Pricing</h3>
+    
+    <div class="form-group">
+      <label>Pricing Type *</label>
+      <div class="pricing-types">
+        <div class="pricing-option">
+          <input type="radio" id="pricing_free" name="pricing_type" value="free" required>
+          <label for="pricing_free">🆓 Free</label>
+        </div>
+        <div class="pricing-option">
+          <input type="radio" id="pricing_fixed" name="pricing_type" value="fixed" required>
+          <label for="pricing_fixed">💵 Fixed Price</label>
+        </div>
+        <div class="pricing-option">
+          <input type="radio" id="pricing_sub" name="pricing_type" value="subscription" required>
+          <label for="pricing_sub">🔄 Subscription</label>
+        </div>
+        <div class="pricing-option">
+          <input type="radio" id="pricing_custom" name="pricing_type" value="custom" required>
+          <label for="pricing_custom">📞 Custom Quote</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="fixed_pricing" class="dynamic-pricing">
+      <div class="form-group">
+        <label for="price">Price ($) *</label>
+        <input type="number" id="price" name="price" min="0" step="0.01" placeholder="99.99">
+      </div>
+    </div>
+
+    <div id="subscription_pricing" class="dynamic-pricing">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="subscription_price">Price ($) *</label>
+          <input type="number" id="subscription_price" name="subscription_price" min="0" step="0.01" placeholder="9.99">
+        </div>
+        <div class="form-group">
+          <label for="subscription_interval">Interval *</label>
+          <select id="subscription_interval" name="subscription_interval">
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Details -->
+  <div class="form-section">
+    <h3>Product Details</h3>
+    
+    <div class="form-group">
+      <label for="features">Features (one per line)</label>
+      <textarea id="features" name="features" placeholder="Unlimited users&#10;Real-time analytics&#10;24/7 support&#10;Mobile app included"></textarea>
+      <div class="form-hint">List key features or highlights, one per line</div>
+    </div>
+
+    <div class="form-group">
+      <label for="tags">Tags (comma-separated)</label>
+      <input type="text" id="tags" name="tags" placeholder="analytics, dashboard, SaaS, business">
+      <div class="form-hint">Help people find your product with relevant tags</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="available_quantity">Available Quantity</label>
+        <input type="number" id="available_quantity" name="available_quantity" min="1" placeholder="Leave blank for unlimited">
+        <div class="form-hint">Leave blank if unlimited</div>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" name="is_limited_edition">
+          Limited Edition / Special Offer
+        </label>
+        <div class="form-hint">Check this for limited-time or quantity-limited offerings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Buttons -->
+  <div class="button-group">
+    <a href="{% url 'marketplace-home' %}" class="button button-secondary">Cancel</a>
+    <button type="submit" class="button">Create Listing</button>
+  </div>
+</form>
+
+<script>
+  const pricingForm = document.getElementById('productForm');
+  const pricingRadios = pricingForm.querySelectorAll('input[name="pricing_type"]');
+  const fixedPricing = document.getElementById('fixed_pricing');
+  const subscriptionPricing = document.getElementById('subscription_pricing');
+
+  function updatePricingFields() {
+    const selected = document.querySelector('input[name="pricing_type"]:checked').value;
+    fixedPricing.classList.remove('active');
+    subscriptionPricing.classList.remove('active');
+    
+    if (selected === 'fixed') {
+      fixedPricing.classList.add('active');
+    } else if (selected === 'subscription') {
+      subscriptionPricing.classList.add('active');
+    }
+  }
+
+  pricingRadios.forEach(radio => {
+    radio.addEventListener('change', updatePricingFields);
+  });
+
+  // Parse features and tags on submit
+  pricingForm.addEventListener('submit', function(e) {
+    const featuresText = document.getElementById('features').value;
+    const features = featuresText.split('\n').filter(f => f.trim());
+    
+    const tagsText = document.getElementById('tags').value;
+    const tags = tagsText.split(',').map(t => t.trim()).filter(t => t);
+    
+    // Store as hidden inputs
+    const featuresInput = document.createElement('input');
+    featuresInput.type = 'hidden';
+    featuresInput.name = 'features';
+    featuresInput.value = JSON.stringify(features);
+    this.appendChild(featuresInput);
+    
+    const tagsInput = document.createElement('input');
+    tagsInput.type = 'hidden';
+    tagsInput.name = 'tags';
+    tagsInput.value = JSON.stringify(tags);
+    this.appendChild(tagsInput);
+  });
+</script>
+
+{% endblock %}

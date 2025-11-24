@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Social Channels — Icycon{% endblock %}
+
+{% block breadcrumb %}/ <a href="/social-media/posts/">Social Media</a> / Channels{% endblock %}
+
+{% block content %}
+<div style="padding: 24px;">
+  <h2 style="margin-top: 0;">Connected Social Channels</h2>
+  <p>Manage social media channels for {{ tenant.name }}. These channels will be used to promote your organization.</p>
+  
+  {% if platform_stats %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0;">
+      {% for platform, count in platform_stats.items %}
+        {% if count > 0 %}
+          <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+            <h4 style="margin: 0 0 8px 0; text-transform: capitalize;">{{ platform }}</h4>
+            <p style="margin: 0; color: #666; font-size: 14px;">{{ count }} account{{ count|pluralize }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+  {% if accounts %}
+    <div style="background: white; border-radius: 8px; padding: 20px; margin-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e5e7eb;">
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Platform</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Handle</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Connected</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for account in accounts %}
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <td style="padding: 12px; text-transform: capitalize;">{{ account.platform }}</td>
+              <td style="padding: 12px;">@{{ account.handle }}</td>
+              <td style="padding: 12px; font-size: 14px; color: #666;">{{ account.connected_at|date:"M d, Y" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; text-align: center; margin-top: 20px;">
+      <p style="color: #6b7280;">No social channels connected yet. Connect a channel to start promoting your organization.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

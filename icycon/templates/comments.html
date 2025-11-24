@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Comments — Icycon{% endblock %}
+{% block breadcrumb %}/ Social Media / Comments{% endblock %}
+{% block content %}
+  <h1>Social Media Comments</h1>
+  
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Comment Management</h5>
+
+      <!-- Filters -->
+      <div class="mb-4">
+        <form class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Post</label>
+            <select class="form-select" id="postFilter">
+              <option value="">All Posts</option>
+              <!-- Posts will be populated by JavaScript -->
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date Range</label>
+            <input type="date" class="form-control" id="dateFilter">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary d-block">Filter</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Comments List -->
+      <div class="comments-list">
+        <!-- Comments will be populated by JavaScript -->
+      </div>
+
+      <!-- Comment Reply Form -->
+      <div class="card mt-4">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2">Add New Comment</h6>
+          <form id="commentForm">
+            <div class="mb-3">
+              <label class="form-label">Select Post</label>
+              <select class="form-select" name="post" required>
+                <!-- Posts will be populated by JavaScript -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Comment</label>
+              <textarea class="form-control" name="content" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Parent Comment (Optional)</label>
+              <select class="form-select" name="parent">
+                <option value="">None (Top-level comment)</option>
+                <!-- Existing comments will be populated by JavaScript -->
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Comment template
+  function createCommentHTML(comment) {
+    return `
+      <div class="comment card mb-3" data-comment-id="${comment.id}">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">
+            ${comment.author_name} · ${new Date(comment.created_at).toLocaleString()}
+          </h6>
+          <p class="card-text">${comment.content}</p>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary reply-btn">Reply</button>
+            <button class="btn btn-sm btn-outline-danger delete-btn">Delete</button>
+          </div>
+          <div class="replies ms-4 mt-3">
+            <!-- Nested replies will go here -->
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Fetch and display comments
+  async function fetchComments() {
+    try {
+      const response = await fetch('/social-media/comments/');
+      const comments = await response.json();
+      
+      const commentsList = document.querySelector('.comments-list');
+      commentsList.innerHTML = '';
+      
+      // Build comment tree
+      const topLevelComments = comments.filter(c => !c.parent);
+      topLevelComments.forEach(comment => {
+        const replies = comments.filter(c => c.parent === comment.id);
+        commentsList.innerHTML += createCommentHTML(comment);
+        
+        if (replies.length) {
+          const repliesContainer = commentsList.querySelector(`[data-comment-id="${comment.id}"] .replies`);
+          replies.forEach(reply => {
+            repliesContainer.innerHTML += createCommentHTML(reply);
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  }
+
+  // Submit new comment
+  document.getElementById('commentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+      const response = await fetch('/social-media/comments/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(Object.fromEntries(formData)),
+      });
+      
+      if (response.ok) {
+        e.target.reset();
+        fetchComments();
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
+  });
+
+  // Initial load
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchComments();
+  });
+
+  // Handle reply buttons
+  document.querySelector('.comments-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('reply-btn')) {
+      const commentId = e.target.closest('.comment').dataset.commentId;
+      const parentSelect = document.querySelector('select[name="parent"]');
+      parentSelect.value = commentId;
+      document.querySelector('textarea[name="content"]').focus();
+    }
+  });
+</script>
+{% endblock %}

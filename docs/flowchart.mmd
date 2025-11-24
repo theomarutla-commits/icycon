@@ -1,0 +1,46 @@
+flowchart TD
+  A[Home] -->|not logged in| B[Login / Signup]
+  B -->|after login| C[Dashboard]
+
+  subgraph Core
+    C --> D[Analytics]
+    C --> E[ASO]
+    C --> F[Backlinks]
+    C --> G[Blog]
+    C --> H[Marketplace]
+    C --> I[Multilingual]
+    C --> J[SEO]
+    C --> K[Email Engine]
+    C --> L[Social]
+    C --> M[Social Media]
+    C --> N[Tenants / Profile]
+  end
+
+  M --> MA[Create Post]
+  MA --> MB[Edit / Add Media / Set Platforms]
+  MB --> MC[Validate]
+  MC -->|pass| MD[Publish Now / Schedule]
+  MC -->|fail| ME[Show Policy Error / Edit]
+  MD --> MF[Post Saved / Published]
+  MF --> MG[View Engagements]
+
+  L --> LA[Connect Social Accounts]
+  LA --> LB[Create Post]
+  LB --> LC[Schedule or Publish]
+  LC --> LD[Social Logs]
+
+  MA -.-> LB
+  LB -.-> MA
+
+  K --> KA[Email Contacts / Lists / Templates / Sends]
+  J --> JA[SEO Content Items]
+  D --> DA[Analytics Dashboards]
+  N --> NA[Invite Users / Tenant Settings]
+
+  MC -->|rate-limit| X[Retry Later]
+  MC -->|auth error| Y[Re-authenticate Account]
+
+  style A fill:#f9f,stroke:#333,stroke-width:1px
+  style C fill:#efe,stroke:#333
+  style M fill:#fffae6,stroke:#333
+  style L fill:#e6f7ff,stroke:#333

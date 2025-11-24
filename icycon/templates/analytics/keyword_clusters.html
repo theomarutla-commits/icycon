@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Keyword Clusters — Icycon{% endblock %}
+
+{% block breadcrumb %}/ <a href="/analytics/">Analytics</a> / Keyword Clusters{% endblock %}
+
+{% block content %}
+<div style="padding: 24px;">
+  <h2 style="margin-top: 0;">Keyword Clusters</h2>
+  <p>Keyword clusters and groupings for your tracked sites.</p>
+  
+  {% if keyword_clusters %}
+    <div style="background: white; border-radius: 8px; padding: 20px; margin-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e5e7eb;">
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Cluster Name</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Keywords</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cluster in keyword_clusters %}
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <td style="padding: 12px;">{{ cluster.name }}</td>
+              <td style="padding: 12px;">{{ cluster.keywords|default:"N/A" }}</td>
+              <td style="padding: 12px;"><span style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Active</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; text-align: center; margin-top: 20px;">
+      <p style="color: #6b7280;">No keyword clusters yet. <a href="/analytics/sites/" style="color: #0ea5e9; text-decoration: none;">Add a site</a> to get started.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

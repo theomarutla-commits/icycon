@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Backlink Analysis - Icycon{% endblock %}
+
+{% block breadcrumb %} / <a href="/backlinks-ui/">Backlinks</a> / Analysis {% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Overview Stats -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Total Backlinks</h6>
+                            <h3 id="totalBacklinks">Loading...</h3>
+                            <small class="text-success">+15% vs last month</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Domain Authority</h6>
+                            <h3 id="domainAuthority">Loading...</h3>
+                            <small class="text-success">+2 points</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Referring Domains</h6>
+                            <h3 id="referringDomains">Loading...</h3>
+                            <small class="text-success">+8 new</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h6>Lost Links</h6>
+                            <h3 id="lostLinks">Loading...</h3>
+                            <small class="text-danger">5 this month</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backlink Growth -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Backlink Growth</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary">Last 30 days</button>
+                    <button class="btn btn-sm btn-outline-secondary">Last 90 days</button>
+                    <button class="btn btn-sm btn-outline-secondary">Last year</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="backlinkGrowthChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Quality Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Link Quality Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="qualityDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anchor Text Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Anchor Text Analysis</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="anchorTextChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Backlinks -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Latest Backlinks</h5>
+                <button class="btn btn-sm btn-primary" onclick="exportBacklinks()">Export Data</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="backlinksTable">
+                        <thead>
+                            <tr>
+                                <th>Source URL</th>
+                                <th>DA</th>
+                                <th>Anchor Text</th>
+                                <th>First Seen</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6" class="text-center">Loading backlinks...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .metric-card h6 {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    .metric-card h3 {
+        margin-bottom: 0.25rem;
+    }
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-lost { background: #fee2e2; color: #991b1b; }
+    .status-new { background: #dbeafe; color: #1e40af; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize charts
+    function initializeCharts() {
+        // Backlink Growth Chart
+        const growthCtx = document.getElementById('backlinkGrowthChart').getContext('2d');
+        new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Total Backlinks',
+                    data: [500, 800, 1200, 1800, 2200, 2500],
+                    borderColor: '#0ea5e9',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Quality Distribution Chart
+        const qualityCtx = document.getElementById('qualityDistributionChart').getContext('2d');
+        new Chart(qualityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Quality', 'Medium Quality', 'Low Quality'],
+                datasets: [{
+                    data: [30, 50, 20],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Anchor Text Chart
+        const anchorCtx = document.getElementById('anchorTextChart').getContext('2d');
+        new Chart(anchorCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Brand', 'Exact Match', 'Partial Match', 'Generic', 'URL'],
+                datasets: [{
+                    label: 'Distribution',
+                    data: [40, 20, 15, 15, 10],
+                    backgroundColor: '#0ea5e9'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // Load backlinks data
+    function loadBacklinks() {
+        // Update metrics
+        document.getElementById('totalBacklinks').textContent = '2,547';
+        document.getElementById('domainAuthority').textContent = '45';
+        document.getElementById('referringDomains').textContent = '328';
+        document.getElementById('lostLinks').textContent = '5';
+
+        // Update table
+        const tbody = document.getElementById('backlinksTable').querySelector('tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://www.google.com/s2/favicons?domain=example.com" class="me-2">
+                        <div>
+                            <a href="#" class="text-decoration-none">example.com/article</a>
+                            <small class="d-block text-muted">Technology Blog</small>
+                        </div>
+                    </div>
+                </td>
+                <td>52</td>
+                <td>"fitness tracking app"</td>
+                <td>2023-11-01</td>
+                <td><span class="status-badge status-active">Active</span></td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary">Details</button>
+                        <button class="btn btn-sm btn-outline-secondary">Monitor</button>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://www.google.com/s2/favicons?domain=blog.com" class="me-2">
+                        <div>
+                            <a href="#" class="text-decoration-none">blog.com/review</a>
+                            <small class="d-block text-muted">Health & Fitness</small>
+                        </div>
+                    </div>
+                </td>
+                <td>45</td>
+                <td>"best workout apps"</td>
+                <td>2023-10-28</td>
+                <td><span class="status-badge status-new">New</span></td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary">Details</button>
+                        <button class="btn btn-sm btn-outline-secondary">Monitor</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    function exportBacklinks() {
+        alert('Exporting backlinks data...');
+    }
+
+    // Initialize page
+    initializeCharts();
+    loadBacklinks();
+</script>
+{% endblock %}

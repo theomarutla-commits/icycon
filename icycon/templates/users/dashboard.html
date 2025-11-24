@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Dashboard — Icycon{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-container {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+  }
+  
+  .dashboard-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2.5em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .dashboard-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1em;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+  }
+
+  .dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #667eea;
+    transition: all 0.3s ease;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--card-bg);
+  }
+
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    flex: 1;
+  }
+
+  .card-header i {
+    font-size: 1.5em;
+    color: #667eea;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 0.95em;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95em;
+    transition: all 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    flex: 1;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid #e0e0e0;
+    flex: 1;
+  }
+
+  .btn-secondary:hover {
+    background: #f0f0f0;
+  }
+
+  .tenant-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tenant-role {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+    transition: all 0.2s;
+  }
+
+  .tenant-role:hover {
+    transform: translateX(4px);
+  }
+
+  .tenant-role h4 {
+    margin: 0 0 8px 0;
+    color: var(--text);
+    font-size: 1em;
+  }
+
+  .tenant-role p {
+    margin: 4px 0;
+    font-size: 0.9em;
+    color: var(--text-light);
+  }
+
+  .tenant-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  .activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .activity-item {
+    padding: 12px;
+    border-left: 3px solid #667eea;
+    background: var(--card-bg);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .activity-item:hover {
+    background: #f0f0f0;
+  }
+
+  .activity-item p {
+    margin: 0 0 4px 0;
+    color: var(--text);
+    font-size: 0.95em;
+  }
+
+  .activity-item small {
+    color: var(--text-light);
+    font-size: 0.85em;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-light);
+  }
+
+  .empty-state i {
+    font-size: 2.5em;
+    color: #ddd;
+    margin-bottom: 12px;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-in-out;
+  }
+
+  .modal-content h3 {
+    margin: 0 0 24px 0;
+    font-size: 1.3em;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-container">
+  
+  <div class="dashboard-header">
+    <h1><i class="bx bxs-user-circle"></i> Dashboard</h1>
+    <p>Manage your profile, roles, and account settings</p>
+  </div>
+
+  <div class="dashboard-grid">
+    
+    <!-- Profile Section -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3>Profile Information</h3>
+        <i class="bx bxs-id-card"></i>
+      </div>
+      <form method="post" class="form">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="error" style="color: #ef4444; font-size: 0.85em;">
+                {% for error in field.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="bx bxs-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tenant Roles Section -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3>Your Tenant Roles</h3>
+        <i class="bx bxs-briefcase"></i>
+      </div>
+      {% with tenant_users=user.tenantuser_set.all %}
+        {% if tenant_users %}
+          <div class="tenant-roles">
+            {% for tu in tenant_users %}
+              <div class="tenant-role">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                  <div>
+                    <h4>{{ tu.tenant.name }}</h4>
+                    <p>Role: <span class="tenant-badge">{{ tu.role|upper }}</span></p>
+                    <p>Member since: <strong>{{ tu.created_at|date:"M d, Y" }}</strong></p>
+                  </div>
+                  <i class="bx bxs-check-circle" style="color: #10b981; font-size: 1.3em;"></i>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <i class="bx bxs-briefcase-alt"></i>
+            <p>You are not currently a member of any tenants.</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3>Recent Activity</h3>
+        <i class="bx bxs-time-five"></i>
+      </div>
+      <div class="activity-feed">
+        {% for activity in activities|default:"" %}
+          <div class="activity-item">
+            <p><i class="bx bxs-chevron-right"></i> {{ activity.description }}</p>
+            <small>{{ activity.timestamp|date:"M d, Y H:i" }}</small>
+          </div>
+        {% empty %}
+          <div class="empty-state">
+            <i class="bx bxs-info-circle"></i>
+            <p>No recent activity to display.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Security Section -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3>Security & Password</h3>
+        <i class="bx bxs-lock-alt"></i>
+      </div>
+      <div style="padding: 16px 0; text-align: center; color: var(--text-light);">
+        <i class="bx bxs-shield-check" style="font-size: 2.5em; color: #10b981;"></i>
+        <p style="margin-top: 12px; margin-bottom: 16px;">Secure your account by updating your password regularly.</p>
+      </div>
+      <button class="btn btn-primary" onclick="showPasswordChangeForm()" style="width: 100%; justify-content: center;">
+        <i class="bx bxs-key"></i> Change Password
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Password Change Modal -->
+<div id="passwordChangeModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="bx bxs-key"></i> Change Password</h3>
+    <form id="passwordChangeForm" class="form">
+      <div class="form-group">
+        <label for="old_password">Current Password</label>
+        <input type="password" id="old_password" name="old_password" required>
+      </div>
+      <div class="form-group">
+        <label for="new_password">New Password</label>
+        <input type="password" id="new_password" name="new_password" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirm New Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="bx bxs-save"></i> Update Password
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="hidePasswordChangeForm()">
+          <i class="bx bxs-x-circle"></i> Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showPasswordChangeForm() {
+  document.getElementById('passwordChangeModal').style.display = 'flex';
+}
+
+function hidePasswordChangeForm() {
+  document.getElementById('passwordChangeModal').style.display = 'none';
+}
+
+// Close modal on outside click
+document.getElementById('passwordChangeModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    hidePasswordChangeForm();
+  }
+});
+
+document.getElementById('passwordChangeForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = {
+    old_password: document.getElementById('old_password').value,
+    new_password: document.getElementById('new_password').value,
+    confirm_password: document.getElementById('confirm_password').value
+  };
+
+  try {
+    const response = await fetch('/users/api/profile/me/change_password/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken')
+      },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+    
+    if (response.ok) {
+      alert('✓ Password updated successfully!');
+      hidePasswordChangeForm();
+      document.getElementById('passwordChangeForm').reset();
+    } else {
+      alert('✗ ' + (data.error || 'Failed to update password. Please try again.'));
+    }
+  } catch (error) {
+    alert('✗ Failed to update password. Please try again.');
+    console.error(error);
+  }
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
+{% endblock %}

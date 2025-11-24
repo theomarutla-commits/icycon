@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Signup — Icycon{% endblock %}
+
+{% block breadcrumb %}/ Signup{% endblock %}
+
+{% block head %}
+<style>
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+  }
+  .form-section {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 8px;
+  }
+  .form-section h3 {
+    margin: 0 0 16px;
+  }
+  .field-help {
+    font-size: 13px;
+    color: var(--text-light);
+    margin: 4px 0 0;
+  }
+  .field-error {
+    color: #dc2626;
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+  .success-message {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #166534;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 24px 0;
+    animation: slideIn 0.3s ease-out;
+  }
+  .error-message {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 24px 0;
+    animation: slideIn 0.3s ease-out;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f4f6;
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <h1>Create a New Tenant</h1>
+  <p>Set up your tenant account to get started with Icycon's services.</p>
+
+  <form id="signupForm">
+    <div class="form-grid">
+      <div class="form-section">
+        <h3>Tenant Details</h3>
+        
+        <label for="name">Tenant name</label>
+        <input 
+          id="name" 
+          name="name" 
+          type="text" 
+          required 
+          minlength="3"
+          pattern="[A-Za-z0-9\s\-]+"
+          title="Letters, numbers, spaces and hyphens only"
+        />
+        <p class="field-help">This will be your organization's name in Icycon</p>
+        <p class="field-error" id="name-error"></p>
+
+        <label for="region">Region</label>
+        <select id="region" name="region" required>
+          <option value="">Select a region...</option>
+          <option value="US">United States (US)</option>
+          <option value="EU">European Union (EU)</option>
+          <option value="UK">United Kingdom (UK)</option>
+          <option value="CA">Canada (CA)</option>
+          <option value="AU">Australia (AU)</option>
+        </select>
+        <p class="field-help">Choose the region where your data will be hosted</p>
+        <p class="field-error" id="region-error"></p>
+      </div>
+
+      <div class="form-section">
+        <h3>Owner Account</h3>
+        
+        <label for="email">Email address</label>
+        <input 
+          id="email" 
+          name="email" 
+          type="email" 
+          required 
+          autocomplete="email"
+        />
+        <p class="field-help">You'll use this to sign in to your account</p>
+        <p class="field-error" id="email-error"></p>
+
+        <label for="password">Password</label>
+        <input 
+          id="password" 
+          name="password" 
+          type="password" 
+          required 
+          minlength="8"
+          autocomplete="new-password"
+        />
+        <p class="field-help">At least 8 characters</p>
+        <p class="field-error" id="password-error"></p>
+
+        <label for="confirm_password">Confirm password</label>
+        <input 
+          id="confirm_password" 
+          name="confirm_password" 
+          type="password" 
+          required
+          autocomplete="new-password"
+        />
+        <p class="field-error" id="confirm-error"></p>
+      </div>
+    </div>
+
+    <div style="text-align:right">
+      <button type="submit" id="submit-btn" style="min-width:160px">
+        Create tenant
+      </button>
+    </div>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('signupForm');
+    const result = document.getElementById('result');
+    const submitBtn = document.getElementById('submit-btn');
+    const formErrors = {
+      name: document.getElementById('name-error'),
+      region: document.getElementById('region-error'),
+      email: document.getElementById('email-error'),
+      password: document.getElementById('password-error'),
+      confirm: document.getElementById('confirm-error')
+    };
+
+    // Clear error when field changes
+    Object.keys(formErrors).forEach(field => {
+      const input = form[field === 'confirm' ? 'confirm_password' : field];
+      if (input) {
+        input.addEventListener('input', () => {
+          formErrors[field].textContent = '';
+          input.classList.remove('error');
+        });
+      }
+    });
+
+    // Client-side validation
+    function validateForm(data) {
+      let isValid = true;
+      
+      // Clear previous errors
+      Object.values(formErrors).forEach(el => el.textContent = '');
+      
+      if (data.name.length < 3) {
+        formErrors.name.textContent = 'Name must be at least 3 characters';
+        isValid = false;
+      }
+      
+      if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        formErrors.email.textContent = 'Please enter a valid email address';
+        isValid = false;
+      }
+      
+      if (!data.region) {
+        formErrors.region.textContent = 'Please select a region';
+        isValid = false;
+      }
+      
+      if (data.password.length < 8) {
+        formErrors.password.textContent = 'Password must be at least 8 characters';
+        isValid = false;
+      }
+      
+      if (data.password !== data.confirm_password) {
+        formErrors.confirm.textContent = 'Passwords do not match';
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const data = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        region: form.region.value,
+        password: form.password.value,
+        confirm_password: form.confirm_password.value
+      };
+
+      if (!validateForm(data)) return;
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="loading"></div>Creating tenant...';
+      result.innerHTML = '';
+
+      try {
+        const resp = await fetch('/tenants/create/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await resp.json();
+        
+        if (!resp.ok) {
+          result.innerHTML = `
+            <div class="error-message">
+              <strong>Could not create tenant</strong>
+              <pre style="margin:8px 0 0;font-size:13px">${JSON.stringify(json, null, 2)}</pre>
+            </div>
+          `;
+          // Show field-specific errors
+          Object.keys(json).forEach(field => {
+            const errorEl = formErrors[field === 'confirm_password' ? 'confirm' : field];
+            if (errorEl) {
+              errorEl.textContent = Array.isArray(json[field]) ? json[field][0] : json[field];
+            }
+          });
+        } else {
+          result.innerHTML = `
+            <div class="success-message">
+              <strong>🎉 Tenant created successfully!</strong>
+              <p style="margin:8px 0 0">Redirecting to tenants list...</p>
+            </div>
+          `;
+          form.reset();
+          setTimeout(() => window.location.href = '/tenants-ui/', 2000);
+        }
+      } catch (err) {
+        result.innerHTML = `
+          <div class="error-message">
+            <strong>Network error</strong>
+            <p style="margin:8px 0 0">${err.message}</p>
+          </div>
+        `;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create tenant';
+      }
+    });
+  </script>
+{% endblock %}

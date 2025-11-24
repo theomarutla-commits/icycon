@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Conversation — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'conversation-list' %}">Messages</a> / {{ conversation.product.title }}{% endblock %}
+
+{% block head %}
+<style>
+  .conversation-header {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  .messages-container {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .message {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+  .message.sent {
+    background: var(--primary);
+    color: white;
+    margin-left: 40px;
+  }
+  .message.received {
+    background: var(--bg);
+    margin-right: 40px;
+  }
+  .message-time {
+    font-size: 0.8em;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="conversation-header">
+  <h1 style="margin: 0 0 12px 0;">{{ conversation.product.title }}</h1>
+  <p style="margin: 0; color: var(--text-light);">
+    Conversation with 
+    {% if is_buyer %}
+      {{ conversation.seller_tenant.name }}
+    {% else %}
+      {{ conversation.buyer_tenant.name }}
+    {% endif %}
+  </p>
+</div>
+
+<div class="messages-container">
+  {% for message in messages %}
+    <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+      <strong>{{ message.sender.username }}</strong>
+      <p style="margin: 4px 0 0 0;">{{ message.content }}</p>
+      <div class="message-time">{{ message.created_at|date:"M d, H:i" }}</div>
+    </div>
+  {% empty %}
+    <p style="text-align: center; color: var(--text-light);">No messages yet. Start the conversation!</p>
+  {% endfor %}
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div style="display: flex; gap: 12px;">
+    <textarea name="content" placeholder="Type your message..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 80px;"></textarea>
+    <button type="submit" class="button" style="align-self: flex-end;">Send</button>
+  </div>
+</form>
+
+{% endblock %}

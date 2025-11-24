@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site.domain }} — SEO{% endblock %}
+
+{% block breadcrumb %} / <a href="/seo/">SEO</a> / <a href="/seo/sites/">Sites</a> / {{ site.domain }} {% endblock %}
+
+{% block content %}
+<h3>{{ site.domain }}</h3>
+{% if site.sitemaps_url %}
+<p><strong>Sitemap:</strong> <a href="{{ site.sitemaps_url }}" target="_blank">{{ site.sitemaps_url }}</a></p>
+{% endif %}
+<hr>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h5>Keyword Clusters</h5>
+      <ul class="list-unstyled">
+        {% for kc in keyword_clusters %}
+          <li class="mb-2">
+            <strong>{{ kc.intent }}</strong> ({{ kc.terms|length }} terms)
+            <small class="text-muted d-block">Terms: {{ kc.terms|join:", " }}</small>
+          </li>
+        {% empty %}
+          <li>No keyword clusters yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h5>Content Items</h5>
+      <ul class="list-unstyled">
+        {% for ci in content_items %}
+          <li class="mb-2">
+            <a href="{{ ci.url }}" target="_blank">{{ ci.url }}</a>
+            <span class="badge bg-{% if ci.status == 'published' %}success{% else %}secondary{% endif %}">{{ ci.status }}</span>
+          </li>
+        {% empty %}
+          <li>No content items yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4 card p-3">
+  <h5>FAQs</h5>
+  <div class="list-group">
+    {% for f in faqs %}
+      <div class="list-group-item">
+        <strong class="d-block">{{ f.question }}</strong>
+        <small class="text-muted">{{ f.answer }}</small>
+      </div>
+    {% empty %}
+      <div class="list-group-item">No FAQs for this site.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="mt-4">
+  <a href="/seo/sites/{{ site.id }}/edit/" class="btn btn-primary">Edit Site</a>
+</div>
+{% endblock %}

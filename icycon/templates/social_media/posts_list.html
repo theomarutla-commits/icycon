@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Posts — Icycon{% endblock %}
+
+{% block breadcrumb %}/ <a href="/social-media/posts/">Social Media</a> / Posts{% endblock %}
+
+{% block content %}
+<div style="padding: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="margin: 0;">Posts & Content</h2>
+      <p style="margin: 8px 0 0 0; color: #666;">Create and manage posts to promote {{ tenant.name }}</p>
+    </div>
+    <a href="/social-media/posts/create/" style="background: #0ea5e9; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: 500;">+ New Post</a>
+  </div>
+  
+  {% if status_stats %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
+      {% for status, count in status_stats.items %}
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+          <p style="margin: 0; font-size: 14px; color: #666; text-transform: capitalize;">{{ status }}</p>
+          <h3 style="margin: 8px 0 0 0;">{{ count }}</h3>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+  {% if posts %}
+    <div style="background: white; border-radius: 8px; padding: 20px; margin-top: 20px;">
+      {% for post in posts %}
+        <div style="border-bottom: 1px solid #e5e7eb; padding: 16px 0; {% if forloop.last %}border-bottom: none;{% endif %}">
+          <h4 style="margin: 0 0 8px 0;">{{ post.title }}</h4>
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">{{ post.content|truncatewords:20 }}</p>
+          <div style="display: flex; gap: 16px; font-size: 12px; color: #999;">
+            <span>Status: <strong>{{ post.get_status_display }}</strong></span>
+            <span>Created: {{ post.created_at|date:"M d, Y" }}</span>
+            {% if post.published_at %}
+              <span>Published: {{ post.published_at|date:"M d, Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; text-align: center; margin-top: 20px;">
+      <p style="color: #6b7280;">No posts yet. <a href="/social-media/posts/create/" style="color: #0ea5e9; text-decoration: none;">Create your first post</a> to promote {{ tenant.name }}.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

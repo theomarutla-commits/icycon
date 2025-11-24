@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Content Items — Icycon{% endblock %}
+
+{% block breadcrumb %}/ <a href="/seo/ui/">SEO</a> / Content Items{% endblock %}
+
+{% block content %}
+<div style="padding: 24px;">
+  <h2 style="margin-top: 0;">Content Items</h2>
+  <p>SEO-optimized content items for your sites.</p>
+  
+  {% if content_items %}
+    <div style="background: white; border-radius: 8px; padding: 20px; margin-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e5e7eb;">
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Title</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">URL</th>
+            <th style="text-align: left; padding: 12px; font-weight: 600;">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in content_items %}
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <td style="padding: 12px;">{{ item.title|default:"Untitled" }}</td>
+              <td style="padding: 12px; font-size: 14px; color: #666;">{{ item.url|truncatewords:5 }}</td>
+              <td style="padding: 12px; font-size: 14px; color: #666;">{{ item.created_at|date:"M d, Y"|default:"N/A" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; text-align: center; margin-top: 20px;">
+      <p style="color: #6b7280;">No content items yet. <a href="/seo/sites/" style="color: #0ea5e9; text-decoration: none;">Create content</a> to get started.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

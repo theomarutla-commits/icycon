@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Review — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'product-detail' product.id %}">{{ product.title }}</a> / Review{% endblock %}
+
+{% block head %}
+<style>
+  .review-form {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .rating-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .rating-star {
+    font-size: 2.5em;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.5;
+  }
+  .rating-star:hover,
+  .rating-star.active {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 150px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Write a Review</h1>
+<p style="color: var(--text-light);">Share your experience with <strong>{{ product.title }}</strong></p>
+
+<form method="post" class="review-form">
+  {% csrf_token %}
+
+  <div class="form-group">
+    <label>Your Rating *</label>
+    <div class="rating-selector" id="ratingSelector">
+      {% for value, label in rating_choices %}
+        <input type="radio" name="rating" value="{{ value }}" id="rating_{{ value }}" style="display: none;" {% if existing_review.rating == value %}checked{% endif %} required>
+        <label for="rating_{{ value }}" class="rating-star" data-rating="{{ value }}">★</label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="title">Review Title *</label>
+    <input type="text" id="title" name="title" required placeholder="e.g., Excellent product, highly recommended!" value="{{ existing_review.title|default:'' }}">
+  </div>
+
+  <div class="form-group">
+    <label for="comment">Your Review *</label>
+    <textarea id="comment" name="comment" required placeholder="Share your honest feedback about this product...">{{ existing_review.comment|default:'' }}</textarea>
+  </div>
+
+  <div style="display: flex; gap: 12px;">
+    <button type="submit" class="button">Submit Review</button>
+    <a href="{% url 'product-detail' product.id %}" class="button" style="background: var(--text-light); color: white;">Cancel</a>
+  </div>
+</form>
+
+<script>
+  const ratingSelector = document.getElementById('ratingSelector');
+  const ratingStars = ratingSelector.querySelectorAll('.rating-star');
+  const ratingInputs = ratingSelector.querySelectorAll('input[name="rating"]');
+
+  // Set initial state if existing review
+  const existingRating = document.querySelector('input[name="rating"]:checked');
+  if (existingRating) {
+    const rating = existingRating.value;
+    ratingStars.forEach((star, idx) => {
+      if (idx < rating) {
+        star.classList.add('active');
+      }
+    });
+  }
+
+  ratingStars.forEach((star, index) => {
+    star.addEventListener('click', () => {
+      ratingInputs[index].checked = true;
+      
+      ratingStars.forEach((s, i) => {
+        if (i < index + 1) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    });
+
+    star.addEventListener('mouseenter', () => {
+      ratingStars.forEach((s, i) => {
+        if (i < index + 1) {
+          s.style.opacity = '1';
+        } else {
+          s.style.opacity = '0.3';
+        }
+      });
+    });
+  });
+
+  ratingSelector.addEventListener('mouseleave', () => {
+    ratingStars.forEach(s => {
+      s.style.opacity = '';
+    });
+  });
+</script>
+
+{% endblock %}

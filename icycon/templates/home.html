@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'chatbot/chat.css' %}">
+{% endblock %}
+
+{% block title %}Home — Icycon{% endblock %}
+
+{% block content %}
+  <h1>Welcome to Icycon</h1>
+  <p>Simple server-rendered navigation while the React frontend is removed.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Tenants</h3>
+      <p>View tenants and create new ones.</p>
+      <p><a href="/tenants-ui/">Open Tenants UI</a></p>
+    </div>
+    <div class="card">
+      <h3>Signup</h3>
+      <p>Create a new tenant account.</p>
+      <p><a href="/signup/">Go to Signup</a></p>
+    </div>
+    <div class="card">
+      <h3>Admin</h3>
+      <p>Open Django admin to manage models.</p>
+      <p><a href="/admin/">Admin</a></p>
+    </div>
+  </div>
+
+  {# Show chatbot only for authenticated non-admin users who belong to a tenant #}
+  {% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
+    {% with first_tenant=user.tenantuser_set.first %}
+      {% if first_tenant %}
+        <script src="{% static 'chatbot/chat.js' %}"></script>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            window.chatWidget = new ChatWidget({{ first_tenant.tenant.id }});
+          });
+        </script>
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+{% endblock %}

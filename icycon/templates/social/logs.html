@@ -1,0 +1,84 @@
+{% extends "social/base_social.html" %}
+
+{% block social_content %}
+<div class="action-bar">
+  <div class="search-bar">
+    <input type="text" placeholder="Search activity logs..." class="form-control">
+    <button class="btn btn-primary">Search</button>
+  </div>
+  <div class="filters">
+    <select class="form-control">
+      <option>All Types</option>
+      <option>Post</option>
+      <option>Account</option>
+      <option>Analytics</option>
+      <option>Error</option>
+    </select>
+    <select class="form-control">
+      <option>All Platforms</option>
+      <option>Twitter</option>
+      <option>LinkedIn</option>
+      <option>Facebook</option>
+      <option>Instagram</option>
+    </select>
+    <input type="date" class="form-control" placeholder="Date">
+  </div>
+</div>
+
+<div class="social-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <h3 style="margin:0">Activity Logs</h3>
+    <button class="btn btn-sm btn-secondary">
+      <i class='bx bx-download'></i> Export
+    </button>
+  </div>
+
+  <div class="logs-timeline">
+    {% for log in logs %}
+    <div class="log-item" style="display:flex;gap:1rem;padding:1rem;border-left:2px solid {% if log.type == 'error' %}#ef4444{% else %}var(--primary){% endif %}">
+      <div style="min-width:150px;color:var(--text-light)">
+        {{ log.timestamp|date:"M j, Y H:i" }}
+      </div>
+      <div>
+        <div style="font-weight:500;margin-bottom:0.25rem">
+          <i class='bx 
+             {% if log.type == "post" %}bx-message-square-detail
+             {% elif log.type == "account" %}bx-user
+             {% elif log.type == "analytics" %}bx-line-chart
+             {% else %}bx-error{% endif %}'
+             style="color:{% if log.type == 'error' %}#ef4444{% else %}var(--primary){% endif %}">
+          </i>
+          {{ log.message }}
+        </div>
+        {% if log.details %}
+        <div style="font-size:0.875rem;color:var(--text-light)">
+          {{ log.details }}
+        </div>
+        {% endif %}
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;font-size:0.875rem">
+          {% if log.account %}
+          <span class="badge" style="background:var(--bg);color:var(--text);padding:0.25rem 0.5rem;border-radius:9999px">
+            {{ log.account }}
+          </span>
+          {% endif %}
+          {% if log.platform %}
+          <span class="badge" style="background:var(--bg);color:var(--text);padding:0.25rem 0.5rem;border-radius:9999px">
+            {{ log.platform }}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      {% if log.action %}
+      <button class="btn btn-sm btn-secondary" style="margin-left:auto">{{ log.action }}</button>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:2rem">
+      <i class='bx bx-history' style="font-size:3rem;color:var(--text-light)"></i>
+      <h3>No Activity Logs</h3>
+      <p>Activity logs will appear here once you start using social media features.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

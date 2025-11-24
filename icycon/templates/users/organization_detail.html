@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ org.organization_name }}</h1>
+<p>Organization details placeholder</p>
+<p><a href="/users/organization/{{ org.id }}/members/">Members</a> | <a href="/users/organization/{{ org.id }}/settings/">Settings</a></p>
+{% endblock %}

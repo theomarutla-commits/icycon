@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Sites — Icycon{% endblock %}
+
+{% block content %}
+<div class="header-actions">
+  <h1>Sites</h1>
+  <a href="{% url 'site_create' %}" class="button">Add New Site</a>
+</div>
+
+<div class="grid">
+  {% for site in sites %}
+    <div class="card">
+      <h3>{{ site.domain }}</h3>
+      <p>Default Locale: {{ site.default_locale }}</p>
+      <p>Created: {{ site.created_at|date }}</p>
+      <div class="card-actions">
+        <a href="{% url 'site_detail' site.id %}">View Details</a>
+        <a href="{% url 'site_edit' site.id %}">Edit</a>
+      </div>
+    </div>
+  {% empty %}
+    <p>No sites added yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

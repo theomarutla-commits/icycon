@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Keyword Research - ASO - Icycon{% endblock %}
+
+{% block breadcrumb %} / <a href="/aso-ui/">ASO</a> / Keyword Research {% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Keyword Research Tool -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Keyword Research</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Seed Keywords</label>
+                        <textarea class="form-control" id="seedKeywords" rows="3" placeholder="Enter one keyword per line"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">App Store</label>
+                        <select class="form-select" id="appStore">
+                            <option value="google">Google Play Store</option>
+                            <option value="apple">Apple App Store</option>
+                            <option value="both">Both Stores</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Language</label>
+                        <select class="form-select" id="language">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <!-- Add more languages -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Country</label>
+                        <select class="form-select" id="country">
+                            <option value="us">United States</option>
+                            <option value="gb">United Kingdom</option>
+                            <option value="ca">Canada</option>
+                            <option value="au">Australia</option>
+                            <!-- Add more countries -->
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" onclick="researchKeywords()">
+                            Research Keywords
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Results -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Research Results</h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()">Export CSV</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="saveToProject()">Save to Project</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onchange="toggleAllKeywords()">
+                                </th>
+                                <th>Keyword</th>
+                                <th>Search Volume</th>
+                                <th>Difficulty</th>
+                                <th>CPC</th>
+                                <th>Apps Ranking</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" class="text-center">Enter keywords and click Research to see results</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyword Insights -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Keyword Insights</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>Search Volume Distribution</h6>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+                <div class="mb-4">
+                    <h6>Top Word Combinations</h6>
+                    <div id="wordCloud" style="height: 200px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Competitor Analysis -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Competitor Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="competitorTable">
+                        <thead>
+                            <tr>
+                                <th>App</th>
+                                <th>Common Keywords</th>
+                                <th>Avg. Rank</th>
+                                <th>Market Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center">Select keywords to see competitor data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+    .difficulty-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+    .difficulty-easy { background: #dcfce7; color: #166534; }
+    .difficulty-medium { background: #fef9c3; color: #854d0e; }
+    .difficulty-hard { background: #fee2e2; color: #991b1b; }
+    #wordCloud {
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-cloud@1.2.5/build/d3.layout.cloud.min.js"></script>
+
+<script>
+    let selectedKeywords = new Set();
+
+    function researchKeywords() {
+        const seedKeywords = document.getElementById('seedKeywords').value;
+        const appStore = document.getElementById('appStore').value;
+        const language = document.getElementById('language').value;
+        const country = document.getElementById('country').value;
+
+        // Show loading state
+        document.getElementById('resultsTable').querySelector('tbody').innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Simulate API call
+        setTimeout(() => {
+            // Sample data - replace with actual API response
+            const results = [
+                {
+                    keyword: 'fitness tracking app',
+                    volume: 12500,
+                    difficulty: 'medium',
+                    cpc: 1.25,
+                    appsRanking: 15,
+                    trend: 'up'
+                },
+                {
+                    keyword: 'workout planner app',
+                    volume: 8300,
+                    difficulty: 'easy',
+                    cpc: 0.95,
+                    appsRanking: 8,
+                    trend: 'up'
+                },
+                // Add more results
+            ];
+
+            updateResults(results);
+            updateInsights(results);
+            updateCompetitors(results);
+        }, 1500);
+    }
+
+    function updateResults(results) {
+        const tbody = document.getElementById('resultsTable').querySelector('tbody');
+        tbody.innerHTML = results.map(result => `
+            <tr>
+                <td>
+                    <input type="checkbox" value="${result.keyword}" onchange="toggleKeyword(this)">
+                </td>
+                <td>${result.keyword}</td>
+                <td>${result.volume.toLocaleString()}</td>
+                <td>
+                    <span class="difficulty-badge difficulty-${result.difficulty}">
+                        ${result.difficulty}
+                    </span>
+                </td>
+                <td>$${result.cpc}</td>
+                <td>${result.appsRanking}</td>
+                <td class="trend-${result.trend}">
+                    ${result.trend === 'up' ? '↑' : '↓'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateInsights(results) {
+        // Volume distribution chart
+        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        new Chart(volumeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['0-1K', '1K-5K', '5K-10K', '10K+'],
+                datasets: [{
+                    label: 'Keywords',
+                    data: [5, 8, 3, 2],
+                    backgroundColor: '#0ea5e9'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Word cloud - requires D3.js cloud layout
+        // Implementation depends on the library you choose
+    }
+
+    function updateCompetitors(results) {
+        const tbody = document.getElementById('competitorTable').querySelector('tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>FitTrack Pro</td>
+                <td>15</td>
+                <td>3.2</td>
+                <td>23%</td>
+            </tr>
+            <tr>
+                <td>GymBuddy</td>
+                <td>12</td>
+                <td>4.5</td>
+                <td>18%</td>
+            </tr>
+        `;
+    }
+
+    function toggleKeyword(checkbox) {
+        if (checkbox.checked) {
+            selectedKeywords.add(checkbox.value);
+        } else {
+            selectedKeywords.delete(checkbox.value);
+        }
+        updateSelection();
+    }
+
+    function toggleAllKeywords() {
+        const checkboxes = document.querySelectorAll('#resultsTable tbody input[type="checkbox"]');
+        const selectAll = document.getElementById('selectAll');
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+            if (selectAll.checked) {
+                selectedKeywords.add(cb.value);
+            } else {
+                selectedKeywords.delete(cb.value);
+            }
+        });
+        updateSelection();
+    }
+
+    function updateSelection() {
+        // Update any UI elements that depend on selection
+        console.log('Selected keywords:', Array.from(selectedKeywords));
+    }
+
+    function exportCSV() {
+        // Implement CSV export logic
+        alert('Exporting selected keywords to CSV...');
+    }
+
+    function saveToProject() {
+        // Implement save to project logic
+        alert('Saving selected keywords to project...');
+    }
+</script>
+{% endblock %}

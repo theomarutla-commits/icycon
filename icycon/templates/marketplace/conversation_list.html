@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Conversations — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'marketplace-home' %}">Home</a> / Conversations{% endblock %}
+
+{% block head %}
+<style>
+  .conversation-item {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .conversation-item:hover {
+    box-shadow: 0 4px 12px var(--shadow);
+    transform: translateX(4px);
+  }
+  .conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 8px;
+  }
+  .conversation-title {
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 1.05em;
+  }
+  .conversation-meta {
+    color: var(--text-light);
+    font-size: 0.9em;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Messages</h1>
+<p style="color: var(--text-light);">Communicate with buyers and sellers about products.</p>
+
+{% if conversations %}
+  {% for conversation in conversations %}
+    <a href="{% url 'conversation-detail' conversation.id %}" class="conversation-item">
+      <div class="conversation-header">
+        <div>
+          <div class="conversation-title">{{ conversation.product.title }}</div>
+          <div class="conversation-meta">with 
+            {% if conversation.buyer_tenant.tenantuser_set.filter|default:False %}
+              {{ conversation.seller_tenant.name }}
+            {% else %}
+              {{ conversation.buyer_tenant.name }}
+            {% endif %}
+          </div>
+        </div>
+        <div style="color: var(--text-light); font-size: 0.9em;">{{ conversation.updated_at|naturalday }}</div>
+      </div>
+    </a>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <p style="font-size: 1.2em;">No conversations yet</p>
+    <a href="{% url 'product-list' %}" class="button" style="display: inline-block; margin-top: 16px;">Browse Products</a>
+  </div>
+{% endif %}
+
+{% endblock %}

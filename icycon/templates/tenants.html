@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Tenants — Icycon{% endblock %}
+
+{% block breadcrumb %}/ Tenants{% endblock %}
+
+{% block head %}
+<style>
+  .tenant-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .tenant-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .tenant-card:hover::before {
+    opacity: 1;
+  }
+  .tenant-meta {
+    color: var(--text-light);
+    font-size: 14px;
+    margin: 8px 0;
+  }
+  .tenant-plan {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .plan-free { background: #f0f9ff; color: #0369a1; }
+  .plan-pro { background: #f0f7ff; color: #1d4ed8; }
+  .plan-enterprise { background: #faf5ff; color: #7e22ce; }
+  .tenant-website {
+    word-break: break-all;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h1 style="margin:0">Tenants</h1>
+    <a href="/signup/" class="button-link" style="display:inline-block;padding:8px 16px;background:var(--primary);color:white;text-decoration:none;border-radius:6px;font-weight:500">+ New Tenant</a>
+  </div>
+  
+  <div class="grid">
+    {% for tenant in tenants %}
+    <div class="card tenant-card">
+      <h3 style="margin:0 0 4px">{{ tenant.name }}</h3>
+      <div class="tenant-meta">
+        <span title="{{ tenant.created_at|date:'Y-m-d H:i:s' }}">Created {{ tenant.created_at|date:"M j, Y" }}</span>
+        •
+        <span>{{ tenant.region }}</span>
+      </div>
+      
+      <div style="margin:16px 0">
+        <span class="tenant-plan plan-{{ tenant.plan }}">{{ tenant.plan|upper }}</span>
+      </div>
+
+      <div style="display:grid;gap:8px;font-size:14px">
+        <div>
+          <strong style="color:var(--text-light)">Owner</strong><br>
+          {{ tenant.owner.email }}
+        </div>
+        
+        {% if tenant.brand_tone %}
+        <div>
+          <strong style="color:var(--text-light)">Brand tone</strong><br>
+          {{ tenant.brand_tone }}
+        </div>
+        {% endif %}
+        
+        {% if tenant.website %}
+        <div class="tenant-website">
+          <strong style="color:var(--text-light)">Website</strong><br>
+          <a href="{{ tenant.website }}" target="_blank" rel="noopener" style="color:var(--primary);word-break:break-all">
+            {{ tenant.website }}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="card" style="grid-column:1/-1;text-align:center;padding:48px 24px">
+      <img src="data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='80' height='80' rx='40' fill='%23F1F5F9'/%3E%3Cpath d='M40 26.6667V53.3334M26.6667 40H53.3333' stroke='%230EA5E9' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E" 
+           alt="Create tenant" style="margin-bottom:24px">
+      <h2 style="margin:0 0 8px">No tenants yet</h2>
+      <p style="margin:0 0 24px;color:var(--text-light)">Create your first tenant to get started</p>
+      <a href="/signup/" style="display:inline-block;padding:12px 24px;background:var(--primary);color:white;text-decoration:none;border-radius:6px;font-weight:500">
+        Create Your First Tenant
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+{% endblock %}

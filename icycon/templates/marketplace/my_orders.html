@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders — Marketplace{% endblock %}
+
+{% block breadcrumb %}/ Marketplace / <a href="{% url 'marketplace-home' %}">Home</a> / My Orders{% endblock %}
+
+{% block head %}
+<style>
+  .tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  .tab-button {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-light);
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-button.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .order-item {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+  }
+  .order-info h3 {
+    margin: 0 0 8px 0;
+    color: var(--primary);
+  }
+  .order-meta {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+  .status-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .status-completed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .status-cancelled {
+    background: #fee2e2;
+    color: #7f1d1d;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>My Orders</h1>
+<p style="color: var(--text-light);">Track your purchases and access digital products.</p>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-button active" data-tab="all">All Orders</button>
+  <button class="tab-button" data-tab="pending">Pending</button>
+  <button class="tab-button" data-tab="completed">Completed</button>
+</div>
+
+<!-- All Orders -->
+<div id="all" class="tab-content active">
+  {% if orders %}
+    {% for order in orders %}
+      <div class="order-item">
+        <div class="order-info">
+          <h3>{{ order.product.title }}</h3>
+          <p class="order-meta">Order #{{ order.order_number }} • {{ order.created_at|date:"M d, Y" }}</p>
+          <p class="order-meta">by {{ order.product.tenant.name }}</p>
+          <p style="margin-top: 8px; font-weight: bold;">💰 ${{ order.total_price }}</p>
+        </div>
+        <div style="text-align: right;">
+          <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+          <div style="margin-top: 12px;">
+            <a href="{% url 'order-detail' order.id %}" class="button" style="background: var(--primary); color: white; display: block; margin-bottom: 8px;">View Details</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p style="font-size: 1.2em;">No orders yet</p>
+      <a href="{% url 'product-list' %}" class="button" style="display: inline-block; margin-top: 16px;">Browse Products</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Pending Orders -->
+<div id="pending" class="tab-content">
+  {% if pending_orders %}
+    {% for order in pending_orders %}
+      <div class="order-item">
+        <div class="order-info">
+          <h3>{{ order.product.title }}</h3>
+          <p class="order-meta">Order #{{ order.order_number }} • {{ order.created_at|date:"M d, Y" }}</p>
+          <p style="margin-top: 8px; font-weight: bold;">💰 ${{ order.total_price }}</p>
+        </div>
+        <div style="text-align: right;">
+          <span class="status-badge status-pending">Pending</span>
+          <div style="margin-top: 12px;">
+            <a href="{% url 'order-detail' order.id %}" class="button" style="background: var(--primary); color: white; display: block;">View Details</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>No pending orders</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Completed Orders -->
+<div id="completed" class="tab-content">
+  {% if completed_orders %}
+    {% for order in completed_orders %}
+      <div class="order-item">
+        <div class="order-info">
+          <h3>{{ order.product.title }}</h3>
+          <p class="order-meta">Order #{{ order.order_number }} • {{ order.completed_at|date:"M d, Y" }}</p>
+          <p style="margin-top: 8px; font-weight: bold;">💰 ${{ order.total_price }}</p>
+        </div>
+        <div style="text-align: right;">
+          <span class="status-badge status-completed">Completed</span>
+          <div style="margin-top: 12px;">
+            <a href="{% url 'order-detail' order.id %}" class="button" style="background: var(--primary); color: white; display: block;">View Details</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>No completed orders</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      
+      // Hide all content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Remove active from buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected
+      document.getElementById(tabName).classList.add('active');
+      this.classList.add('active');
+    });
+  });
+</script>
+
+{% endblock %}

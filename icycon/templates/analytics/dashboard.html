@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analytics Dashboard — Icycon{% endblock %}
+
+{% block extra_css %}
+<style>
+  .analytics-container {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+  }
+  
+  .dashboard-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2.5em;
+  }
+  
+  .dashboard-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1em;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .metric-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, currentColor, transparent);
+    opacity: 0.1;
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+
+  .metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .metric-card.sites { border-left-color: #667eea; }
+  .metric-card.content { border-left-color: #764ba2; }
+  .metric-card.keywords { border-left-color: #f093fb; }
+  .metric-card.views { border-left-color: #4facfe; }
+
+  .metric-icon {
+    font-size: 1.5em;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .metric-icon.sites { color: #667eea; }
+  .metric-icon.content { color: #764ba2; }
+  .metric-icon.keywords { color: #f093fb; }
+  .metric-icon.views { color: #4facfe; }
+
+  .metric-label {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .metric-value {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+
+  .content-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--card-bg);
+    padding-bottom: 16px;
+  }
+
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header i {
+    font-size: 1.4em;
+  }
+
+  .sites-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .site-item {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    border-left: 3px solid #667eea;
+    cursor: pointer;
+  }
+
+  .site-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .site-item strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .site-item a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .site-item a:hover {
+    text-decoration: underline;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .btn-action {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid #e0e0e0;
+  }
+
+  .btn-secondary:hover {
+    background: #f0f0f0;
+  }
+
+  .empty-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+  }
+
+  .empty-message i {
+    font-size: 3em;
+    color: #ddd;
+    margin-bottom: 12px;
+  }
+
+  .empty-message p {
+    margin-bottom: 16px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="analytics-container">
+  
+  <div class="dashboard-header">
+    <h1><i class="bx bxs-bar-chart-alt-2"></i> Analytics & SEO Dashboard</h1>
+    <p>Track your site performance, keywords, and content metrics</p>
+  </div>
+
+  <!-- Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card sites">
+      <div class="metric-icon sites"><i class="bx bxs-world"></i></div>
+      <div class="metric-label">Total Sites</div>
+      <div class="metric-value">{{ metrics.site_count }}</div>
+    </div>
+
+    <div class="metric-card content">
+      <div class="metric-icon content"><i class="bx bxs-file-doc"></i></div>
+      <div class="metric-label">Content Items</div>
+      <div class="metric-value">{{ metrics.content_items }}</div>
+    </div>
+
+    <div class="metric-card keywords">
+      <div class="metric-icon keywords"><i class="bx bxs-key"></i></div>
+      <div class="metric-label">Keyword Clusters</div>
+      <div class="metric-value">{{ metrics.keyword_clusters }}</div>
+    </div>
+
+    <div class="metric-card views">
+      <div class="metric-icon views"><i class="bx bxs-chart"></i></div>
+      <div class="metric-label">Total Pageviews</div>
+      <div class="metric-value">{{ metrics.total_pageviews }}</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="content-section">
+    <div class="section-header">
+      <h3><i class="bx bxs-bolt"></i> Quick Actions</h3>
+    </div>
+    <div class="action-buttons">
+      <a href="{% url 'site_create' %}" class="btn-action btn-primary">
+        <i class="bx bxs-plus-circle"></i> Add New Site
+      </a>
+      <a href="{% url 'site_list' %}" class="btn-action btn-secondary">
+        <i class="bx bxs-book"></i> View All Sites
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Sites -->
+  <div class="content-section">
+    <div class="section-header">
+      <h3><i class="bx bxs-time-five"></i> Recent Sites</h3>
+    </div>
+    
+    {% if sites %}
+      <div class="sites-list">
+        {% for site in sites|slice:":5" %}
+          <div class="site-item">
+            <strong>{{ site.domain }}</strong>
+            <a href="{% url 'site_detail' site.id %}}">
+              <i class="bx bxs-chevron-right"></i> View Details
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-message">
+        <i class="bx bxs-search"></i>
+        <p>No sites added yet. Start by creating your first site!</p>
+        <a href="{% url 'site_create' %}" class="btn-action btn-primary">Create Site</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

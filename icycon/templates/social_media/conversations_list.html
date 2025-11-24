@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Conversations — Icycon{% endblock %}
+
+{% block breadcrumb %}/ <a href="/social-media/posts/">Social Media</a> / Conversations{% endblock %}
+
+{% block content %}
+<div style="padding: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="margin: 0;">Conversations & Messaging</h2>
+      <p style="margin: 8px 0 0 0; color: #666;">Communicate with channels and promote {{ tenant.name }}</p>
+    </div>
+  </div>
+  
+  {% if conversations %}
+    <div style="background: white; border-radius: 8px; padding: 0; margin-top: 20px; border: 1px solid #e5e7eb;">
+      {% for conversation in conversations %}
+        <a href="/social-media/conversations/{{ conversation.id }}/" style="display: block; padding: 16px; border-bottom: 1px solid #e5e7eb; text-decoration: none; color: inherit; transition: background 0.2s;">
+          <h4 style="margin: 0 0 4px 0; color: #222;">{{ conversation.subject|default:"Conversation" }}</h4>
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">
+            Participants: 
+            {% for participant in conversation.participants.all|slice:":3" %}
+              {{ participant.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+            {% if conversation.participants.count > 3 %}+{{ conversation.participants.count|add:"-3" }} more{% endif %}
+          </p>
+          <p style="margin: 0; color: #999; font-size: 12px;">Last updated: {{ conversation.updated_at|date:"M d, Y H:i" }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; text-align: center; margin-top: 20px;">
+      <p style="color: #6b7280;">No conversations yet. Start a conversation to communicate with other channels and promote your organization.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

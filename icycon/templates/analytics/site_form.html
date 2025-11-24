@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} Site — {{ tenant.name|default:"Icycon" }}{% endblock %}
+
+{% block content %}
+<h1>{% if is_edit %}Edit{% else %}Create{% endif %} Site</h1>
+
+<form method="post" class="form">
+  {% csrf_token %}
+  
+  <div class="form-group">
+    <label for="domain">Domain/URL*</label>
+    <input type="url" id="domain" name="domain" value="{% firstof form.domain site.domain '' %}" required>
+    {% if errors.domain %}<span class="error">{{ errors.domain }}</span>{% endif %}
+  </div>
+
+  <div class="form-group">
+    <label for="sitemaps_url">Sitemaps URL</label>
+    <input type="url" id="sitemaps_url" name="sitemaps_url" value="{% firstof form.sitemaps_url site.sitemaps_url '' %}">
+  </div>
+
+  <div class="form-group">
+    <label for="default_locale">Default Locale</label>
+    <input type="text" id="default_locale" name="default_locale" value="{% firstof form.default_locale site.default_locale 'en' %}">
+  </div>
+
+  <div class="form-group">
+    <label for="robots_txt">Robots.txt Content</label>
+    <textarea id="robots_txt" name="robots_txt">{% firstof form.robots_txt site.robots_txt '' %}</textarea>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit">{% if is_edit %}Save Changes{% else %}Create Site{% endif %}</button>
+    <a href="{% url 'site_list' %}" class="button secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
