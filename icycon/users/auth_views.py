@@ -1,6 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from django.core.mail import send_mail
+from django.conf import settings
 from .auth_serializers import SignupSerializer, LoginSerializer
 
 
@@ -25,6 +27,23 @@ class SignupView(generics.CreateAPIView):
     """
     serializer_class = SignupSerializer
     permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        # Send a simple welcome email; failures are logged but do not block signup
+        try:
+            subject = f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}!"
+            body = (
+                f"Hi {user.username},\n\n"
+                f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}! "
+                "Your account has been created successfully.\n\n"
+                "You can now log in and start exploring the API.\n"
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=True)
+        except Exception:
+            # Don't interrupt signup if email sending fails
+            pass
+        return user
 
 
 class LoginView(generics.GenericAPIView):

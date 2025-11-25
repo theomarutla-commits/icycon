@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -17,6 +18,7 @@ from marketplace.models import (
 )
 from seo.models import FAQ as SEOFAQ
 from seo.models import ContentItem as SEOContentItem
+from seo.models import Directory as SEODirectory
 from seo.models import KeywordCluster as SEOKeywordCluster
 from seo.models import Site as SEOSite
 from social_media.models import (
@@ -55,6 +57,8 @@ FEATURES_INDEX = [
     {"key": "seo_keyword_clusters", "name": "SEO Keyword Clusters", "path": "/api/seo/keywords/", "description": "Keyword clusters"},
     {"key": "seo_content_items", "name": "SEO Content", "path": "/api/seo/content/", "description": "Content items"},
     {"key": "seo_faqs", "name": "SEO FAQs", "path": "/api/seo/faqs/", "description": "FAQ entries"},
+    {"key": "seo_backlinks", "name": "SEO Backlinks", "path": "/api/seo/backlinks/", "description": "Backlinks for your SEO sites"},
+    {"key": "seo_directories", "name": "SEO Directories", "path": "/api/seo/directories/", "description": "Directory listings/citations"},
     {"key": "social_accounts", "name": "Social Accounts", "path": "/api/social/accounts/", "description": "Connected social accounts"},
     {"key": "social_posts", "name": "Social Posts", "path": "/api/social/posts/", "description": "Posts across platforms"},
     {"key": "social_conversations", "name": "Social Conversations", "path": "/api/social/conversations/", "description": "DM threads"},
@@ -66,6 +70,9 @@ FEATURES_INDEX = [
     {"key": "email_flows", "name": "Email Flows", "path": "/api/email/flows/", "description": "Automation flows"},
     {"key": "email_contacts", "name": "Email Contacts", "path": "/api/email/contacts/", "description": "Contacts"},
     {"key": "email_sends", "name": "Email Sends", "path": "/api/email/sends/", "description": "Send history"},
+    {"key": "email_marketing_summary", "name": "Email Marketing", "path": "/api/email/marketing/", "description": "Email marketing overview"},
+    {"key": "translation_llm", "name": "Translation & LLM", "path": "/api/translate/", "description": "Translate supplied text (stubbed LLM)"},
+    {"key": "geo_lookup", "name": "Geo Lookup", "path": "/api/geo/lookup/", "description": "Geocode an address (stub with optional OpenAI)"},
 ]
 
 
@@ -617,26 +624,56 @@ def seo_site_detail(request, site_id):
 @permission_classes([IsAuthenticated])
 def seo_keyword_clusters(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        intent = request.data.get("intent") or request.data.get("keyword")
+        terms = request.data.get("terms") or []
+        locale = request.data.get("locale", "en")
+        if isinstance(terms, str):
+            terms = [t.strip() for t in terms.split(",") if t.strip()]
+        if not intent:
+            return Response({"error": "intent or keyword is required"}, status=400)
+        if not tenant_ids:
+            return Response({"error": "No tenant associated with user"}, status=400)
+        cluster = SEOKeywordCluster.objects.create(
+            tenant_id=tenant_ids[0],
+            intent=intent,
+            terms=terms if isinstance(terms, list) else [],
+            locale=locale,
+        )
+        return Response(
+            {
+                "id": cluster.id,
+                "intent": cluster.intent,
+                "terms": cluster.terms,
+                "locale": cluster.locale,
+                "created_at": iso(cluster.created_at),
+            },
+            status=201,
+        )
+
     clusters = SEOKeywordCluster.objects.filter(tenant_id__in=tenant_ids)
-    data = [
-        {
-            "id": c.id,
-            "keyword": c.terms[0]
-            if hasattr(c, "terms")
-            and isinstance(c.terms, list)
-            and len(c.terms) > 0
-            else getattr(c, "intent", "N/A") or "N/A",
-            "intent": getattr(c, "intent", "N/A"),
-            "locale": getattr(c, "locale", "en"),
-            "domain": getattr(c, "domain", "N/A"),
-            "search_volume": 0,
-            "difficulty": "Medium",
-            "ranking": 0,
-            "traffic_value": 0,
-            "created_at": iso(getattr(c, "created_at", None)),
-        }
-        for c in clusters
-    ]
+    data = []
+    for c in clusters:
+        keyword_val = None
+        if hasattr(c, "terms") and isinstance(c.terms, list) and c.terms:
+            keyword_val = c.terms[0]
+        else:
+            keyword_val = getattr(c, "intent", "N/A") or "N/A"
+
+        data.append(
+            {
+                "id": c.id,
+                "keyword": keyword_val,
+                "intent": getattr(c, "intent", "N/A"),
+                "locale": getattr(c, "locale", "en"),
+                "domain": getattr(c, "domain", "N/A"),
+                "search_volume": 0,
+                "difficulty": "Medium",
+                "ranking": 0,
+                "traffic_value": 0,
+                "created_at": iso(getattr(c, "created_at", None)),
+            }
+        )
     return Response(data)
 
 
@@ -665,6 +702,75 @@ def seo_faqs(request):
             "created_at": iso(f.created_at),
         }
         for f in faqs
+    ]
+    return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def seo_backlinks(request):
+    tenant_ids = get_user_tenant_ids(request.user)
+    if not hasattr(SEOSite, "backlinks"):
+        return Response([])
+    sites = SEOSite.objects.filter(tenant_id__in=tenant_ids).prefetch_related("backlinks")
+    backlinks = []
+    for site in sites:
+        for b in getattr(site, "backlinks").all():
+            backlinks.append(
+                {
+                    "id": b.id,
+                    "site_id": site.id,
+                    "domain": site.domain,
+                    "source_url": b.source_url,
+                    "target_url": b.target_url,
+                    "anchor_text": b.anchor_text,
+                    "status": getattr(b, "status", "active"),
+                    "domain_rating": getattr(b, "domain_rating", 0),
+                    "created_at": iso(getattr(b, "first_seen", None)),
+                }
+            )
+    return Response(backlinks)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def seo_directories(request):
+    tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        name = request.data.get("name")
+        url = request.data.get("url")
+        status_val = request.data.get("status", "submitted")
+        if not name or not url:
+            return Response({"error": "name and url are required"}, status=400)
+        if not tenant_ids:
+            return Response({"error": "No tenant associated with user"}, status=400)
+        directory = SEODirectory.objects.create(
+            tenant_id=tenant_ids[0],
+            name=name,
+            url=url,
+            status=status_val if status_val in dict(SEODirectory.STATUS_CHOICES) else "submitted",
+        )
+        return Response(
+            {
+                "id": directory.id,
+                "name": directory.name,
+                "url": directory.url,
+                "status": directory.status,
+                "created_at": iso(directory.created_at),
+            },
+            status=201,
+        )
+
+    directories = SEODirectory.objects.filter(tenant_id__in=tenant_ids)
+    data = [
+        {
+            "id": d.id,
+            "name": d.name,
+            "url": d.url,
+            "status": d.status,
+            "created_at": iso(d.created_at),
+        }
+        for d in directories
     ]
     return Response(data)
 
@@ -888,3 +994,156 @@ def email_sends(request):
         for s in sends
     ]
     return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def email_marketing_summary(request):
+    """Aggregate overview for email marketing."""
+    tenant_ids = get_user_tenant_ids(request.user)
+    lists_count = EmailList.objects.filter(tenant_id__in=tenant_ids).count()
+    contacts_count = Contact.objects.filter(tenant_id__in=tenant_ids).count()
+    templates_count = EmailTemplate.objects.filter(tenant_id__in=tenant_ids).count()
+    flows_count = EmailFlow.objects.filter(tenant_id__in=tenant_ids).count()
+    sends_count = EmailSend.objects.filter(tenant_id__in=tenant_ids).count()
+
+    return Response(
+        {
+            "lists_count": lists_count,
+            "contacts_count": contacts_count,
+            "templates_count": templates_count,
+            "flows_count": flows_count,
+            "sends_count": sends_count,
+        }
+    )
+
+
+# Translation / LLM (stubbed) ----------------------------------------------
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def translate_text(request):
+    """
+    Stub translation endpoint. Accepts `text` and optional `target_lang`.
+    If `url` is provided, we respond with an error because external fetch is disabled.
+    """
+    text = request.data.get("text", "")
+    url = request.data.get("url")
+    target_lang = request.data.get("target_lang", "en")
+    fetched_from = None
+
+    # Optional: fetch content from URL if provided
+    if url and not text:
+        try:
+            import requests
+
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            text = resp.text[:5000]  # basic limit to avoid huge payloads
+            fetched_from = url
+        except Exception as exc:
+            return Response({"error": f"Failed to fetch URL: {exc}"}, status=400)
+
+    if not text:
+        return Response({"error": "text is required"}, status=400)
+
+    # Try OpenAI if configured; otherwise stub
+    api_key = getattr(settings, "OPENAI_API_KEY", None)
+    if api_key:
+        try:
+            import openai
+
+            openai.api_key = api_key
+            prompt_text = text[:3500]  # keep prompt reasonable
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.2,
+                messages=[
+                    {"role": "system", "content": f"You are a translation engine. Translate to {target_lang} preserving meaning and tone."},
+                    {"role": "user", "content": prompt_text},
+                ],
+            )
+            translated = completion["choices"][0]["message"]["content"].strip()
+            return Response(
+                {
+                    "source": "openai",
+                    "original": text,
+                    "translated": translated,
+                    "target_lang": target_lang,
+                    "fetched_from": fetched_from,
+                }
+            )
+        except Exception as exc:
+            # Fallback to stub if OpenAI fails
+            fallback = f"[{target_lang}] {text}"
+            return Response(
+                {
+                    "source": "stub",
+                    "original": text,
+                    "translated": fallback,
+                    "target_lang": target_lang,
+                    "fetched_from": fetched_from,
+                    "error": str(exc),
+                },
+                status=200,
+            )
+
+    # No API key: stub translation
+    translated = f"[{target_lang}] {text}"
+    return Response(
+        {"source": "stub", "original": text, "translated": translated, "target_lang": target_lang, "fetched_from": fetched_from}
+    )
+
+
+# Geo ----------------------------------------------------------------------
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def geo_lookup(request):
+    """
+    Geocode an address. Uses OpenAI if configured, otherwise returns a stub.
+    Accepts: address (string), optional city/state/country for hints.
+    """
+    address = request.data.get("address", "")
+    city = request.data.get("city")
+    state = request.data.get("state")
+    country = request.data.get("country")
+
+    if not address:
+        return Response({"error": "address is required"}, status=400)
+
+    full = ", ".join([x for x in [address, city, state, country] if x])
+
+    api_key = getattr(settings, "OPENAI_API_KEY", None)
+    if api_key:
+        try:
+            import openai
+
+            openai.api_key = api_key
+            prompt = (
+                "You are a geocoding assistant. Given an address, return a JSON object with "
+                "'lat' and 'lng' numeric fields. If uncertain, approximate.\n"
+                f"Address: {full}"
+            )
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0,
+                messages=[
+                    {"role": "system", "content": "Return only JSON with lat and lng keys."},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            content = completion["choices"][0]["message"]["content"].strip()
+            # Best effort parse
+            import json
+
+            coords = json.loads(content)
+            lat = coords.get("lat")
+            lng = coords.get("lng")
+            if lat is None or lng is None:
+                raise ValueError("lat/lng not found")
+            return Response({"source": "openai", "lat": lat, "lng": lng, "query": full})
+        except Exception as exc:
+            # Fall back to stub
+            pass
+
+    # Stubbed coords (0,0) when no API or failure
+    return Response({"source": "stub", "lat": 0.0, "lng": 0.0, "query": full})

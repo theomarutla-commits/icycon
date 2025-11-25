@@ -49,6 +49,8 @@ urlpatterns = [
     path("api/seo/keywords/", views.seo_keyword_clusters, name="seo-keywords"),
     path("api/seo/content/", views.seo_content_items, name="seo-content"),
     path("api/seo/faqs/", views.seo_faqs, name="seo-faqs"),
+    path("api/seo/backlinks/", views.seo_backlinks, name="seo-backlinks"),
+    path("api/seo/directories/", views.seo_directories, name="seo-directories"),
     path("api/social/accounts/", views.social_accounts, name="social-accounts"),
     path("api/social/posts/", views.social_posts, name="social-posts"),
     path("api/social/conversations/", views.social_conversations, name="social-conversations"),
@@ -60,6 +62,9 @@ urlpatterns = [
     path("api/email/flows/", views.email_flows, name="email-flows"),
     path("api/email/contacts/", views.email_contacts, name="email-contacts"),
     path("api/email/sends/", views.email_sends, name="email-sends"),
+    path("api/email/marketing/", views.email_marketing_summary, name="email-marketing-summary"),
+    path("api/translate/", views.translate_text, name="translate-text"),
+    path("api/geo/lookup/", views.geo_lookup, name="geo-lookup"),
     path('api/chat/', include('chatbot.urls')),
     path('', include('users.urls')),
 ]

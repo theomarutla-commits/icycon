@@ -62,6 +62,29 @@ class FAQ(models.Model):
         return self.question
 
 
+class Directory(models.Model):
+    """Directory listings for local/SEO citations."""
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("submitted", "Submitted"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='seo_directories')
+    name = models.CharField(max_length=200)
+    url = models.URLField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="submitted")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("tenant", "url")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.url})"
+
+
 # ============ BACKLINKS MODELS ============
 
 class Backlink(models.Model):
