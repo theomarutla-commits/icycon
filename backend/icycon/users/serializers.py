@@ -21,11 +21,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     organization_memberships = OrganizationMembershipSerializer(source='memberships', many=True, read_only=True)
     organization_members = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
+    avatar = serializers.ImageField(required=False, allow_null=True, use_url=True)
     
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'first_name', 'last_name', 'email', 
+            'id', 'username', 'first_name', 'last_name', 'email', 'avatar',
             'full_name', 'organization_name', 'region', 'plan', 
             'brand_tone', 'organization_role', 'organization_created_at',
             'organization_memberships', 'organization_members', 'is_staff'

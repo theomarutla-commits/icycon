@@ -32,47 +32,60 @@ from social_media.models import (
 from tenants.models import Tenant, TenantUser
 
 FEATURES_INDEX = [
-    {"key": "dashboard", "name": "Dashboard", "path": "/api/dashboard/", "description": "User overview and counts"},
-    {"key": "aso_apps", "name": "ASO Apps", "path": "/api/aso/apps/", "description": "List ASO apps you manage"},
-    {"key": "aso_app_detail", "name": "ASO App Detail", "path": "/api/aso/apps/<app_id>/", "description": "Single app details"},
-    {"key": "aso_keywords", "name": "ASO Keywords", "path": "/api/aso/keywords/", "description": "Tracked keywords across apps"},
-    {"key": "aso_listings", "name": "ASO Listings", "path": "/api/aso/listings/", "description": "Localized store listings"},
-    {"key": "marketplace_products", "name": "Marketplace Products", "path": "/api/marketplace/products/", "description": "Products you sell"},
-    {"key": "marketplace_product_detail", "name": "Marketplace Product Detail", "path": "/api/marketplace/products/<product_id>/", "description": "Single product with reviews"},
-    {"key": "marketplace_reviews", "name": "Marketplace Reviews", "path": "/api/marketplace/reviews/", "description": "All reviews for your products"},
-    {"key": "marketplace_review_detail", "name": "Marketplace Review Detail", "path": "/api/marketplace/reviews/<review_id>/", "description": "Single review"},
-    {"key": "marketplace_orders", "name": "Marketplace Orders", "path": "/api/marketplace/orders/", "description": "Orders where you are buyer or seller"},
-    {"key": "marketplace_saved", "name": "Saved Products", "path": "/api/marketplace/saved/", "description": "Saved products/bookmarks"},
-    {"key": "marketplace_conversations", "name": "Marketplace Conversations", "path": "/api/marketplace/conversations/", "description": "Buyer/seller conversations"},
-    {"key": "marketplace_messages", "name": "Marketplace Messages", "path": "/api/marketplace/messages/", "description": "Conversation messages"},
-    {"key": "analytics_sites", "name": "Analytics Sites", "path": "/api/analytics/sites/", "description": "Tracked sites"},
-    {"key": "analytics_site_detail", "name": "Analytics Site Detail", "path": "/api/analytics/sites/<site_id>/", "description": "Single site stats"},
-    {"key": "analytics_pageviews", "name": "Analytics Pageviews", "path": "/api/analytics/pageviews/", "description": "Recent pageviews"},
-    {"key": "multilingual_summary", "name": "Multilingual Summary", "path": "/api/multilingual/summary/", "description": "Content locales summary"},
-    {"key": "tenants_summary", "name": "Tenants Summary", "path": "/api/tenants/summary/", "description": "Tenants you belong to"},
-    {"key": "tenant_members", "name": "Tenant Members", "path": "/api/tenants/<tenant_id>/members/", "description": "Members in a tenant"},
-    {"key": "tenant_integrations", "name": "Tenant Integrations", "path": "/api/tenants/integrations/", "description": "Connected integrations"},
-    {"key": "seo_sites", "name": "SEO Sites", "path": "/api/seo/sites/", "description": "SEO-tracked sites"},
-    {"key": "seo_site_detail", "name": "SEO Site Detail", "path": "/api/seo/sites/<site_id>/", "description": "Single SEO site"},
-    {"key": "seo_keyword_clusters", "name": "SEO Keyword Clusters", "path": "/api/seo/keywords/", "description": "Keyword clusters"},
-    {"key": "seo_content_items", "name": "SEO Content", "path": "/api/seo/content/", "description": "Content items"},
-    {"key": "seo_faqs", "name": "SEO FAQs", "path": "/api/seo/faqs/", "description": "FAQ entries"},
-    {"key": "seo_backlinks", "name": "SEO Backlinks", "path": "/api/seo/backlinks/", "description": "Backlinks for your SEO sites"},
-    {"key": "seo_directories", "name": "SEO Directories", "path": "/api/seo/directories/", "description": "Directory listings/citations"},
-    {"key": "social_accounts", "name": "Social Accounts", "path": "/api/social/accounts/", "description": "Connected social accounts"},
-    {"key": "social_posts", "name": "Social Posts", "path": "/api/social/posts/", "description": "Posts across platforms"},
-    {"key": "social_conversations", "name": "Social Conversations", "path": "/api/social/conversations/", "description": "DM threads"},
-    {"key": "social_comments", "name": "Social Comments", "path": "/api/social/comments/", "description": "Post comments"},
-    {"key": "social_engagement", "name": "Social Engagement", "path": "/api/social/engagement/", "description": "Engagement metrics"},
-    {"key": "social_messages", "name": "Social Messages", "path": "/api/social/messages/", "description": "Conversation messages"},
-    {"key": "email_lists", "name": "Email Lists", "path": "/api/email/lists/", "description": "Subscriber lists"},
-    {"key": "email_templates", "name": "Email Templates", "path": "/api/email/templates/", "description": "Email templates"},
-    {"key": "email_flows", "name": "Email Flows", "path": "/api/email/flows/", "description": "Automation flows"},
-    {"key": "email_contacts", "name": "Email Contacts", "path": "/api/email/contacts/", "description": "Contacts"},
-    {"key": "email_sends", "name": "Email Sends", "path": "/api/email/sends/", "description": "Send history"},
-    {"key": "email_marketing_summary", "name": "Email Marketing", "path": "/api/email/marketing/", "description": "Email marketing overview"},
-    {"key": "translation_llm", "name": "Translation & LLM", "path": "/api/translate/", "description": "Translate supplied text (stubbed LLM)"},
-    {"key": "geo_lookup", "name": "Geo Lookup", "path": "/api/geo/lookup/", "description": "Geocode an address (stub with optional OpenAI)"},
+    # Platform / global
+    {"key": "dashboard", "slug": "seo", "name": "Dashboard", "path": "/api/dashboard/", "description": "User overview and counts"},
+    # AEO
+    {"key": "aeo_readiness", "slug": "aeo", "name": "AEO Readiness", "path": "/api/aeo/readiness/", "description": "AEO/LLM structured data readiness checklist"},
+    {"key": "translation_llm", "slug": "aeo", "name": "Translation & LLM", "path": "/api/translate/", "description": "Translate supplied text (stubbed LLM)"},
+    # Social
+    {"key": "social_accounts", "slug": "social", "name": "Social Accounts", "path": "/api/social/accounts/", "description": "Connected social accounts"},
+    {"key": "social_posts", "slug": "social", "name": "Social Posts", "path": "/api/social/posts/", "description": "Posts across platforms"},
+    {"key": "social_conversations", "slug": "social", "name": "Social Conversations", "path": "/api/social/conversations/", "description": "DM threads"},
+    {"key": "social_comments", "slug": "social", "name": "Social Comments", "path": "/api/social/comments/", "description": "Post comments"},
+    {"key": "social_engagement", "slug": "social", "name": "Social Engagement", "path": "/api/social/engagement/", "description": "Engagement metrics"},
+    {"key": "social_messages", "slug": "social", "name": "Social Messages", "path": "/api/social/messages/", "description": "Conversation messages"},
+    # Email
+    {"key": "email_lists", "slug": "email", "name": "Email Lists", "path": "/api/email/lists/", "description": "Subscriber lists"},
+    {"key": "email_templates", "slug": "email", "name": "Email Templates", "path": "/api/email/templates/", "description": "Email templates"},
+    {"key": "email_flows", "slug": "email", "name": "Email Flows", "path": "/api/email/flows/", "description": "Automation flows"},
+    {"key": "email_contacts", "slug": "email", "name": "Email Contacts", "path": "/api/email/contacts/", "description": "Contacts"},
+    {"key": "email_sends", "slug": "email", "name": "Email Sends", "path": "/api/email/sends/", "description": "Send history"},
+    {"key": "email_marketing_summary", "slug": "email", "name": "Email Marketing", "path": "/api/email/marketing/", "description": "Email marketing overview"},
+    # Multilingual
+    {"key": "multilingual_summary", "slug": "multilingual", "name": "Multilingual Summary", "path": "/api/multilingual/summary/", "description": "Content locales summary"},
+    # Backlinks & directories
+    {"key": "seo_backlinks", "slug": "backlinks", "name": "SEO Backlinks", "path": "/api/seo/backlinks/", "description": "Backlinks for your SEO sites"},
+    {"key": "seo_directories", "slug": "directories", "name": "SEO Directories", "path": "/api/seo/directories/", "description": "Directory listings/citations"},
+    # Free zone (stub ideas)
+    {"key": "free_zone", "slug": "free-zone", "name": "Free Zone", "path": "/api/free-zone/", "description": "Microtool and campaign ideas (stub)"},
+    # ASO
+    {"key": "aso_apps", "slug": "aso", "name": "ASO Apps", "path": "/api/aso/apps/", "description": "List ASO apps you manage"},
+    {"key": "aso_app_detail", "slug": "aso", "name": "ASO App Detail", "path": "/api/aso/apps/<app_id>/", "description": "Single app details"},
+    {"key": "aso_keywords", "slug": "aso", "name": "ASO Keywords", "path": "/api/aso/keywords/", "description": "Tracked keywords across apps"},
+    {"key": "aso_listings", "slug": "aso", "name": "ASO Listings", "path": "/api/aso/listings/", "description": "Localized store listings"},
+    # Marketplace
+    {"key": "marketplace_products", "slug": "marketplace", "name": "Marketplace Products", "path": "/api/marketplace/products/", "description": "Products you sell"},
+    {"key": "marketplace_product_detail", "slug": "marketplace", "name": "Marketplace Product Detail", "path": "/api/marketplace/products/<product_id>/", "description": "Single product with reviews"},
+    {"key": "marketplace_reviews", "slug": "marketplace", "name": "Marketplace Reviews", "path": "/api/marketplace/reviews/", "description": "All reviews for your products"},
+    {"key": "marketplace_review_detail", "slug": "marketplace", "name": "Marketplace Review Detail", "path": "/api/marketplace/reviews/<review_id>/", "description": "Single review"},
+    {"key": "marketplace_orders", "slug": "marketplace", "name": "Marketplace Orders", "path": "/api/marketplace/orders/", "description": "Orders where you are buyer or seller"},
+    {"key": "marketplace_saved", "slug": "marketplace", "name": "Saved Products", "path": "/api/marketplace/saved/", "description": "Saved products/bookmarks"},
+    {"key": "marketplace_conversations", "slug": "marketplace", "name": "Marketplace Conversations", "path": "/api/marketplace/conversations/", "description": "Buyer/seller conversations"},
+    {"key": "marketplace_messages", "slug": "marketplace", "name": "Marketplace Messages", "path": "/api/marketplace/messages/", "description": "Conversation messages"},
+    # Analytics/SEO/content
+    {"key": "analytics_sites", "slug": "seo", "name": "Analytics Sites", "path": "/api/analytics/sites/", "description": "Tracked sites"},
+    {"key": "analytics_site_detail", "slug": "seo", "name": "Analytics Site Detail", "path": "/api/analytics/sites/<site_id>/", "description": "Single site stats"},
+    {"key": "analytics_pageviews", "slug": "seo", "name": "Analytics Pageviews", "path": "/api/analytics/pageviews/", "description": "Recent pageviews"},
+    {"key": "tenants_summary", "slug": "seo", "name": "Tenants Summary", "path": "/api/tenants/summary/", "description": "Tenants you belong to"},
+    {"key": "tenant_members", "slug": "seo", "name": "Tenant Members", "path": "/api/tenants/<tenant_id>/members/", "description": "Members in a tenant"},
+    {"key": "tenant_integrations", "slug": "seo", "name": "Tenant Integrations", "path": "/api/tenants/integrations/", "description": "Connected integrations"},
+    {"key": "seo_sites", "slug": "seo", "name": "SEO Sites", "path": "/api/seo/sites/", "description": "SEO-tracked sites"},
+    {"key": "seo_site_detail", "slug": "seo", "name": "SEO Site Detail", "path": "/api/seo/sites/<site_id>/", "description": "Single SEO site"},
+    {"key": "seo_keyword_clusters", "slug": "content", "name": "SEO Keyword Clusters", "path": "/api/seo/keywords/", "description": "Keyword clusters"},
+    {"key": "seo_content_items", "slug": "content", "name": "SEO Content", "path": "/api/seo/content/", "description": "Content items"},
+    {"key": "seo_faqs", "slug": "aeo", "name": "SEO FAQs", "path": "/api/seo/faqs/", "description": "FAQ entries"},
+    # Geo helper
+    {"key": "geo_lookup", "slug": "seo", "name": "Geo Lookup", "path": "/api/geo/lookup/", "description": "Geocode an address (stub with optional OpenAI)"},
 ]
 
 
@@ -129,6 +142,7 @@ def dashboard(request):
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "avatar": user.avatar.url if getattr(user, "avatar", None) else None,
             },
             "aso_apps_count": safe_count(ASOApp.objects.filter(tenant_id__in=tenant_ids)) if tenant_ids else 0,
             "marketplace_products_count": safe_count(Product.objects.filter(tenant_id__in=tenant_ids)) if tenant_ids else 0,
@@ -142,6 +156,26 @@ def dashboard(request):
 @permission_classes([IsAuthenticated])
 def aso_apps(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        name = request.data.get("name") or "New App"
+        platform = request.data.get("platform") or "ios"
+        return Response(
+            {
+                "id": 0,
+                "name": name,
+                "platform": platform,
+                "bundle_id": request.data.get("bundle_id", ""),
+                "rating": 0,
+                "reviews_count": 0,
+                "downloads_count": 0,
+                "category": request.data.get("category", ""),
+                "icon_url": request.data.get("icon_url", ""),
+                "status": "draft",
+                "keywords_count": 0,
+            },
+            status=201,
+        )
+
     apps = ASOApp.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -236,6 +270,25 @@ def aso_listings(request):
 @permission_classes([IsAuthenticated])
 def marketplace_products(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        title = request.data.get("title") or "Untitled Product"
+        price = request.data.get("price", 0)
+        return Response(
+            {
+                "id": 0,
+                "title": title,
+                "category": request.data.get("category", "general"),
+                "status": request.data.get("status", "draft"),
+                "price": float(price) if price else 0,
+                "pricing_type": request.data.get("pricing_type", "one_time"),
+                "featured_image": request.data.get("featured_image", ""),
+                "rating": 0,
+                "review_count": 0,
+                "created_at": iso(None),
+            },
+            status=201,
+        )
+
     products = Product.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -445,6 +498,20 @@ def feature_index(request):
 @permission_classes([IsAuthenticated])
 def analytics_sites(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        domain = request.data.get("domain") or "example.com"
+        locale = request.data.get("default_locale", "en")
+        return Response(
+            {
+                "id": 0,
+                "domain": domain,
+                "default_locale": locale,
+                "created_at": iso(None),
+                "pageview_count": 0,
+            },
+            status=201,
+        )
+
     sites = Site.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -681,6 +748,20 @@ def seo_keyword_clusters(request):
 @permission_classes([IsAuthenticated])
 def seo_content_items(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        url = request.data.get("url") or "https://example.com"
+        return Response(
+            {
+                "id": 0,
+                "type": request.data.get("type", "page"),
+                "url": url,
+                "status": request.data.get("status", "draft"),
+                "locale": request.data.get("locale", "en"),
+                "created_at": iso(None),
+            },
+            status=201,
+        )
+
     items = SEOContentItem.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {"id": i.id, "type": i.type, "url": i.url, "status": i.status, "locale": i.locale, "created_at": iso(i.created_at)}
@@ -693,6 +774,19 @@ def seo_content_items(request):
 @permission_classes([IsAuthenticated])
 def seo_faqs(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        question = request.data.get("question") or "New FAQ?"
+        answer = request.data.get("answer") or ""
+        return Response(
+            {
+                "id": 0,
+                "question": question,
+                "answer": answer,
+                "created_at": iso(None),
+            },
+            status=201,
+        )
+
     faqs = SEOFAQ.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -710,6 +804,22 @@ def seo_faqs(request):
 @permission_classes([IsAuthenticated])
 def seo_backlinks(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        return Response(
+            {
+                "id": 0,
+                "site_id": request.data.get("site_id"),
+                "domain": request.data.get("domain", "example.com"),
+                "source_url": request.data.get("source_url", ""),
+                "target_url": request.data.get("target_url", ""),
+                "anchor_text": request.data.get("anchor_text", ""),
+                "status": request.data.get("status", "active"),
+                "domain_rating": request.data.get("domain_rating", 0),
+                "created_at": iso(None),
+            },
+            status=201,
+        )
+
     if not hasattr(SEOSite, "backlinks"):
         return Response([])
     sites = SEOSite.objects.filter(tenant_id__in=tenant_ids).prefetch_related("backlinks")
@@ -800,6 +910,23 @@ def social_accounts(request):
 @permission_classes([IsAuthenticated])
 def social_posts(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        content = request.data.get("content") or ""
+        return Response(
+            {
+                "id": 0,
+                "content": content,
+                "platform": request.data.get("platform", "general"),
+                "status": "scheduled",
+                "created_at": iso(None),
+                "posted_date": None,
+                "like_count": 0,
+                "comment_count": 0,
+                "share_count": 0,
+            },
+            status=201,
+        )
+
     posts = Post.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -903,6 +1030,21 @@ def social_messages(request):
 @permission_classes([IsAuthenticated])
 def email_lists(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        name = request.data.get("name") or "New List"
+        return Response(
+            {
+                "id": 0,
+                "name": name,
+                "subscriber_count": 0,
+                "is_active": True,
+                "open_rate": "0%",
+                "created_at": iso(None),
+                "description": f"Lawful basis: {request.data.get('lawful_basis', 'unknown')}",
+            },
+            status=201,
+        )
+
     lists = EmailList.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -923,6 +1065,21 @@ def email_lists(request):
 @permission_classes([IsAuthenticated])
 def email_templates(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        name = request.data.get("name") or "New Template"
+        subject = request.data.get("subject") or "Subject"
+        return Response(
+            {
+                "id": 0,
+                "name": name,
+                "subject": subject,
+                "is_active": True,
+                "created_at": iso(None),
+                "date_created": iso(None),
+            },
+            status=201,
+        )
+
     templates = EmailTemplate.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -942,6 +1099,19 @@ def email_templates(request):
 @permission_classes([IsAuthenticated])
 def email_flows(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        name = request.data.get("name") or "New Flow"
+        return Response(
+            {
+                "id": 0,
+                "name": name,
+                "is_active": True,
+                "description": request.data.get("description", "Email automation flow"),
+                "created_at": iso(None),
+            },
+            status=201,
+        )
+
     flows = EmailFlow.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -960,6 +1130,20 @@ def email_flows(request):
 @permission_classes([IsAuthenticated])
 def email_contacts(request):
     tenant_ids = get_user_tenant_ids(request.user)
+    if request.method == "POST":
+        email_val = request.data.get("email") or ""
+        return Response(
+            {
+                "id": 0,
+                "email": email_val,
+                "name": request.data.get("name", ""),
+                "subscribed": True,
+                "subscribed_at": iso(None),
+                "unsubscribed_at": None,
+            },
+            status=201,
+        )
+
     contacts = Contact.objects.filter(tenant_id__in=tenant_ids)
     data = [
         {
@@ -1147,3 +1331,36 @@ def geo_lookup(request):
 
     # Stubbed coords (0,0) when no API or failure
     return Response({"source": "stub", "lat": 0.0, "lng": 0.0, "query": full})
+
+
+# AEO ----------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def aeo_readiness(request):
+    """Stubbed AEO readiness checklist."""
+    return Response(
+        {
+            "status": "ok",
+            "checks": [
+                {"name": "Structured FAQs", "status": "pending"},
+                {"name": "Multilingual coverage", "status": "pending"},
+                {"name": "Backlinks", "status": "pending"},
+            ],
+        }
+    )
+
+
+# Free Zone ---------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def free_zone(request):
+    """Stubbed Free Zone ideas."""
+    return Response(
+        {
+            "ideas": [
+                {"title": "SEO mini-audit", "type": "microtool", "cta": "/"},
+                {"title": "A/B headline tester", "type": "microtool", "cta": "/"},
+                {"title": "Newsletter opt-in promo", "type": "campaign", "cta": "/"},
+            ]
+        }
+    )

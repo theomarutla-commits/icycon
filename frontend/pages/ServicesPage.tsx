@@ -54,6 +54,11 @@ const ServicesPage: React.FC = () => {
                   View feature <span aria-hidden>+</span>
                 </span>
               </Link>
+              <div className="mt-2">
+                <Link to={`/features/${feature.slug}/data`} className="text-sm font-semibold text-icy-main hover:underline">
+                  Open data page →
+                </Link>
+              </div>
             </motion.div>
           ))}
         </div>

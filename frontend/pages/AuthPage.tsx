@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { login, signup, fetchFeatures } from '../lib/api';
+import { useAuth } from '../lib/AuthContext';
 
 const AuthPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ const AuthPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setAuthHeader } = useAuth();
 
   const toggleMode = () => setIsLogin(!isLogin);
 
@@ -27,14 +29,14 @@ const AuthPage: React.FC = () => {
     try {
       if (isLogin) {
         const res = await login(email, password);
-        localStorage.setItem('authHeader', res.authHeader);
+        setAuthHeader(res.authHeader, res.user || { email, username: res?.user?.username });
         setSuccess('Logged in! Loading your features...');
         // warm up features
         await fetchFeatures(res.authHeader).catch(() => undefined);
       } else {
         const derivedUsername = username || email.split('@')[0];
         const res = await signup(email, password, derivedUsername);
-        localStorage.setItem('authHeader', res.authHeader);
+        setAuthHeader(res.authHeader, { email, username: derivedUsername });
         setSuccess('Account created! You are logged in.');
       }
       setTimeout(() => navigate('/'), 600);

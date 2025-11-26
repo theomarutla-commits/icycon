@@ -53,16 +53,14 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         """Authenticate the user."""
-        email = data.get('email')
-        password = data.get('password')
+        email = data.get('email') or ''
+        password = data.get('password') or ''
 
-        # Get user by email
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        # Get user by email; fall back gracefully if multiple or missing
+        user = User.objects.filter(email=email).first()
+        if not user:
             raise serializers.ValidationError({'email': 'Invalid email or password.'})
 
-        # Check password
         if not user.check_password(password):
             raise serializers.ValidationError({'password': 'Invalid email or password.'})
 
@@ -73,12 +71,14 @@ class LoginSerializer(serializers.Serializer):
         """Return user info."""
         user = obj.get('user')
         if user:
+            avatar_url = user.avatar.url if getattr(user, 'avatar', None) else None
             return {
                 'id': user.id,
                 'email': user.email,
                 'username': user.username,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'avatar': avatar_url,
             }
         return None
 

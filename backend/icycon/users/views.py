@@ -1,7 +1,8 @@
 from django.contrib.auth import update_session_auth_hash, get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status, generics, serializers
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from .serializers import UserProfileSerializer, ChangePasswordSerializer, OrganizationMembershipSerializer
 from .models import OrganizationMembership
@@ -11,6 +12,7 @@ User = get_user_model()
 # API function views replacing templates
 @api_view(['GET', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def profile_dashboard(request):
     """Return or update the authenticated user's profile and basic activity."""
     user = request.user
@@ -30,6 +32,7 @@ def profile_dashboard(request):
 class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_queryset(self):
         """Users can only see their own profile."""

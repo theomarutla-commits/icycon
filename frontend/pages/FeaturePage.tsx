@@ -27,14 +27,32 @@ const FeaturePage: React.FC = () => {
   }
 
   return (
-    <FeatureLayout
-      title={feature.title}
-      subtitle={feature.subtitle}
-      description={feature.description}
-      bullets={feature.bullets}
-      primaryCta={feature.primaryCta}
-      secondaryCta={feature.secondaryCta}
-    />
+    <>
+      <FeatureLayout
+        title={feature.title}
+        subtitle={feature.subtitle}
+        description={feature.description}
+        bullets={feature.bullets}
+        primaryCta={feature.primaryCta}
+        secondaryCta={feature.secondaryCta}
+      />
+      <div className="bg-slate-50 dark:bg-icy-dark pb-12 px-4">
+        <div className="w-[90%] lg:w-[80%] mx-auto">
+          <div className="bg-white dark:bg-[#001c4d] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-xl flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Ready to add data for this feature?</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">{feature.title} data console</h3>
+            </div>
+            <Link
+              to={`/features/${feature.slug}/data`}
+              className="bg-icy-main text-white px-5 py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+            >
+              Open data page
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

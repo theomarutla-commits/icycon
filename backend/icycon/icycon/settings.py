@@ -4,6 +4,15 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Helper to safely parse comma-separated env vars (handles None values)
+def env_list(name, default=""):
+    raw = os.getenv(name)
+    if raw is None:
+        raw = default
+    if not isinstance(raw, str):
+        raw = str(raw)
+    return [item.strip() for item in raw.split(",") if isinstance(item, str) and item.strip()]
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
 
@@ -11,12 +20,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Parse ALLOWED_HOSTS, default to localhost for development
-_allowed_hosts = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost')
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in _allowed_hosts.split(',')
-    if host.strip()
-]
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
 
 # Application definition
 INSTALLED_APPS = [
@@ -109,6 +113,8 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
@@ -128,11 +134,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3001',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
-] + [
-    origin.strip() 
-    for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') 
-    if origin.strip()
-]
+] + env_list('CORS_ALLOWED_ORIGINS', '')
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
@@ -144,7 +146,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3001',
     'http://127.0.0.1',
     'http://localhost',
-] + CORS_ALLOWED_ORIGINS
+] + env_list('CSRF_TRUSTED_ORIGINS', '') + CORS_ALLOWED_ORIGINS
 
 # In development, use cookie-based CSRF and allow from all origins if DEBUG is True
 if DEBUG:
@@ -182,4 +184,4 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@localhost')

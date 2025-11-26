@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../lib/AuthContext';
 
 interface NavbarProps {
   darkMode: boolean;
@@ -19,6 +20,17 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { authHeader, user, setAuthHeader } = useAuth();
+
+  const initials = React.useMemo(() => {
+    const name = user?.username || user?.email || '';
+    if (!name) return '';
+    const parts = name.replace(/[^a-zA-Z0-9 ]/g, '').split(' ').filter(Boolean);
+    if (parts.length === 0) return name.slice(0, 2).toUpperCase();
+    const first = parts[0]?.[0] || '';
+    const second = parts[1]?.[0] || '';
+    return (first + second).toUpperCase();
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,12 +82,41 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link to="/auth" className="text-sm font-semibold hover:text-icy-main transition-colors">
-              Log In
-            </Link>
-            <Link to="/auth?mode=signup" className="bg-icy-dark text-white dark:bg-white dark:text-icy-dark px-5 py-2 rounded-full text-sm font-bold hover:scale-105 transition-transform">
-              Start Growth
-            </Link>
+            {authHeader ? (
+              <div className="flex items-center gap-3">
+                <Link to="/profile" className="flex items-center gap-2 group">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="Profile"
+                      className="w-9 h-9 rounded-full object-cover border border-white/20"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-icy-main/15 text-icy-dark dark:text-white dark:bg-white/10 flex items-center justify-center text-xs font-bold">
+                      {initials || <UserIcon size={18} />}
+                    </div>
+                  )}
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-icy-main transition-colors">
+                    Profile
+                  </span>
+                </Link>
+                <button
+                  onClick={() => setAuthHeader(null)}
+                  className="text-sm font-semibold hover:text-icy-main transition-colors"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link to="/auth" className="text-sm font-semibold hover:text-icy-main transition-colors">
+                  Log In
+                </Link>
+                <Link to="/auth?mode=signup" className="bg-icy-dark text-white dark:bg-white dark:text-icy-dark px-5 py-2 rounded-full text-sm font-bold hover:scale-105 transition-transform">
+                  Start Growth
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -120,16 +161,50 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
                   {link.name}
                 </Link>
               ))}
-               <Link 
-                  to="/auth"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="border-b border-gray-100 dark:border-white/10 pb-4"
-                >
-                  Log In
-                </Link>
-              <Link to="/auth?mode=signup" onClick={() => setIsMobileMenuOpen(false)} className="bg-icy-main text-white py-4 rounded-xl mt-4 font-bold shadow-lg shadow-icy-main/30 text-center">
-                Start Growth
-              </Link>
+              {authHeader ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 border-b border-gray-100 dark:border-white/10 pb-4"
+                  >
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover border border-white/20"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-icy-main/15 text-icy-dark dark:text-white dark:bg-white/10 flex items-center justify-center text-sm font-bold">
+                        {initials || <UserIcon size={18} />}
+                      </div>
+                    )}
+                    <span className="text-base font-semibold">Profile</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setAuthHeader(null);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-base font-semibold hover:text-icy-main transition-colors text-left"
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/auth"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="border-b border-gray-100 dark:border-white/10 pb-4"
+                  >
+                    Log In
+                  </Link>
+                  <Link to="/auth?mode=signup" onClick={() => setIsMobileMenuOpen(false)} className="bg-icy-main text-white py-4 rounded-xl mt-4 font-bold shadow-lg shadow-icy-main/30 text-center">
+                    Start Growth
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}

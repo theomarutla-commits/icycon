@@ -5,10 +5,12 @@ from . import api_views as views
 urlpatterns = [
     path("features/", views.feature_index, name="feature-index"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("aeo/readiness/", views.aeo_readiness, name="aeo-readiness"),
     path("aso/apps/", views.aso_apps, name="aso-apps"),
     path("aso/apps/<int:app_id>/", views.aso_app_detail, name="aso-app-detail"),
     path("aso/keywords/", views.aso_keywords, name="aso-keywords"),
     path("aso/listings/", views.aso_listings, name="aso-listings"),
+    path("free-zone/", views.free_zone, name="free-zone"),
     path("marketplace/products/", views.marketplace_products, name="marketplace-products"),
     path(
         "marketplace/products/<int:product_id>/",

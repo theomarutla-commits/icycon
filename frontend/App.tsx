@@ -6,6 +6,8 @@ import ServicesPage from './pages/ServicesPage';
 import PricingPage from './pages/PricingPage';
 import AuthPage from './pages/AuthPage';
 import FeaturePage from './pages/FeaturePage';
+import ProfilePage from './pages/ProfilePage';
+import FeatureDataPage from './pages/FeatureDataPage';
 import Footer from './components/Footer';
 import { AuthProvider } from './lib/AuthContext';
 
@@ -52,6 +54,8 @@ export default function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/features/:slug/data" element={<FeatureDataPage />} />
               <Route path="/features/:slug" element={<FeaturePage />} />
             </Routes>
           </main>

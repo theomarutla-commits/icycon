@@ -76,8 +76,11 @@ def send_via_provider(email_send):
     template = email_send.template
     recipient = email_send.recipient
 
-    from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@localhost')
-    to_addr = recipient.email
+    from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None) or 'no-reply@localhost'
+    to_addr = getattr(recipient, 'email', '') or ''
+    if not to_addr:
+        return False, None, 'recipient email missing'
+
     subject = template.subject if template and getattr(template, 'subject', None) else f"Message from {email_send.tenant.name}"
     body_text = getattr(template, 'body_text', '') if template else ''
     body_html = getattr(template, 'body_html', None) if template else None

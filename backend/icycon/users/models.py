@@ -40,6 +40,7 @@ class User(AbstractUser):
         symmetrical=False,
         related_name='organization_members'
     )
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # Set organization creation time on first save
