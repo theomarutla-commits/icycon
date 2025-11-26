@@ -1,36 +1,31 @@
+
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
-import { Menu, X, Sun, Moon, User as UserIcon } from 'lucide-react';
+import { Menu, X, Sun, Moon, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../lib/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   darkMode: boolean;
   toggleTheme: () => void;
+  isAuthenticated: boolean;
+  onLogout: () => void;
 }
 
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Pricing', href: '/pricing' },
+  { name: 'SEO', href: '/seo' },
+  { name: 'Email', href: '/email' },
+  { name: 'Social', href: '/social' },
 ];
 
-const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
+const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme, isAuthenticated, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { authHeader, user, setAuthHeader } = useAuth();
-
-  const initials = React.useMemo(() => {
-    const name = user?.username || user?.email || '';
-    if (!name) return '';
-    const parts = name.replace(/[^a-zA-Z0-9 ]/g, '').split(' ').filter(Boolean);
-    if (parts.length === 0) return name.slice(0, 2).toUpperCase();
-    const first = parts[0]?.[0] || '';
-    const second = parts[1]?.[0] || '';
-    return (first + second).toUpperCase();
-  }, [user]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +35,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLogoutClick = () => {
+    onLogout();
+    navigate('/');
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
@@ -48,12 +49,14 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className={`
-            relative w-[95%] lg:w-[80%] rounded-full px-6 py-3
+            relative w-[95%] lg:w-[90%] rounded-full px-6 py-3
             flex items-center justify-between
             transition-all duration-300
-            ${isScrolled || isMobileMenuOpen ? 'shadow-lg glass-nav' : 'bg-transparent'}
-            border border-transparent
-            ${isScrolled && 'border-white/10'}
+            border border-icy-main/10
+            ${isScrolled || isMobileMenuOpen 
+              ? 'shadow-lg backdrop-blur-xl bg-white/80 dark:bg-[#002466]/60' 
+              : 'backdrop-blur-md bg-white/50 dark:bg-[#002466]/30'
+            }
           `}
         >
           {/* Logo */}
@@ -62,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6 xl:gap-8">
             {navLinks.map((link) => (
               <Link 
                 key={link.name} 
@@ -72,6 +75,14 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
                 {link.name}
               </Link>
             ))}
+            {isAuthenticated && (
+               <Link 
+                to="/dashboard"
+                className={`text-sm font-medium hover:text-icy-main transition-colors duration-200 flex items-center gap-1 ${location.pathname === '/dashboard' ? 'text-icy-main' : ''}`}
+              >
+                <LayoutDashboard size={16} /> Dashboard
+              </Link>
+            )}
           </div>
 
           {/* Actions */}
@@ -82,31 +93,20 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            {authHeader ? (
-              <div className="flex items-center gap-3">
-                <Link to="/profile" className="flex items-center gap-2 group">
-                  {user?.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt="Profile"
-                      className="w-9 h-9 rounded-full object-cover border border-white/20"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-icy-main/15 text-icy-dark dark:text-white dark:bg-white/10 flex items-center justify-center text-xs font-bold">
-                      {initials || <UserIcon size={18} />}
-                    </div>
-                  )}
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-icy-main transition-colors">
-                    Profile
-                  </span>
-                </Link>
-                <button
-                  onClick={() => setAuthHeader(null)}
-                  className="text-sm font-semibold hover:text-icy-main transition-colors"
-                >
-                  Log out
-                </button>
-              </div>
+            
+            {isAuthenticated ? (
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-icy-main text-white flex items-center justify-center font-bold text-xs cursor-pointer">
+                    JD
+                  </div>
+                  <button 
+                    onClick={handleLogoutClick}
+                    className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors"
+                    title="Log Out"
+                  >
+                    <LogOut size={18} />
+                  </button>
+               </div>
             ) : (
               <>
                 <Link to="/auth" className="text-sm font-semibold hover:text-icy-main transition-colors">
@@ -161,36 +161,23 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme }) => {
                   {link.name}
                 </Link>
               ))}
-              {authHeader ? (
-                <>
-                  <Link
-                    to="/profile"
+               {isAuthenticated && (
+                  <Link 
+                    to="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 border-b border-gray-100 dark:border-white/10 pb-4"
+                    className="border-b border-gray-100 dark:border-white/10 pb-4 flex items-center gap-2 text-icy-main"
                   >
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border border-white/20"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-icy-main/15 text-icy-dark dark:text-white dark:bg-white/10 flex items-center justify-center text-sm font-bold">
-                        {initials || <UserIcon size={18} />}
-                      </div>
-                    )}
-                    <span className="text-base font-semibold">Profile</span>
+                    <LayoutDashboard size={20} /> Dashboard
                   </Link>
-                  <button
-                    onClick={() => {
-                      setAuthHeader(null);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-base font-semibold hover:text-icy-main transition-colors text-left"
+              )}
+
+              {isAuthenticated ? (
+                 <button 
+                    onClick={handleLogoutClick}
+                    className="text-left border-b border-gray-100 dark:border-white/10 pb-4 text-red-500 flex items-center gap-2"
                   >
-                    Log out
+                    <LogOut size={20} /> Log Out
                   </button>
-                </>
               ) : (
                 <>
                   <Link 

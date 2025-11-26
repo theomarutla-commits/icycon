@@ -3,7 +3,7 @@ import React from 'react';
 const About: React.FC = () => {
   return (
     <section id="about" className="py-24 px-4 bg-white dark:bg-icy-dark relative overflow-hidden">
-      <div className="w-[90%] lg:w-[80%] mx-auto text-center relative z-10">
+      <div className="w-[90%] lg:w-[90%] mx-auto text-center relative z-10">
         <h2 className="text-sm font-bold tracking-widest text-icy-main uppercase mb-4">About Us</h2>
         <h3 className="text-3xl md:text-5xl font-bold mb-8">
           Architects of the <span className="text-icy-secondary">Digital Future</span>

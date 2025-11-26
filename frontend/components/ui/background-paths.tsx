@@ -67,7 +67,7 @@ export function BackgroundPaths({
                 <FloatingPaths position={-1} />
             </div>
 
-            <div className="relative z-10 w-[90%] lg:w-[80%] mx-auto px-4 md:px-6 text-center">
+            <div className="relative z-10 w-[90%] lg:w-[90%] mx-auto px-4 md:px-6 text-center">
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}

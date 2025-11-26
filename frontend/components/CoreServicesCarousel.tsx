@@ -31,7 +31,7 @@ const carouselItems = [
 const CoreServicesCarousel: React.FC = () => {
   return (
     <section id="services" className="py-24 px-4 bg-white dark:bg-black/20">
-      <div className="w-[90%] lg:w-[80%] mx-auto">
+      <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Core Services</h2>
           <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">

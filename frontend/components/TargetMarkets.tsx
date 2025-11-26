@@ -44,7 +44,7 @@ const markets = [
 const TargetMarkets: React.FC = () => {
   return (
     <section id="markets" className="py-24 px-4 bg-icy-secondary/5">
-      <div className="w-[90%] lg:w-[80%] mx-auto">
+      <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}

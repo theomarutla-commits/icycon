@@ -1,49 +1,26 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { login, signup, fetchFeatures } from '../lib/api';
-import { useAuth } from '../lib/AuthContext';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 
-const AuthPage: React.FC = () => {
+interface AuthPageProps {
+  onLogin?: () => void;
+}
+
+const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { setAuthHeader } = useAuth();
 
   const toggleMode = () => setIsLogin(!isLogin);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
-    try {
-      if (isLogin) {
-        const res = await login(email, password);
-        setAuthHeader(res.authHeader, res.user || { email, username: res?.user?.username });
-        setSuccess('Logged in! Loading your features...');
-        // warm up features
-        await fetchFeatures(res.authHeader).catch(() => undefined);
-      } else {
-        const derivedUsername = username || email.split('@')[0];
-        const res = await signup(email, password, derivedUsername);
-        setAuthHeader(res.authHeader, { email, username: derivedUsername });
-        setSuccess('Account created! You are logged in.');
-      }
-      setTimeout(() => navigate('/'), 600);
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+    // Mock authentication
+    if (onLogin) {
+      onLogin();
+      navigate('/dashboard');
     }
   };
 
@@ -79,8 +56,7 @@ const AuthPage: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
                     <input 
                         type="text" 
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        required
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
                         placeholder="John"
                     />
@@ -89,24 +65,11 @@ const AuthPage: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
                     <input 
                         type="text" 
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        required
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
                         placeholder="Doe"
                     />
                 </div>
-            </div>
-          )}
-          {!isLogin && (
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-              <input 
-                type="text" 
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
-                placeholder="your-username"
-              />
             </div>
           )}
           
@@ -114,8 +77,7 @@ const AuthPage: React.FC = () => {
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
             <input 
               type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              required
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
               placeholder="you@company.com"
             />
@@ -125,22 +87,14 @@ const AuthPage: React.FC = () => {
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
             <input 
               type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              required
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {success && <p className="text-sm text-emerald-500">{success}</p>}
-
-          <button 
-            className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6 disabled:opacity-60"
-            disabled={loading}
-            type="submit"
-          >
-            {loading ? 'Working...' : isLogin ? 'Sign In' : 'Get Started'}
+          <button className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6">
+            {isLogin ? 'Sign In' : 'Get Started'}
           </button>
         </form>
 

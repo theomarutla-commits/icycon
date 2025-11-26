@@ -34,7 +34,7 @@ const Hero: React.FC = () => {
       {/* Overlay gradient to help blend bottom if needed */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-icy-dark to-transparent z-10 transition-colors duration-500" />
 
-      <div className="relative z-10 w-[90%] lg:w-[80%] mx-auto grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 w-[90%] lg:w-[90%] mx-auto grid lg:grid-cols-2 gap-12 items-center">
         
         {/* Left Column: Text */}
         <div className="text-center lg:text-left space-y-8 order-2 lg:order-1">
@@ -43,9 +43,6 @@ const Hero: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="inline-block px-4 py-2 rounded-full border border-gray-200 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-md text-slate-800 dark:text-white font-semibold text-sm mb-6 shadow-lg">
-              Future-Proof Your Digital Strategy
-            </span>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] text-slate-900 dark:text-white drop-shadow-sm dark:drop-shadow-lg transition-colors duration-300">
               Build a worldwide <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-icy-main to-cyan-400 dark:to-cyan-300">

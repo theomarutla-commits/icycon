@@ -22,7 +22,7 @@ const testimonials = [
 const Testimonials: React.FC = () => {
   return (
     <section className="py-24 px-4 bg-icy-main/5">
-      <div className="w-[90%] lg:w-[80%] mx-auto">
+      <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">What Our Partners Say</h2>
           <p className="text-gray-600 dark:text-gray-400">Join the ranks of high-growth companies.</p>

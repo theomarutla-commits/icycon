@@ -198,8 +198,8 @@ const PricingPage: React.FC = () => {
       </LampContainer>
       
       {/* Content Section - Pulled up */}
-      <div className="relative z-10 -mt-32 pb-24 px-4">
-         <div className="w-[90%] lg:w-[80%] mx-auto">
+      <div className="relative z-10 -mt-24 pb-24 px-4">
+         <div className="w-[90%] lg:w-[90%] mx-auto">
             
             {/* Curve Selector */}
             <motion.div
@@ -316,7 +316,7 @@ const PricingPage: React.FC = () => {
 
       {/* FAQ Section */}
       <div className="py-24 px-4 bg-white dark:bg-icy-dark relative border-t border-gray-200 dark:border-white/5 transition-colors duration-300">
-        <div className="w-[90%] lg:w-[80%] max-w-3xl mx-auto">
+        <div className="w-[90%] lg:w-[90%] max-w-3xl mx-auto">
             <motion.div 
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}

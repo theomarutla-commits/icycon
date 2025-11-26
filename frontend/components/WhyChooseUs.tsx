@@ -38,7 +38,7 @@ const WhyChooseUs: React.FC = () => {
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-icy-deep/30 to-transparent pointer-events-none" />
 
-      <div className="w-[90%] lg:w-[80%] mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+      <div className="w-[90%] lg:w-[90%] mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
         
         {/* Text Content */}
         <div>
