@@ -62,3 +62,4 @@ wcwidth==0.2.13
 xlsxwriter==3.2.9
 whitenoise
 gunicorn
+openai==1.51.0
