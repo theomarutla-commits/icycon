@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 
@@ -32,9 +33,11 @@ const Testimonials: React.FC = () => {
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.2 }}
+              {...({
+                  initial: { opacity: 0, y: 30 },
+                  whileInView: { opacity: 1, y: 0 },
+                  transition: { delay: i * 0.2 }
+              } as any)}
               className="bg-white dark:bg-icy-dark p-8 rounded-3xl shadow-xl relative"
             >
               <div className="absolute top-8 right-8 text-6xl text-icy-main/20 font-serif leading-none">"</div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
@@ -74,12 +75,14 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
             className="stroke-[10px] fill-none"
             stroke={plans[activeIndex].color}
             strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ 
-                pathLength: activeIndex === 0 ? 0.001 : activeIndex === 1 ? 0.5 : 1,
-                stroke: plans[activeIndex].color
-            }}
-            transition={{ duration: 0.6, ease: "circOut" }}
+            {...({
+                initial: { pathLength: 0 },
+                animate: { 
+                    pathLength: activeIndex === 0 ? 0.001 : activeIndex === 1 ? 0.5 : 1,
+                    stroke: plans[activeIndex].color
+                },
+                transition: { duration: 0.6, ease: "circOut" }
+            } as any)}
             style={{ filter: "url(#glow-home)" }}
         />
 
@@ -110,7 +113,7 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
                             fill: isActive ? plan.color : '#ffffff', 
                             stroke: isPassed ? plan.color : '#e5e7eb'
                         }}
-                        animate={{ r: isActive ? 22 : 14 }}
+                        {...({ animate: { r: isActive ? 22 : 14 } } as any)}
                     />
                     
                     {/* Inner Dot */}
@@ -119,8 +122,10 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
                         cy={pos.y} 
                         r={isActive ? 12 : 0} 
                         className="fill-white"
-                        animate={{ r: isActive ? 12 : 0 }}
-                        initial={false}
+                        {...({ 
+                            animate: { r: isActive ? 12 : 0 },
+                            initial: false 
+                        } as any)}
                     />
 
                     {/* Label */}
@@ -148,21 +153,28 @@ const HomePricing: React.FC = () => {
   const [activePlan, setActivePlan] = useState<number>(1); // Default to Growth (index 1)
 
   return (
-    <section id="pricing" className="py-24 px-4 bg-slate-50 dark:bg-icy-dark transition-colors duration-300">
-      <div className="w-[90%] lg:w-[90%] mx-auto">
+    <section id="pricing" className="py-24 px-4 bg-slate-50 dark:bg-icy-dark transition-colors duration-300 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[500px] bg-icy-main/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="w-[90%] lg:w-[90%] mx-auto relative z-10">
         <div className="text-center mb-16">
           <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            {...({
+                initial: { opacity: 0, y: 20 },
+                whileInView: { opacity: 1, y: 0 }
+            } as any)}
             className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white"
           >
             Simple and Affordable <br />
             <span className="text-icy-main">Pricing Plans</span>
           </motion.h2>
           <motion.p
-             initial={{ opacity: 0 }}
-             whileInView={{ opacity: 1 }}
-             transition={{ delay: 0.2 }}
+             {...({
+                 initial: { opacity: 0 },
+                 whileInView: { opacity: 1 },
+                 transition: { delay: 0.2 }
+             } as any)}
              className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
           >
              Start tracking and improving your digital growth management today.
@@ -171,9 +183,11 @@ const HomePricing: React.FC = () => {
 
         {/* Curve Selector */}
         <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            {...({
+                initial: { opacity: 0 },
+                whileInView: { opacity: 1 },
+                transition: { delay: 0.4 }
+            } as any)}
         >
             <CurveSelector activeIndex={activePlan} onChange={setActivePlan} />
         </motion.div>
@@ -185,13 +199,15 @@ const HomePricing: React.FC = () => {
                 return (
                     <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        onClick={() => setActivePlan(index)}
-                        whileHover={!isActive ? { scale: 1.05, opacity: 1 } : {}}
-                        animate={isActive ? { scale: 1.1, opacity: 1, zIndex: 20 } : { scale: 0.95, opacity: 0.7, zIndex: 10 }}
+                        {...({
+                            initial: { opacity: 0, y: 50 },
+                            whileInView: { opacity: 1, y: 0 },
+                            viewport: { once: true },
+                            transition: { delay: index * 0.1 },
+                            onClick: () => setActivePlan(index),
+                            whileHover: !isActive ? { scale: 1.02, opacity: 1 } : {},
+                            animate: isActive ? { scale: 1.05, opacity: 1, zIndex: 20 } : { scale: 0.98, opacity: 0.7, zIndex: 10 }
+                        } as any)}
                         className={`
                             relative flex flex-col p-8 rounded-3xl transition-all duration-300 cursor-pointer
                             border group
@@ -200,13 +216,13 @@ const HomePricing: React.FC = () => {
                                 : 'hover:shadow-xl'
                             }
                             ${isActive 
-                                ? 'bg-white dark:bg-[#002466]/90' 
-                                : 'bg-white/80 dark:bg-black/40'
+                                ? 'bg-white/80 dark:bg-white/10' 
+                                : 'bg-white/60 dark:bg-white/5'
                             }
                             backdrop-blur-xl
                         `}
                         style={{
-                            borderColor: isActive ? plan.color : 'transparent',
+                            borderColor: isActive ? plan.color : 'rgba(255,255,255,0.1)',
                             boxShadow: isActive ? `0 20px 50px -12px ${plan.color}40` : 'none'
                         }}
                     >
@@ -239,7 +255,7 @@ const HomePricing: React.FC = () => {
                                 w-full py-3 rounded-xl text-sm font-bold transition-all mb-8
                                 ${isActive
                                     ? 'text-white shadow-lg hover:brightness-110'
-                                    : 'bg-transparent border border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                                    : 'bg-transparent border border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10'
                                 }
                             `}
                             style={{

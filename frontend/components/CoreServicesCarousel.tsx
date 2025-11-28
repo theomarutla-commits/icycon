@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   SliderBtnGroup,
@@ -8,12 +9,6 @@ import {
 } from './ui/progressive-carousel';
 
 const carouselItems = [
-  {
-    sliderName: 'growth',
-    title: 'Growth',
-    desc: 'Social Media Management • Global Localization',
-    img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2032&auto=format&fit=crop',
-  },
   {
     sliderName: 'optimisation',
     title: 'Optimisation',
@@ -26,6 +21,12 @@ const carouselItems = [
     desc: 'Directories • Marketplaces • Blog Engine • Backlinks • Email & SMS',
     img: 'https://images.unsplash.com/photo-1557200134-90327ee9fafa?q=80&w=2070&auto=format&fit=crop',
   },
+  {
+    sliderName: 'growth',
+    title: 'Growth',
+    desc: 'Social Media Management • Global Localization',
+    img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2032&auto=format&fit=crop',
+  },
 ];
 
 const CoreServicesCarousel: React.FC = () => {
@@ -35,13 +36,13 @@ const CoreServicesCarousel: React.FC = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Core Services</h2>
           <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            A holistic suite of digital performance tools designed for the modern algorithm.
-            Organized to drive Growth, Optimisation, and Reach.
+            A holistic suite of digital tools that are designed for the modern algorithm.
+            Organized to drive Optimisation, Reach, and Growth.
           </p>
         </div>
 
         <div className="w-full">
-          <ProgressSlider vertical={false} activeSlider='growth' className="w-full">
+          <ProgressSlider vertical={false} activeSlider='optimisation' className="w-full">
             <SliderContent className="w-full">
               {carouselItems.map((item, index) => (
                 <SliderWrapper key={index} value={item.sliderName} className="w-full">

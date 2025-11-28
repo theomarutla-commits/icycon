@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Heart, MessageCircle, Mic } from 'lucide-react';
 import CTA from '../components/CTA';
+import QuickCreateCard from '../components/QuickCreateCard';
 
 const features = [
   {
@@ -57,8 +59,10 @@ const SocialPage: React.FC = () => {
       <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...({
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 }
+            } as any)}
             className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white"
           >
             Amplify Your <span className="text-icy-main">Voice</span>
@@ -72,9 +76,11 @@ const SocialPage: React.FC = () => {
           {features.map((f, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              {...({
+                  initial: { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  transition: { delay: i * 0.1 }
+              } as any)}
               className="bg-white dark:bg-[#002466]/40 p-8 rounded-3xl border border-gray-200 dark:border-white/10 hover:border-icy-main transition-colors"
             >
               <div className="w-12 h-12 bg-icy-main/10 text-icy-main rounded-xl flex items-center justify-center mb-6">
@@ -84,6 +90,27 @@ const SocialPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <QuickCreateCard
+            title="Post to Social"
+            description="POST /api/social/posts/"
+            endpoint="/api/social/posts/"
+            fields={[
+              { name: 'content', label: 'Content', placeholder: 'Write your update', type: 'textarea' },
+              { name: 'platform', label: 'Platform', placeholder: 'general' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Translate Snippet"
+            description="POST /api/translate/"
+            endpoint="/api/translate/"
+            fields={[
+              { name: 'text', label: 'Text', placeholder: 'Translate this text', type: 'textarea' },
+              { name: 'target_lang', label: 'Target language', placeholder: 'es', defaultValue: 'es' },
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-[#002466]/40 border border-gray-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl">

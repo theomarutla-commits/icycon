@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -40,8 +41,12 @@ export function InteractiveNebulaShader({
     if (!container) return;
 
     // Renderer with alpha enabled for transparency
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // OPTIMIZATION: powerPreference: "high-performance" hints the browser to use dGPU if available
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
+    
+    // OPTIMIZATION: Cap pixel ratio to 2 to prevent massive GPU load on 4k/Retina screens
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
     container.appendChild(renderer.domElement);
 
     const scene  = new THREE.Scene();
@@ -85,7 +90,8 @@ export function InteractiveNebulaShader({
         float d = 2.5;
 
         // Ray-march
-        for (int i = 0; i <= 5; i++) {
+        // OPTIMIZATION: Reduced iterations from 5 to 4 for better performance with minimal visual loss
+        for (int i = 0; i <= 4; i++) {
           vec3 p = vec3(0,0,5.) + normalize(vec3(uv, -1.)) * d;
           float rz = map(p);
           float f  = clamp((rz - map(p + 0.1)) * 0.5, -0.1, 1.0);
@@ -149,6 +155,7 @@ export function InteractiveNebulaShader({
 
     // Resize & mouse
     const onResize = () => {
+      if (!container) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       renderer.setSize(w, h);
@@ -158,7 +165,9 @@ export function InteractiveNebulaShader({
       uniforms.iMouse.value.set(e.clientX, window.innerHeight - e.clientY);
     };
     
+    // Initial size
     onResize();
+    
     const resizeObserver = new ResizeObserver(() => onResize());
     resizeObserver.observe(container);
     window.addEventListener("mousemove", onMouseMove);
@@ -172,7 +181,7 @@ export function InteractiveNebulaShader({
       resizeObserver.disconnect();
       window.removeEventListener("mousemove", onMouseMove);
       renderer.setAnimationLoop(null);
-      if (container.contains(renderer.domElement)) {
+      if (container && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
       material.dispose();
@@ -184,7 +193,7 @@ export function InteractiveNebulaShader({
   return (
     <div
       ref={containerRef}
-      className={`absolute inset-0 z-0 transition-opacity duration-500 ${className}`}
+      className={`absolute inset-0 z-0 transition-opacity duration-500 will-change-[opacity] ${className}`}
       aria-label="Interactive nebula background"
     />
   );

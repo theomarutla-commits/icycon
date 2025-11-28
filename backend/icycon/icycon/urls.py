@@ -3,12 +3,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from users.auth_views import SignupView
+from users.auth_views import SignupView, LoginView
+from users.views import profile_dashboard
 from . import api_views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/signup', SignupView.as_view(), name='api_signup'),
+    path('api/auth/login', LoginView.as_view(), name='api_login'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
@@ -69,6 +71,7 @@ urlpatterns = [
     path("api/geo/lookup/", views.geo_lookup, name="geo-lookup"),
     path('api/chat/', include('chatbot.urls')),
     path('', include('users.urls')),
+    path('api/profile', profile_dashboard, name='api_profile'),  # current user profile fetch/update
 ]
 
 if settings.DEBUG:

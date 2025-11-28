@@ -9,15 +9,15 @@ const About: React.FC = () => {
           Architects of the <span className="text-icy-secondary">Digital Future</span>
         </h3>
         <p className="max-w-4xl mx-auto text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-12">
-          Icycon was born from a simple realization: the digital landscape isn't just changing; it's being completely rewritten by AI. We assembled a team of data scientists, creative directors, and growth hackers to build a new kind of agency—one that speaks fluent algorithm.
+          Icycon was born from a simple realization, the digital landscape isn't just changing, it's being completely rewritten by AI. We assembled a team of data scientists, creative directors, and growth hackers to build a new kind of agency. One that speaks fluent algorithm.
         </p>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { label: "Clients", value: "200+" },
-            { label: "ROI Generated", value: "$50M+" },
-            { label: "Countries", value: "15" },
-            { label: "Team Members", value: "45" },
+            { label: "Revenue", value: "R10m+" },
+            { label: "Languages Covered", value: "10+" },
+            { label: "Countries", value: "90+" },
+            { label: "Team Members", value: "30" },
           ].map((stat, i) => (
             <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
               <div className="text-3xl font-bold text-icy-main mb-1">{stat.value}</div>

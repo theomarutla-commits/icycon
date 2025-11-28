@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -33,17 +34,19 @@ function FloatingPaths({ position }: { position: number }) {
                         stroke="currentColor"
                         strokeWidth={path.width}
                         strokeOpacity={0.1 + path.id * 0.03}
-                        initial={{ pathLength: 0.3, opacity: 0.6 }}
-                        animate={{
-                            pathLength: 1,
-                            opacity: [0.3, 0.6, 0.3],
-                            pathOffset: [0, 1, 0],
-                        }}
-                        transition={{
-                            duration: 20 + Math.random() * 10,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: "linear",
-                        }}
+                        {...({
+                            initial: { pathLength: 0.3, opacity: 0.6 },
+                            animate: {
+                                pathLength: 1,
+                                opacity: [0.3, 0.6, 0.3],
+                                pathOffset: [0, 1, 0],
+                            },
+                            transition: {
+                                duration: 20 + Math.random() * 10,
+                                repeat: Number.POSITIVE_INFINITY,
+                                ease: "linear",
+                            }
+                        } as any)}
                     />
                 ))}
             </svg>
@@ -69,9 +72,11 @@ export function BackgroundPaths({
 
             <div className="relative z-10 w-[90%] lg:w-[90%] mx-auto px-4 md:px-6 text-center">
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 2 }}
+                    {...({
+                        initial: { opacity: 0 },
+                        whileInView: { opacity: 1 },
+                        transition: { duration: 2 }
+                    } as any)}
                     className="max-w-4xl mx-auto"
                 >
                     <h1 className="text-4xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
@@ -83,16 +88,18 @@ export function BackgroundPaths({
                                 {word.split("").map((letter, letterIndex) => (
                                     <motion.span
                                         key={`${wordIndex}-${letterIndex}`}
-                                        initial={{ y: 100, opacity: 0 }}
-                                        whileInView={{ y: 0, opacity: 1 }}
-                                        transition={{
-                                            delay:
-                                                wordIndex * 0.1 +
-                                                letterIndex * 0.03,
-                                            type: "spring",
-                                            stiffness: 150,
-                                            damping: 25,
-                                        }}
+                                        {...({
+                                            initial: { y: 100, opacity: 0 },
+                                            whileInView: { y: 0, opacity: 1 },
+                                            transition: {
+                                                delay:
+                                                    wordIndex * 0.1 +
+                                                    letterIndex * 0.03,
+                                                type: "spring",
+                                                stiffness: 150,
+                                                damping: 25,
+                                            }
+                                        } as any)}
                                         className="inline-block text-transparent bg-clip-text 
                                         bg-gradient-to-r from-icy-dark to-icy-main 
                                         dark:from-white dark:to-white/80"

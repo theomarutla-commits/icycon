@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -71,16 +72,20 @@ const ServicesPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...({
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 }
+            } as any)}
             className="text-5xl md:text-6xl font-bold mb-6 text-icy-dark dark:text-white"
           >
             The <span className="text-icy-main">11 Pillars</span> of Growth
           </motion.h1>
           <motion.p 
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             transition={{ delay: 0.2 }}
+             {...({
+                initial: { opacity: 0 },
+                animate: { opacity: 1 },
+                transition: { delay: 0.2 }
+             } as any)}
              className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto"
           >
             Icycon isn't just a tool; it's a multi-tenant engine designed to drive converting traffic through a holistic digital ecosystem.
@@ -97,10 +102,12 @@ const ServicesPage: React.FC = () => {
           {pillars.map((pillar, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
+              {...({
+                  initial: { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: true },
+                  transition: { delay: index * 0.05 }
+              } as any)}
               className="bg-white dark:bg-[#002466]/40 border border-gray-200 dark:border-white/10 p-8 rounded-3xl hover:border-icy-main transition-all hover:shadow-xl group"
             >
               <div className="w-12 h-12 bg-icy-main/10 text-icy-main rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">

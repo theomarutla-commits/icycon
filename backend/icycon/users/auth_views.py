@@ -47,7 +47,8 @@ class SignupView(generics.CreateAPIView):
             "Your account has been created successfully.\n\n"
             "You can now log in and start exploring the platform.\n"
         )
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+        # Avoid blocking signup if email backend is misconfigured
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=True)
         return user
 
 

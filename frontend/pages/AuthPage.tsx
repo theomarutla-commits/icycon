@@ -1,62 +1,50 @@
-
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { login, signup, API_BASE, UserProfile } from '../lib/api';
+import { login as apiLogin, signup as apiSignup } from '../lib/api';
 
 interface AuthPageProps {
-  onLogin?: (user: UserProfile) => void;
+  onLogin?: () => void;
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setError(null);
-  };
+  const toggleMode = () => setIsLogin(!isLogin);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsSubmitting(true);
+    setLoading(true);
 
     try {
-      if (!email || !password) {
-        setError('Email and password are required.');
-        return;
-      }
-      if (!isLogin && password !== passwordConfirm) {
-        setError('Passwords must match.');
-        return;
-      }
-
       if (isLogin) {
-        const auth = await login(email, password);
-        onLogin?.(auth.user);
-        navigate('/dashboard');
+        await apiLogin(email, password);
       } else {
-        const usernameSeed = [firstName, lastName].filter(Boolean).join('.') || email.split('@')[0];
-        const username = usernameSeed.toLowerCase().replace(/[^a-z0-9._-]/g, '') || email;
-        await signup({ email, username, password, password_confirm: passwordConfirm || password });
-        const auth = await login(email, password);
-        onLogin?.(auth.user);
-        navigate('/dashboard');
+        const username = email.split('@')[0] || email;
+        await apiSignup({
+          email,
+          username,
+          password,
+          password_confirm: password,
+        });
+        await apiLogin(email, password);
       }
+      onLogin?.();
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err?.message || 'Unable to authenticate. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -69,8 +57,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        {...({
+            initial: { opacity: 0, scale: 0.95 },
+            animate: { opacity: 1, scale: 1 }
+        } as any)}
         className="w-full max-w-md bg-white dark:bg-[#001c4d] border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
       >
         <div className="text-center mb-8">
@@ -137,31 +127,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             />
           </div>
 
-          {!isLogin && (
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-              <input 
-                type="password" 
-                required
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
-                placeholder="••••••••"
-              />
-            </div>
-          )}
-
           {error && (
-            <div className="text-sm text-red-500 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3">
+            <div className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               {error}
             </div>
           )}
 
-          <button 
-            disabled={isSubmitting}
-            className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Connecting…' : isLogin ? 'Sign In' : 'Get Started'}
+          <button className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6 disabled:opacity-60 disabled:cursor-not-allowed" disabled={loading} type="submit">
+            {loading ? 'Working...' : isLogin ? 'Sign In' : 'Get Started'}
           </button>
         </form>
 
@@ -170,10 +143,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           <button onClick={toggleMode} className="text-icy-main font-semibold hover:underline">
             {isLogin ? 'Sign Up' : 'Log In'}
           </button>
-        </div>
-
-        <div className="mt-6 text-center text-xs text-gray-400">
-          API target: <span className="font-semibold text-icy-main">{API_BASE || 'http://localhost:8000'}</span>
         </div>
       </motion.div>
     </div>

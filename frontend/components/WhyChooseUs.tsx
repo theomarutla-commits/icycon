@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
 import { motion } from 'framer-motion';
@@ -47,17 +48,19 @@ const WhyChooseUs: React.FC = () => {
             <span className="text-icy-main">Icycon</span>
           </h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">
-            We don't just follow trends; we engineer the algorithms that define them. 
-            Our proprietary technology stack ensures your brand stays ahead of the curve.
+            Your advantage isn't just in following trends, but in having them work for you. 
+            We design the intelligent systems that proactively position your brand for growth, turning market shifts into your opportunities.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-10">
             {reasons.map((r, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                {...({
+                    initial: { opacity: 0, y: 20 },
+                    whileInView: { opacity: 1, y: 0 },
+                    transition: { delay: i * 0.1 }
+                } as any)}
                 className="flex flex-col gap-3"
               >
                 <div className="flex items-center gap-2 text-icy-main font-bold text-lg">
@@ -72,8 +75,10 @@ const WhyChooseUs: React.FC = () => {
 
         {/* Chart Card */}
         <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
+          {...({
+              initial: { scale: 0.9, opacity: 0 },
+              whileInView: { scale: 1, opacity: 1 }
+          } as any)}
           className="relative"
         >
           {/* Glowing effect behind card */}

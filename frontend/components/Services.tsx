@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Globe, Share2, Mail, Smartphone } from 'lucide-react';
@@ -32,8 +33,11 @@ const services = [
 
 const Services: React.FC = () => {
   return (
-    <section id="services" className="py-24 px-4 bg-white dark:bg-black/20">
-      <div className="max-w-7xl mx-auto">
+    <section id="services" className="py-24 px-4 bg-white dark:bg-black/20 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-icy-main/10 rounded-full blur-[150px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Core Services</h2>
           <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -45,17 +49,19 @@ const Services: React.FC = () => {
           {services.map((service, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="group relative p-8 rounded-3xl border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#001c4d] hover:bg-white dark:hover:bg-[#002466] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+              {...({
+                  initial: { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: true },
+                  transition: { delay: index * 0.1 }
+              } as any)}
+              className="group relative p-8 rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-xl hover:shadow-2xl dark:hover:shadow-black/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
             >
               {/* Gradient Blob on Hover */}
-              <div className="absolute -right-10 -top-10 w-32 h-32 bg-icy-main/20 rounded-full blur-3xl group-hover:bg-icy-main/40 transition-all duration-500" />
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-icy-main/20 rounded-full blur-3xl group-hover:bg-icy-main/40 transition-all duration-500 opacity-0 group-hover:opacity-100" />
               
               <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-icy-main text-white flex items-center justify-center mb-6 shadow-lg shadow-icy-main/30 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-icy-main to-icy-deep text-white flex items-center justify-center mb-6 shadow-lg shadow-icy-main/30 group-hover:scale-110 transition-transform duration-300">
                   {service.icon}
                 </div>
                 <h3 className="text-2xl font-bold mb-4">{service.title}</h3>

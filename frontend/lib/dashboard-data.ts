@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { 
   LayoutGrid, Bot, MessageSquare, Mail, Globe, Link as LinkIcon, 
   MapPin, Zap, Smartphone, ShoppingBag, PenTool, Activity, Users, 
   TrendingUp, BarChart3, Rocket, Target, Facebook, Instagram, 
-  Linkedin, Twitter, Download, Star, RotateCcw, Eye, Clock, UserPlus, FileText
+  Linkedin, Twitter, Download, Star, RotateCcw, Eye, Clock, UserPlus, FileText,
+  Search, CheckCircle, AlertCircle, AlertTriangle
 } from 'lucide-react';
 
 // --- Categories ---
@@ -24,11 +26,11 @@ export const services = [
   // Growth
   { icon: MessageSquare, title: "Social Media Mgmt", category: "Growth", id: "social" },
   { icon: Globe, title: "Multilingual SEO", category: "Growth", id: "multi-seo" },
-  { icon: Zap, title: "Free Zone Tools", category: "Growth", id: "free-zone" },
+  // Removed Free Zone Tools
 
   // Reach
   { icon: Mail, title: "Email & SMS", category: "Reach", id: "email" },
-  { icon: MapPin, title: "Directories", category: "Reach", id: "directories" },
+  // Removed Directories
   { icon: ShoppingBag, title: "Marketplaces", category: "Reach", id: "marketplaces" },
   { icon: PenTool, title: "Blog Engine", category: "Reach", id: "blog" },
   { icon: LinkIcon, title: "Backlinks", category: "Reach", id: "backlinks" },
@@ -39,6 +41,31 @@ export const stats = [
   { label: "Active Campaigns", value: "12", trend: "+2", color: "text-green-500", icon: Activity },
   { label: "Total Reach", value: "85.2k", trend: "+15%", color: "text-icy-main", icon: Users },
   { label: "Est. ROI", value: "340%", trend: "+12%", color: "text-purple-500", icon: TrendingUp },
+];
+
+// --- Mock Data: Overview ---
+export const overviewTrafficTrends = [
+  { name: 'Jan', seo: 4000, social: 2400, paid: 2400 },
+  { name: 'Feb', seo: 3000, social: 1398, paid: 2210 },
+  { name: 'Mar', seo: 2000, social: 9800, paid: 2290 },
+  { name: 'Apr', seo: 2780, social: 3908, paid: 2000 },
+  { name: 'May', seo: 1890, social: 4800, paid: 2181 },
+  { name: 'Jun', seo: 2390, social: 3800, paid: 2500 },
+  { name: 'Jul', seo: 3490, social: 4300, paid: 2100 },
+];
+
+export const overviewRevenueMix = [
+  { name: 'Email & SMS', value: 45, color: '#4092ef' },
+  { name: 'Marketplace', value: 30, color: '#818cf8' },
+  { name: 'Organic Leads', value: 15, color: '#a78bfa' },
+  { name: 'Social Ads', value: 10, color: '#34d399' },
+];
+
+export const systemHealthData = [
+  { service: "SEO Platform", status: "Healthy", uptime: "99.9%", issues: 0, icon: LayoutGrid },
+  { service: "Social Media", status: "Action Req", uptime: "98.5%", issues: 2, icon: MessageSquare },
+  { service: "Email Engine", status: "Healthy", uptime: "100%", issues: 0, icon: Mail },
+  { service: "AEO / AI", status: "Warning", uptime: "99.0%", issues: 1, icon: Bot },
 ];
 
 // --- Mock Data: Optimisation ---
@@ -222,10 +249,10 @@ export const blogNotifications = [
 // --- Mock Data: Backlinks ---
 export const backlinkOverview = [
   { name: 'Jan', total: 1200, lost: 50 },
-  { name: 'Feb', total: 1450, lost: 40 },
-  { name: 'Mar', total: 1600, lost: 60 },
-  { name: 'Apr', total: 1900, lost: 30 },
-  { name: 'May', total: 2200, lost: 45 },
+  { name: 'Feb', total: 1350, lost: 40 },
+  { name: 'Mar', total: 1500, lost: 60 },
+  { name: 'Apr', total: 1800, lost: 30 },
+  { name: 'May', total: 2100, lost: 60 },
   { name: 'Jun', total: 2450, lost: 25 },
 ];
 
@@ -249,4 +276,19 @@ export const competitorBacklinks = [
   { name: 'Competitor A', value: 52, fill: '#94a3b8' },
   { name: 'Competitor B', value: 38, fill: '#94a3b8' },
   { name: 'Competitor C', value: 65, fill: '#94a3b8' },
+];
+
+// --- Mock Data: AEO Dashboard ---
+export const aeoAiPresence = [
+  { name: "ChatGPT", status: "Cited", score: 85, icon: Bot, color: "text-green-500" },
+  { name: "Claude", status: "Mentioned", score: 68, icon: MessageSquare, color: "text-orange-500" },
+  { name: "Perplexity", status: "Top Source", score: 92, icon: Search, color: "text-blue-500" },
+  { name: "Gemini", status: "Not Found", score: 20, icon: Zap, color: "text-red-500" },
+];
+
+export const aeoStrategyMetrics = [
+  { label: "Answerability", value: 46 },
+  { label: "Knowledge Base", value: 100 },
+  { label: "Structured Data", value: 23 },
+  { label: "AI Crawler Accessibility", value: 50 },
 ];

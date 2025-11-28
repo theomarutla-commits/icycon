@@ -1,6 +1,12 @@
 from pathlib import Path
 from datetime import timedelta
 
+try:
+    import dj_database_url
+except ImportError:  # optional dep; skip if not installed
+    dj_database_url = None
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,9 +46,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4173',
 ]
 
-# JWT lifetimes (manual)
-JWT_ACCESS_MINUTES = 60
-JWT_REFRESH_DAYS = 7
 
 #  OpenAI (manual)
 OPENAI_API_KEY = '' # paste your key if used
@@ -57,12 +60,6 @@ DEFAULT_FROM_EMAIL = 'theosknowledge@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = 'theosknowledge@gmail.com'
-# EMAIL_HOST_PASSWORD = 'qbou ikyx crnt mody '  # You'll need to set this to your Gmail app password
-# EMAIL_USE_TLS = True
-# DEFAULT_FROM_EMAIL = 'theosknowledge@gmail.com'
 
 # Database options (manual)
 # Default remains SQLite. A Postgres connection is defined for optional use.
@@ -125,35 +122,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'icycon.wsgi.application'
 
-# Database
-# Default uses SQLite for easy local dev. A Postgres connection is also defined;
-# set USE_POSTGRES_AS_DEFAULT to True if your Postgres instance is running.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-USE_POSTGRES_AS_DEFAULT = False  # toggle to True only when Postgres is up
-POSTGRES = {
-    'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'icycon',
-    'USER': 'icy',
-    'PASSWORD': 'IpE6ksNJL2pqnB96kxLAWE9ZiUdNBzZx',
-    'HOST': 'dpg-d4euuargk3sc73c06940-a',
-    'PORT': '5432',
+# Database: explicit Postgres URL; fallback to local SQLite if parsing fails or dependency missing
+DATABASE_URL = "postgresql://icy:IpE6ksNJL2pqnB96kxLAWE9ZiUdNBzZx@dpg-d4euuargk3sc73c06940-a.oregon-postgres.render.com/icycon"
+DATABASE_SSL_REQUIRED = True
+
+default_sqlite = {
+    "ENGINE": "django.db.backends.sqlite3",
+    "NAME": BASE_DIR / "db.sqlite3",
 }
 
-if USE_POSTGRES_AS_DEFAULT:
+if DATABASE_URL and dj_database_url:
     DATABASES = {
-        'default': POSTGRES,
-        'sqlite': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        },
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=DATABASE_SSL_REQUIRED,
+        )
     }
 else:
-    DATABASES['postgres'] = POSTGRES
+    DATABASES = {"default": default_sqlite}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
@@ -204,6 +191,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# JWT lifetimes (manual)
+JWT_ACCESS_MINUTES = 60
+JWT_REFRESH_DAYS = 7
+
 
 # JWT settings (manual defaults)
 SIMPLE_JWT = {

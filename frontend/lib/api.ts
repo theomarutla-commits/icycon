@@ -179,6 +179,18 @@ export async function fetchDashboard(): Promise<DashboardResponse> {
   return request("/api/dashboard/");
 }
 
+export async function fetchProfile() {
+  return request("/api/profile", undefined, { skipAuth: false });
+}
+
+export async function updateProfile(payload: Partial<UserProfile>) {
+  return request("/api/profile", { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+export async function updateProfileForm(payload: FormData) {
+  return request("/api/profile", { method: "PATCH", body: payload });
+}
+
 export async function fetchFeatureIndex(): Promise<FeatureIndexItem[]> {
   const res = await request<{ features: FeatureIndexItem[] }>("/api/features/");
   return res.features;

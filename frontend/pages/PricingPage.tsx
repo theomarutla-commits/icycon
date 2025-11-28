@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Plus, Minus } from 'lucide-react';
@@ -98,12 +99,14 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
             className="stroke-[10px] fill-none"
             stroke={plans[activeIndex].color}
             strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ 
-                pathLength: activeIndex === 0 ? 0.001 : activeIndex === 1 ? 0.5 : 1,
-                stroke: plans[activeIndex].color
-            }}
-            transition={{ duration: 0.6, ease: "circOut" }}
+            {...({
+                initial: { pathLength: 0 },
+                animate: { 
+                    pathLength: activeIndex === 0 ? 0.001 : activeIndex === 1 ? 0.5 : 1,
+                    stroke: plans[activeIndex].color
+                },
+                transition: { duration: 0.6, ease: "circOut" }
+            } as any)}
             style={{ filter: "url(#glow)" }}
         />
 
@@ -131,10 +134,10 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
                         r={isActive ? 22 : 14} 
                         className="stroke-[4px] transition-colors duration-300"
                         style={{ 
-                            fill: isActive ? plan.color : '#ffffff', // Or adapt for dark mode background if needed
-                            stroke: isPassed ? plan.color : '#e5e7eb' // Gray-200
+                            fill: isActive ? plan.color : '#ffffff',
+                            stroke: isPassed ? plan.color : '#e5e7eb'
                         }}
-                        animate={{ r: isActive ? 22 : 14 }}
+                        {...({ animate: { r: isActive ? 22 : 14 } } as any)}
                     />
                     
                     {/* Inner Dot */}
@@ -143,8 +146,10 @@ const CurveSelector = ({ activeIndex, onChange }: { activeIndex: number, onChang
                         cy={pos.y} 
                         r={isActive ? 12 : 0} 
                         className="fill-white"
-                        animate={{ r: isActive ? 12 : 0 }}
-                        initial={false}
+                        {...({ 
+                            animate: { r: isActive ? 12 : 0 },
+                            initial: false 
+                        } as any)}
                     />
 
                     {/* Label */}
@@ -174,38 +179,51 @@ const PricingPage: React.FC = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-icy-dark min-h-screen transition-colors duration-300">
-      <LampContainer className="pt-24" glowColor={plans[activePlan].color}>
+      {/* 
+          LAYOUT FIX: 
+          1. pt-64 (Increased) pushes the lamp down significantly to clear navbar.
+      */}
+      <LampContainer className="pt-64" glowColor={plans[activePlan].color}>
         <motion.h1
-          initial={{ opacity: 0.5, y: 100 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{
-            delay: 0.3,
-            duration: 0.8,
-            ease: "easeInOut",
-          }}
+          {...({
+              initial: { opacity: 0.5, y: 100 },
+              whileInView: { opacity: 1, y: 0 },
+              transition: {
+                delay: 0.3,
+                duration: 0.8,
+                ease: "easeInOut",
+              }
+          } as any)}
           className="mt-8 bg-gradient-to-br from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
         >
           Simple and Affordable <br /> Pricing Plans
         </motion.h1>
         <motion.p
-           initial={{ opacity: 0, y: 20 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.5, duration: 0.8 }}
+           {...({
+               initial: { opacity: 0, y: 20 },
+               whileInView: { opacity: 1, y: 0 },
+               transition: { delay: 0.5, duration: 0.8 }
+           } as any)}
            className="text-slate-600 dark:text-slate-400 mt-4 max-w-lg text-center mx-auto"
         >
             Start tracking and improving your digital growth management today.
         </motion.p>
       </LampContainer>
       
-      {/* Content Section - Pulled up */}
-      <div className="relative z-10 -mt-24 pb-24 px-4">
+      {/* 
+          LAYOUT FIX:
+          2. -mt-20 reduces the overlap, keeping the cards visible but connected.
+      */}
+      <div className="relative z-10 -mt-20 pb-24 px-4">
          <div className="w-[90%] lg:w-[90%] mx-auto">
             
             {/* Curve Selector */}
             <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
+                {...({
+                    initial: { opacity: 0 },
+                    whileInView: { opacity: 1 },
+                    transition: { delay: 0.6 }
+                } as any)}
             >
                 <CurveSelector activeIndex={activePlan} onChange={setActivePlan} />
             </motion.div>
@@ -217,14 +235,15 @@ const PricingPage: React.FC = () => {
                     return (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            onClick={() => setActivePlan(index)}
-                            // Hover effect for inactive cards
-                            whileHover={!isActive ? { scale: 1.05, opacity: 1 } : {}}
-                            animate={isActive ? { scale: 1.1, opacity: 1, zIndex: 20 } : { scale: 0.95, opacity: 0.7, zIndex: 10 }}
+                            {...({
+                                initial: { opacity: 0, y: 50 },
+                                whileInView: { opacity: 1, y: 0 },
+                                viewport: { once: true },
+                                transition: { delay: index * 0.1 },
+                                onClick: () => setActivePlan(index),
+                                whileHover: !isActive ? { scale: 1.02, opacity: 1 } : {},
+                                animate: isActive ? { scale: 1.05, opacity: 1, zIndex: 20 } : { scale: 0.98, opacity: 0.7, zIndex: 10 }
+                            } as any)}
                             className={`
                                 relative flex flex-col p-8 rounded-3xl transition-all duration-300 cursor-pointer
                                 border group
@@ -233,13 +252,13 @@ const PricingPage: React.FC = () => {
                                     : 'hover:shadow-xl'
                                 }
                                 ${isActive 
-                                    ? 'bg-white dark:bg-[#002466]/90' 
-                                    : 'bg-white/80 dark:bg-black/40'
+                                    ? 'bg-white/90 dark:bg-[#002466]/90' 
+                                    : 'bg-white/60 dark:bg-white/5'
                                 }
                                 backdrop-blur-xl
                             `}
                             style={{
-                                borderColor: isActive ? plan.color : 'transparent',
+                                borderColor: isActive ? plan.color : 'rgba(255,255,255,0.1)',
                                 boxShadow: isActive ? `0 20px 50px -12px ${plan.color}40` : 'none'
                             }}
                         >
@@ -272,7 +291,7 @@ const PricingPage: React.FC = () => {
                                     w-full py-3 rounded-xl text-sm font-bold transition-all mb-8
                                     ${isActive
                                         ? 'text-white shadow-lg hover:brightness-110'
-                                        : 'bg-transparent border border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                                        : 'bg-transparent border border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10'
                                     }
                                 `}
                                 style={{
@@ -318,8 +337,10 @@ const PricingPage: React.FC = () => {
       <div className="py-24 px-4 bg-white dark:bg-icy-dark relative border-t border-gray-200 dark:border-white/5 transition-colors duration-300">
         <div className="w-[90%] lg:w-[90%] max-w-3xl mx-auto">
             <motion.div 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                {...({
+                    initial: { opacity: 0 },
+                    whileInView: { opacity: 1 }
+                } as any)}
                 className="text-center mb-16"
             >
                 <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -332,9 +353,11 @@ const PricingPage: React.FC = () => {
                 {faqs.map((faq, index) => (
                     <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        {...({
+                            initial: { opacity: 0, y: 20 },
+                            whileInView: { opacity: 1, y: 0 },
+                            transition: { delay: index * 0.1 }
+                        } as any)}
                         className="border border-gray-200 dark:border-white/10 rounded-2xl bg-gray-50 dark:bg-white/5 overflow-hidden transition-colors duration-300"
                     >
                         <button

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Store, ShoppingBag, Briefcase, User, Smartphone, Globe } from 'lucide-react';
@@ -7,19 +8,19 @@ const markets = [
     icon: <Store className="w-6 h-6" />,
     title: "Local Services",
     subtitle: "Health, Home, Legal",
-    features: ["Heavy GBP/Local SEO", "Review Management", "Directory Dominance", "Multilingual Support"]
+    features: ["Heavy GBP/Local Search Engine Optimzation", "Review Management", "Directory Dominance", "Multilingual Support"]
   },
   {
     icon: <ShoppingBag className="w-6 h-6" />,
     title: "D2C / eCommerce",
     subtitle: "Retail Brands",
-    features: ["Blog + UGC Content", "Viral Short-form Video", "LLM 'Best of' Ranking", "Seasonal Trend Sprints"]
+    features: ["Blog + UGC Content", "LLM 'Best of' Ranking", "Seasonal Trend Sprints"]
   },
   {
     icon: <Briefcase className="w-6 h-6" />,
     title: "SaaS & B2B",
     subtitle: "Enterprise Software",
-    features: ["GEO/AEO Leadership", "High Intent Content", "Compliant Outreach", "LinkedIn Assets"]
+    features: ["Generative Engine optimsation/Answer Engine Optimsation Leadership", "High Intent Content", "Compliant Outreach", "LinkedIn Assets"]
   },
   {
     icon: <User className="w-6 h-6" />,
@@ -31,13 +32,13 @@ const markets = [
     icon: <Smartphone className="w-6 h-6" />,
     title: "Mobile Publishers",
     subtitle: "Apps & Games",
-    features: ["ASO & Store Assets", "Review Operations", "In-App Prompting", "Apple Developer+ Tactics"]
+    features: ["App Store Optimzation & Store Assets", "Review Operations", "In-App Prompting", "Apple + Google Play Tactics"]
   },
   {
     icon: <Globe className="w-6 h-6" />,
     title: "Marketplaces",
     subtitle: "Aggregators",
-    features: ["Supply/Demand SEO", "Trust Content Signals", "Digital PR Campaigns", "Answer Engine Footprint"]
+    features: ["Supply/Demand Search Engine optimsation", "Trust Content Signals", "Digital PR Campaigns", "Answer Engine Footprint"]
   }
 ];
 
@@ -47,16 +48,18 @@ const TargetMarkets: React.FC = () => {
       <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            {...({
+                initial: { opacity: 0, x: -50 },
+                whileInView: { opacity: 1, x: 0 },
+                viewport: { once: true }
+            } as any)}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Tailored Strategies for <br/>
               <span className="text-icy-main">Every Growth Stage</span>
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-              Whether you are a local brick-and-mortar or a global SaaS, our proprietary technology stack ensures your brand stays ahead of the curve in an AI-first world.
+              A powerful suite to help you master the digital landscape. Get everything you need to attract your audience, optimize every interaction, and expand your reach globally.
             </p>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
               <img 
@@ -76,10 +79,12 @@ const TargetMarkets: React.FC = () => {
             {markets.map((market, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                {...({
+                    initial: { opacity: 0, y: 20 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true },
+                    transition: { delay: index * 0.1 }
+                } as any)}
                 className="bg-white dark:bg-icy-dark/50 backdrop-blur-sm p-6 rounded-2xl border border-gray-200 dark:border-white/10 hover:border-icy-main/50 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-4">

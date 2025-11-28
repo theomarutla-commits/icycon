@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MessageSquare, Users, TrendingUp } from 'lucide-react';
 import CTA from '../components/CTA';
+import QuickCreateCard from '../components/QuickCreateCard';
 
 const features = [
   {
@@ -32,8 +34,10 @@ const EmailPage: React.FC = () => {
       <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...({
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 }
+            } as any)}
             className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white"
           >
             The <span className="text-icy-main">Revenue Engine</span>
@@ -47,9 +51,11 @@ const EmailPage: React.FC = () => {
           {features.map((f, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              {...({
+                  initial: { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  transition: { delay: i * 0.1 }
+              } as any)}
               className="bg-white dark:bg-[#002466]/40 p-8 rounded-3xl border border-gray-200 dark:border-white/10 hover:border-icy-main transition-colors"
             >
               <div className="w-12 h-12 bg-icy-main/10 text-icy-main rounded-xl flex items-center justify-center mb-6">
@@ -59,6 +65,56 @@ const EmailPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <QuickCreateCard
+            title="Create Email List"
+            description="POST /api/email/lists/"
+            endpoint="/api/email/lists/"
+            fields={[
+              { name: 'name', label: 'List name', placeholder: 'Newsletter' },
+              {
+                name: 'lawful_basis',
+                label: 'Lawful basis',
+                type: 'select',
+                options: [
+                  { label: 'Consent', value: 'consent' },
+                  { label: 'Contract', value: 'contract' },
+                  { label: 'Legitimate Interest', value: 'legitimate_interest' },
+                ],
+                defaultValue: 'consent',
+              },
+            ]}
+          />
+          <QuickCreateCard
+            title="Add Email Template"
+            description="POST /api/email/templates/"
+            endpoint="/api/email/templates/"
+            fields={[
+              { name: 'name', label: 'Template name', placeholder: 'Welcome' },
+              { name: 'subject', label: 'Subject', placeholder: 'Welcome aboard!' },
+              { name: 'body_html', label: 'HTML body', placeholder: '<p>Welcome!</p>', type: 'textarea', defaultValue: '<p>Welcome!</p>' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Create Email Flow"
+            description="POST /api/email/flows/"
+            endpoint="/api/email/flows/"
+            fields={[
+              { name: 'name', label: 'Flow name', placeholder: 'Onboarding flow' },
+              { name: 'description', label: 'Description', placeholder: 'Email automation flow', type: 'textarea', defaultValue: 'Email automation flow' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Add Contact"
+            description="POST /api/email/contacts/"
+            endpoint="/api/email/contacts/"
+            fields={[
+              { name: 'email', label: 'Email', placeholder: 'user@example.com' },
+              { name: 'name', label: 'Name', placeholder: 'Jane Doe' },
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-[#002466]/40 border border-gray-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl">

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react"
 import * as d3 from "d3"
 import { TrendingUp, Users, Globe, PieChart, BarChart, DollarSign } from "lucide-react"
@@ -60,8 +61,34 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  // Track real DOM dimensions for responsive scaling of overlay elements
+  const dimensionsRef = useRef({ width, height })
+  
   // Refs for card DOM elements to update positions without re-renders
   const cardsRef = useRef<(HTMLDivElement | null)[]>([])
+
+  // Setup ResizeObserver to track actual container size
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Initial size
+    dimensionsRef.current = {
+        width: containerRef.current.clientWidth || width,
+        height: containerRef.current.clientHeight || height
+    };
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+            dimensionsRef.current = {
+                width: entry.contentRect.width,
+                height: entry.contentRect.height
+            };
+        }
+    });
+
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [width, height]);
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -70,29 +97,33 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
     const context = canvas.getContext("2d")
     if (!context) return
 
-    // Set up responsive dimensions
+    // Set up virtual responsive dimensions (D3 logic space)
     const containerWidth = width
     const containerHeight = height
     
     const radius = Math.min(containerWidth, containerHeight) / 2.2
 
-    const dpr = window.devicePixelRatio || 1
+    // OPTIMIZATION: Cap DPR at 2 to improve performance on high-res screens
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); 
+    
+    // Canvas internal resolution uses Virtual Size * DPR
     canvas.width = containerWidth * dpr
     canvas.height = containerHeight * dpr
+    
+    // CSS size handles the actual display size (responsive)
     canvas.style.width = `100%`
     canvas.style.height = `auto`
-    canvas.style.maxWidth = `${width}px`
     
     context.scale(dpr, dpr)
 
-    // Create projection
-    const projection = d3
+    // Create projection based on Virtual Dimensions
+    const projection = (d3 as any)
       .geoOrthographic()
       .scale(radius)
       .translate([containerWidth / 2, containerHeight / 2])
       .clipAngle(90)
 
-    const path = d3.geoPath().projection(projection).context(context)
+    const path = (d3 as any).geoPath().projection(projection).context(context)
 
     const pointInPolygon = (point: [number, number], polygon: number[][]): boolean => {
       const [x, y] = point
@@ -139,10 +170,11 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
       return false
     }
 
-    const generateDotsInPolygon = (feature: any, dotSpacing = 16) => {
+    const generateDotsInPolygon = (feature: any, dotSpacing = 20) => {
       const dots: [number, number][] = []
-      const bounds = d3.geoBounds(feature)
+      const bounds = (d3 as any).geoBounds(feature)
       const [[minLng, minLat], [maxLng, maxLat]] = bounds
+      // OPTIMIZATION: Increased dotSpacing default creates fewer dots, faster load
       const stepSize = dotSpacing * 0.08
       if (stepSize <= 0) return dots;
       for (let lng = minLng; lng <= maxLng; lng += stepSize) {
@@ -175,7 +207,7 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
       context.beginPath()
       context.arc(containerWidth / 2, containerHeight / 2, currentScale, 0, 2 * Math.PI)
       
-      // Ocean fill
+      // Ocean fill (Increased opacity for visibility on white background)
       context.fillStyle = "rgba(0, 19, 88, 0.6)" 
       context.strokeStyle = "rgba(255, 255, 255, 0.2)" 
       
@@ -185,7 +217,7 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
 
       if (landFeatures) {
         // Draw graticule
-        const graticule = d3.geoGraticule()
+        const graticule = (d3 as any).geoGraticule()
         context.beginPath()
         path(graticule())
         context.strokeStyle = "rgba(64, 146, 239, 0.15)" 
@@ -193,6 +225,7 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
         context.stroke()
 
         // Draw dots
+        context.fillStyle = "#4092ef" 
         allDots.forEach((dot) => {
           const projected = projection([dot.lng, dot.lat])
           if (
@@ -204,37 +237,44 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
           ) {
             context.beginPath()
             context.arc(projected[0], projected[1], 1.5 * scaleFactor, 0, 2 * Math.PI)
-            context.fillStyle = "#4092ef" 
             context.fill()
           }
         })
       }
+
+      // Calculate Scaling Factor based on real DOM width vs Virtual D3 width
+      // Important: Use dimensionsRef for accurate mobile scaling
+      const scaleRatio = dimensionsRef.current.width / width;
 
       // Update Card Positions
       STATS.forEach((stat, index) => {
         const el = cardsRef.current[index]
         if (!el) return
 
-        // D3 projection returns [x, y] or null if the point is clipped (on the back side)
-        // However, d3.geoOrthographic() with clipAngle(90) clips points on the back.
-        // We need to be careful: if it's clipped, projection returns null? 
-        // d3 v4+ returns null if clipped.
+        // Projection gives coordinates in Virtual Space (e.g. 600x600)
         const coords = projection([stat.coords[0], stat.coords[1]])
         
         if (coords) {
           const [x, y] = coords
-          // Check if it's within bounds (double check)
-          // Also, slightly adjust scale based on z-depth? Orthographic doesn't give z-depth easily, 
-          // but visibility is binary with clipAngle(90).
+          // Check visibility in virtual space
+          const dist = Math.sqrt(Math.pow(x - containerWidth/2, 2) + Math.pow(y - containerHeight/2, 2))
           
-          el.style.display = 'block'
-          el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -150%)`
-          el.style.opacity = '1'
-          el.style.zIndex = '10'
+          if (dist < currentScale) {
+             // Scale coordinates to match actual DOM size
+             const domX = x * scaleRatio;
+             const domY = y * scaleRatio;
+
+             el.style.display = 'block'
+             // Anchor bottom-center of line (-100% Y) to the point
+             el.style.transform = `translate(${domX}px, ${domY}px) translate(-50%, -100%)`
+             el.style.opacity = '1'
+             el.style.zIndex = '10'
+          } else {
+             el.style.opacity = '0'
+             el.style.zIndex = '0'
+          }
         } else {
           el.style.display = 'none'
-          el.style.opacity = '0'
-          el.style.zIndex = '0'
         }
       })
     }
@@ -248,13 +288,16 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
         if (!response.ok) throw new Error("Failed to load land data")
         landFeatures = await response.json()
         landFeatures.features.forEach((feature: any) => {
-          const dots = generateDotsInPolygon(feature, 12)
+          const dots = generateDotsInPolygon(feature, 18)
           dots.forEach(([lng, lat]) => {
             allDots.push({ lng, lat, visible: true })
           })
         })
         render()
-        setIsLoading(false)
+        // Wait a frame for initial render before fading in to avoid lag visual
+        requestAnimationFrame(() => {
+            setIsLoading(false)
+        })
       } catch (err) {
         console.error(err)
         setError("Failed to load land map data")
@@ -273,7 +316,7 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
         render()
       }
     }
-    const rotationTimer = d3.timer(rotate)
+    const rotationTimer = (d3 as any).timer(rotate)
 
     const handleMouseDown = (event: MouseEvent) => {
       autoRotate = false
@@ -311,7 +354,9 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
 
     canvas.addEventListener("mousedown", handleMouseDown)
     canvas.addEventListener("wheel", handleWheel, { passive: false })
-    loadWorldData()
+    
+    // Defer data loading slightly to allow initial paint
+    setTimeout(() => loadWorldData(), 100);
 
     return () => {
       rotationTimer.stop()
@@ -331,7 +376,16 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
   }
 
   return (
-    <div ref={containerRef} className={`relative flex justify-center items-center ${className} cursor-grab active:cursor-grabbing`}>
+    <div 
+      ref={containerRef} 
+      className={`
+        relative flex justify-center items-center cursor-grab active:cursor-grabbing
+        transition-opacity duration-1000 ease-out
+        ${className} 
+        ${isLoading ? 'opacity-0' : 'opacity-100'}
+      `}
+      style={{ maxWidth: `${width}px`, width: '100%', margin: '0 auto' }}
+    >
       <canvas ref={canvasRef} className="rounded-full select-none" />
       
       {/* Floating Stats Cards */}
@@ -341,17 +395,21 @@ export default function RotatingEarth({ width = 600, height = 600, className = "
             ref={(el) => { cardsRef.current[i] = el }}
             className="absolute top-0 left-0 pointer-events-none hidden will-change-transform"
         >
-            <div className="flex items-center gap-3 p-3 pr-6 rounded-xl bg-white/80 dark:bg-black/40 backdrop-blur-md border border-slate-200 dark:border-white/20 shadow-xl min-w-[160px]">
-                <div className="w-10 h-10 rounded-lg bg-icy-main/20 flex items-center justify-center text-icy-main">
-                    <stat.icon size={20} />
+            <div className={`
+                flex items-center gap-2 md:gap-3 p-2 md:p-3 pr-4 md:pr-6 rounded-lg md:rounded-xl backdrop-blur-md shadow-xl min-w-[120px] md:min-w-[160px]
+                transition-colors duration-300
+                ${isDarkMode ? 'bg-black/40 border border-white/20 text-white' : 'bg-white/80 border border-slate-200 text-black'}
+            `}>
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-md md:rounded-lg bg-icy-main/20 flex items-center justify-center text-icy-main">
+                    <stat.icon size={16} className="md:w-5 md:h-5" />
                 </div>
                 <div>
-                    <div className="text-xs text-slate-600 dark:text-gray-400 font-medium uppercase tracking-wider">{stat.label}</div>
-                    <div className="text-black dark:text-white font-bold">{stat.value}</div>
+                    <div className={`text-[10px] md:text-xs font-medium uppercase tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-slate-600'}`}>{stat.label}</div>
+                    <div className="font-bold text-xs md:text-base">{stat.value}</div>
                 </div>
             </div>
             {/* Connecting line anchor */}
-            <div className="w-0.5 h-8 bg-gradient-to-b from-icy-main/50 to-transparent mx-auto"></div>
+            <div className="w-0.5 h-4 md:h-8 bg-gradient-to-b from-icy-main/50 to-transparent mx-auto"></div>
         </div>
       ))}
     </div>

@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Globe, Zap, BarChart, Bot } from 'lucide-react';
 import CTA from '../components/CTA';
+import QuickCreateCard from '../components/QuickCreateCard';
 
 const features = [
   {
@@ -32,8 +34,10 @@ const SEOPage: React.FC = () => {
       <div className="w-[90%] lg:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...({
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 }
+            } as any)}
             className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-white"
           >
             Dominate <span className="text-icy-main">Search & AI</span>
@@ -47,9 +51,11 @@ const SEOPage: React.FC = () => {
           {features.map((f, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              {...({
+                  initial: { opacity: 0, y: 20 },
+                  whileInView: { opacity: 1, y: 0 },
+                  transition: { delay: i * 0.1 }
+              } as any)}
               className="bg-white dark:bg-[#002466]/40 p-8 rounded-3xl border border-gray-200 dark:border-white/10 hover:border-icy-main transition-colors"
             >
               <div className="w-12 h-12 bg-icy-main/10 text-icy-main rounded-xl flex items-center justify-center mb-6">
@@ -59,6 +65,69 @@ const SEOPage: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <QuickCreateCard
+            title="Add Analytics Site"
+            description="POST /api/analytics/sites/"
+            endpoint="/api/analytics/sites/"
+            fields={[
+              { name: 'domain', label: 'Domain', placeholder: 'https://example.com' },
+              { name: 'default_locale', label: 'Locale', placeholder: 'en', defaultValue: 'en' },
+              { name: 'sitemaps_url', label: 'Sitemaps URL', placeholder: 'https://example.com/sitemap.xml' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Seed Keyword Cluster"
+            description="POST /api/seo/keywords/"
+            endpoint="/api/seo/keywords/"
+            fields={[
+              { name: 'intent', label: 'Intent/Topic', placeholder: 'buy running shoes' },
+              { name: 'terms', label: 'Terms (comma separated)', placeholder: 'best shoes,running shoes' },
+              { name: 'locale', label: 'Locale', placeholder: 'en', defaultValue: 'en' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Create Content Item"
+            description="POST /api/seo/content/"
+            endpoint="/api/seo/content/"
+            fields={[
+              { name: 'url', label: 'URL', placeholder: 'https://example.com/blog/post' },
+              { name: 'type', label: 'Type', placeholder: 'blog', defaultValue: 'blog' },
+              { name: 'status', label: 'Status', placeholder: 'draft', defaultValue: 'draft' },
+              { name: 'locale', label: 'Locale', placeholder: 'en', defaultValue: 'en' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Add FAQ"
+            description="POST /api/seo/faqs/"
+            endpoint="/api/seo/faqs/"
+            fields={[
+              { name: 'question', label: 'Question', placeholder: 'How do I optimize for AI answers?' },
+              { name: 'answer', label: 'Answer', placeholder: 'Provide concise, factual responses.', type: 'textarea' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Record Backlink"
+            description="POST /api/seo/backlinks/"
+            endpoint="/api/seo/backlinks/"
+            fields={[
+              { name: 'source_url', label: 'Source URL', placeholder: 'https://source.com/article' },
+              { name: 'target_url', label: 'Target URL', placeholder: 'https://your-site.com' },
+              { name: 'anchor_text', label: 'Anchor Text', placeholder: 'Brand name' },
+              { name: 'status', label: 'Status', placeholder: 'active', defaultValue: 'active' },
+            ]}
+          />
+          <QuickCreateCard
+            title="Add Directory/Citation"
+            description="POST /api/seo/directories/"
+            endpoint="/api/seo/directories/"
+            fields={[
+              { name: 'name', label: 'Directory Name', placeholder: 'Yelp' },
+              { name: 'url', label: 'Listing URL', placeholder: 'https://yelp.com/biz/your-business' },
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-[#002466]/40 border border-gray-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl">

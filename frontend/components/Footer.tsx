@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Logo } from './Logo';
 import { Twitter, Instagram, Linkedin, Globe, Mail, Phone, MapPin } from 'lucide-react';
@@ -22,7 +23,6 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold mb-6">Company</h4>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><Link to="/services" className="hover:text-icy-main transition-colors">Services</Link></li>
               <li><Link to="/pricing" className="hover:text-icy-main transition-colors">Pricing</Link></li>
               <li><Link to="/#about" className="hover:text-icy-main transition-colors">About Us</Link></li>
               <li><Link to="/auth" className="hover:text-icy-main transition-colors">Sign In</Link></li>
@@ -31,12 +31,11 @@ const Footer: React.FC = () => {
 
           {/* Links 2 */}
           <div>
-            <h4 className="font-bold mb-6">Resources</h4>
+            <h4 className="font-bold mb-6">Services</h4>
             <ul className="space-y-4 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-icy-main transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-icy-main transition-colors">Case Studies</a></li>
-              <li><a href="#" className="hover:text-icy-main transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-icy-main transition-colors">Support</a></li>
+              <li><Link to="/optimisation" className="hover:text-icy-main transition-colors">Optimisation</Link></li>
+              <li><Link to="/growth" className="hover:text-icy-main transition-colors">Growth</Link></li>
+              <li><Link to="/reach" className="hover:text-icy-main transition-colors">Reach</Link></li>
             </ul>
           </div>
 

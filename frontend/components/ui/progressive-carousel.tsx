@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -174,9 +175,11 @@ export const SliderWrapper: FC<SliderWrapperProps> = ({
       {active === value && (
         <motion.div
           key={value}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          {...({
+              initial: { opacity: 0 },
+              animate: { opacity: 1 },
+              exit: { opacity: 0 }
+          } as any)}
           className={cn('', className)}
         >
           {children}
