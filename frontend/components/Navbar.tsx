@@ -1,14 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
-import { Menu, X, Sun, Moon, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sun, Moon, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { UserProfile } from '../lib/api';
 
 interface NavbarProps {
   darkMode: boolean;
   toggleTheme: () => void;
   isAuthenticated: boolean;
+  user?: UserProfile | null;
   onLogout: () => void;
 }
 
@@ -21,7 +23,7 @@ const navLinks = [
   { name: 'Social', href: '/social' },
 ];
 
-const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme, isAuthenticated, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme, isAuthenticated, user, onLogout }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -40,6 +42,10 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme, isAuthenticated,
     navigate('/');
     setIsMobileMenuOpen(false);
   };
+
+  const initials = user
+    ? (user.first_name?.[0] || user.username?.[0] || user.email?.[0] || 'U').toUpperCase()
+    : 'JD';
 
   return (
     <>
@@ -97,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleTheme, isAuthenticated,
             {isAuthenticated ? (
                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-icy-main text-white flex items-center justify-center font-bold text-xs cursor-pointer">
-                    JD
+                    {initials}
                   </div>
                   <button 
                     onClick={handleLogoutClick}

@@ -152,7 +152,7 @@ def dashboard(request):
 
 
 # ASO ----------------------------------------------------------------------
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def aso_apps(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -266,7 +266,7 @@ def aso_listings(request):
 
 
 # Marketplace --------------------------------------------------------------
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def marketplace_products(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -494,7 +494,7 @@ def feature_index(request):
     return Response({"features": features})
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def analytics_sites(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -687,7 +687,7 @@ def seo_site_detail(request, site_id):
     )
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_keyword_clusters(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -744,7 +744,7 @@ def seo_keyword_clusters(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_content_items(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -770,7 +770,7 @@ def seo_content_items(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_faqs(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -800,7 +800,7 @@ def seo_faqs(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_backlinks(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -842,7 +842,7 @@ def seo_backlinks(request):
     return Response(backlinks)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_directories(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -906,7 +906,7 @@ def social_accounts(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def social_posts(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -1026,7 +1026,7 @@ def social_messages(request):
 
 
 # Email --------------------------------------------------------------------
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_lists(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -1061,7 +1061,7 @@ def email_lists(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_templates(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -1095,7 +1095,7 @@ def email_templates(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_flows(request):
     tenant_ids = get_user_tenant_ids(request.user)
@@ -1126,7 +1126,7 @@ def email_flows(request):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_contacts(request):
     tenant_ids = get_user_tenant_ids(request.user)

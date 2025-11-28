@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Sidebar from '../components/dashboard/Sidebar';
 import OptimisationDashboard from '../components/dashboard/OptimisationDashboard';
@@ -8,11 +8,42 @@ import AppStoreOptimizationDashboard from '../components/dashboard/ASODashboard'
 import SocialMediaDashboard from '../components/dashboard/SocialMediaDashboard';
 import MarketplaceDashboard from '../components/dashboard/MarketplaceDashboard';
 import { services, stats } from '../lib/dashboard-data';
+import FeatureDataPanel from '../components/dashboard/FeatureDataPanel';
+import { DashboardResponse, FeatureIndexItem, fetchDashboard, fetchFeatureIndex, UserProfile } from '../lib/api';
 
-const Dashboard: React.FC = () => {
+type DashboardProps = {
+  user?: UserProfile | null;
+};
+
+const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [currentView, setCurrentView] = useState<string>("Overview");
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [apiFeatures, setApiFeatures] = useState<FeatureIndexItem[]>([]);
+  const [apiData, setApiData] = useState<DashboardResponse | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [loadingApi, setLoadingApi] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      setLoadingApi(true);
+      try {
+        const [dashboardRes, featureRes] = await Promise.all([fetchDashboard(), fetchFeatureIndex()]);
+        if (!isMounted) return;
+        setApiData(dashboardRes);
+        setApiFeatures(featureRes);
+      } catch (err: any) {
+        if (isMounted) setApiError(err?.message || 'Unable to reach backend');
+      } finally {
+        if (isMounted) setLoadingApi(false);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Handle category click (Expand/Collapse logic)
   const handleCategoryClick = (categoryName: string, hasChildren: boolean) => {
@@ -49,6 +80,8 @@ const Dashboard: React.FC = () => {
     ? services 
     : services.filter(s => s.category === currentView);
 
+  const welcomeName = apiData?.user?.first_name || user?.first_name || user?.username || user?.email || "there";
+
   return (
     <div className="pt-24 pb-12 px-4 min-h-screen bg-slate-50 dark:bg-icy-dark">
       <div className="w-[95%] lg:w-[90%] mx-auto">
@@ -60,7 +93,7 @@ const Dashboard: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Welcome back, <span className="text-icy-main">John</span>
+              Welcome back, <span className="text-icy-main">{welcomeName}</span>
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
               Manage your growth engine from one central command center.
@@ -75,6 +108,53 @@ const Dashboard: React.FC = () => {
             Download Report
           </motion.button>
         </div>
+
+        {/* API wiring status */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+          <div className="lg:col-span-2 p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-semibold text-gray-900 dark:text-white">Backend connection</div>
+              <span className="text-xs px-2 py-1 rounded-full bg-icy-main/10 text-icy-main font-semibold">
+                {loadingApi ? 'Checking…' : apiError ? 'Error' : 'Connected'}
+              </span>
+            </div>
+            {apiError ? (
+              <p className="text-sm text-red-500">{apiError}</p>
+            ) : (
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                {apiFeatures.length > 0
+                  ? `Loaded ${apiFeatures.length} feature endpoints and dashboard metrics.`
+                  : 'Fetching feature map from the API…'}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm text-gray-600 dark:text-gray-300">
+            <div className="font-semibold text-gray-900 dark:text-white mb-2">Live counts</div>
+            <div className="flex items-center justify-between">
+              <span>ASO apps</span>
+              <span className="font-semibold">{apiData?.aso_apps_count ?? '—'}</span>
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <span>Marketplace products</span>
+              <span className="font-semibold">{apiData?.marketplace_products_count ?? '—'}</span>
+            </div>
+          </div>
+        </div>
+
+        <FeatureDataPanel />
+
+        {apiFeatures.length > 0 && (
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {apiFeatures.slice(0, 6).map((feature) => (
+              <div key={feature.key} className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{feature.name}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{feature.description}</p>
+                <code className="block text-xs text-icy-main mt-2 break-all">{feature.endpoint}</code>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Overview Stats (Visible in Overview only) */}
         {currentView === "Overview" && !selectedService && (

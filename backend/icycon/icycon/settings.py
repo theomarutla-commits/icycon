@@ -1,26 +1,52 @@
-import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Helper to safely parse comma-separated env vars (handles None values)
-def env_list(name, default=""):
-    raw = os.getenv(name)
-    if raw is None:
-        raw = default
-    if not isinstance(raw, str):
-        raw = str(raw)
-    return [item.strip() for item in raw.split(",") if isinstance(item, str) and item.strip()]
+# ---------------------------------------------------------------------------
+# Manual settings (no environment variable lookup)
+# ---------------------------------------------------------------------------
+# Update these values directly to fit your deployment.
+SECRET_KEY = 'django-insecure-change-me'
+DEBUG = True  # Set to False in production
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','*']
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
+# CORS / CSRF (manually managed)
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3001',
+    'http://localhost:3001',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # convenient for local dev
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3001',
+    'http://localhost:3001',
+]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+# JWT lifetimes (manual)
+JWT_ACCESS_MINUTES = 60
+JWT_REFRESH_DAYS = 7
 
-# Parse ALLOWED_HOSTS, default to localhost for development
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
+# Email + OpenAI (manual)
+OPENAI_API_KEY = ''  # paste your key if used
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'no-reply@localhost'
+
+# Database options (manual)
+# Default remains SQLite. A Postgres connection is defined for optional use.
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -80,19 +106,30 @@ TEMPLATES = [
 WSGI_APPLICATION = 'icycon.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-# if os.getenv('DATABASE_URL'):
-#     import dj_database_url
-#     DATABASES = {
-#         'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
-#     }
-# else:
+# Default uses SQLite for easy local dev. A Postgres connection is also defined;
+# flip USE_POSTGRES_AS_DEFAULT to True to make Postgres the primary database.
 DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+    
+}
+USE_POSTGRES_AS_DEFAULT = False #set to true in order to use db 
+POSTGRES = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME': 'icycon',
+    'USER': 'postgres',
+    'PASSWORD': '',
+    'HOST': 'localhost',
+    'PORT': '5432',
+}
+
+if USE_POSTGRES_AS_DEFAULT:
+    DATABASES['default'] = POSTGRES
+else:
+    # Keep Postgres available for routers or manual use without making it default
+    DATABASES['postgres'] = POSTGRES
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
@@ -125,28 +162,7 @@ LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
 LOGOUT_REDIRECT_URL = '/'  # Redirect to home page after logout
 LOGIN_URL = '/login/'  # URL to redirect to when login is required
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only True in development
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-    'http://127.0.0.1:3001',
-    'http://localhost:3001',
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-] + env_list('CORS_ALLOWED_ORIGINS', '')
-
-# CSRF settings
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://127.0.0.1',
-    'http://localhost',
-] + env_list('CSRF_TRUSTED_ORIGINS', '') + CORS_ALLOWED_ORIGINS
+# CORS / CSRF settings (manually managed above)
 
 # In development, use cookie-based CSRF and allow from all origins if DEBUG is True
 if DEBUG:
@@ -165,23 +181,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-# JWT settings (sensible defaults; override via env if needed)
-from datetime import timedelta
+# JWT settings (manual defaults)
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_MINUTES', 60))),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_DAYS', 7))),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=JWT_ACCESS_MINUTES),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=JWT_REFRESH_DAYS),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
-
-# OpenAI settings
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
-# Email settings
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@localhost')

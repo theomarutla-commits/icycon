@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
@@ -11,6 +11,7 @@ import EmailPage from './pages/EmailPage';
 import SocialPage from './pages/SocialPage';
 import Dashboard from './pages/Dashboard';
 import Footer from './components/Footer';
+import { UserProfile, getStoredAuth, clearStoredAuth } from './lib/api';
 
 // Component to scroll to top on route change
 function ScrollToTop() {
@@ -24,6 +25,15 @@ function ScrollToTop() {
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const saved = getStoredAuth();
+    if (saved) {
+      setIsAuthenticated(true);
+      setUser(saved.user);
+    }
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -37,12 +47,15 @@ export default function App() {
     setDarkMode(!darkMode);
   };
 
-  const handleLogin = () => {
+  const handleLogin = (profile: UserProfile) => {
     setIsAuthenticated(true);
+    setUser(profile);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setUser(null);
+    clearStoredAuth();
   };
 
   return (
@@ -59,6 +72,7 @@ export default function App() {
           darkMode={darkMode} 
           toggleTheme={toggleTheme} 
           isAuthenticated={isAuthenticated} 
+          user={user}
           onLogout={handleLogout}
         />
         
@@ -71,7 +85,14 @@ export default function App() {
             <Route path="/email" element={<EmailPage />} />
             <Route path="/social" element={<SocialPage />} />
             <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                isAuthenticated 
+                  ? <Dashboard user={user} /> 
+                  : <Navigate to="/auth" replace />
+              } 
+            />
           </Routes>
         </main>
 

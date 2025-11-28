@@ -2,25 +2,63 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { API_BASE, login, signup, UserProfile } from '../lib/api';
 
 interface AuthPageProps {
-  onLogin?: () => void;
+  onLogin?: (user: UserProfile) => void;
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const toggleMode = () => setIsLogin(!isLogin);
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setError(null);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock authentication
-    if (onLogin) {
-      onLogin();
-      navigate('/dashboard');
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      if (!email || !password) {
+        setError('Email and password are required.');
+        return;
+      }
+
+      if (!isLogin && password !== passwordConfirm) {
+        setError('Passwords must match.');
+        return;
+      }
+
+      if (isLogin) {
+        const auth = await login(email, password);
+        onLogin?.(auth.user);
+        navigate('/dashboard');
+      } else {
+        const emailPrefix = email.split('@')[0];
+        const usernameSeed = [firstName, lastName].filter(Boolean).join('.') || emailPrefix;
+        const username = usernameSeed.toLowerCase().replace(/[^a-z0-9._-]/g, '') || emailPrefix;
+        await signup({ email, username, password, password_confirm: passwordConfirm || password });
+        const auth = await login(email, password);
+        onLogin?.(auth.user);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Unable to authenticate. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,6 +95,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                     <input 
                         type="text" 
                         required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
                         placeholder="John"
                     />
@@ -66,6 +106,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                     <input 
                         type="text" 
                         required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
                         placeholder="Doe"
                     />
@@ -78,6 +120,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             <input 
               type="email" 
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
               placeholder="you@company.com"
             />
@@ -88,13 +132,38 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             <input 
               type="password" 
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
               placeholder="••••••••"
             />
           </div>
 
-          <button className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6">
-            {isLogin ? 'Sign In' : 'Get Started'}
+          {!isLogin && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+              <input 
+                type="password" 
+                required
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:outline-none focus:border-icy-main transition-colors"
+                placeholder="••••••••"
+              />
+            </div>
+          )}
+
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl px-4 py-3">
+              {error}
+            </div>
+          )}
+
+          <button 
+            disabled={isSubmitting}
+            className="w-full bg-icy-main text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-icy-main/25 mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Connecting…' : isLogin ? 'Sign In' : 'Get Started'}
           </button>
         </form>
 
@@ -103,6 +172,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           <button onClick={toggleMode} className="text-icy-main font-semibold hover:underline">
             {isLogin ? 'Sign Up' : 'Log In'}
           </button>
+        </div>
+
+        <div className="mt-6 text-center text-xs text-gray-400">
+          API target: <span className="font-semibold text-icy-main">{API_BASE || 'http://localhost:8000'}</span>
         </div>
       </motion.div>
     </div>
