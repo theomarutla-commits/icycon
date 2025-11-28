@@ -13,15 +13,20 @@ DEBUG = True  # Set to False in production
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','*']
 
 # CORS / CSRF (manually managed)
+CORS_ALLOW_ALL_ORIGINS = False  # avoid '*' because we send credentials
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:3000',
     'http://127.0.0.1:3001',
     'http://localhost:3001',
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+    'http://127.0.0.1:4173',
+    'http://localhost:4173',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # convenient for local dev
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8000',
@@ -29,20 +34,35 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3001',
     'http://localhost:3001',
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+    'http://127.0.0.1:4173',
+    'http://localhost:4173',
 ]
 
 # JWT lifetimes (manual)
 JWT_ACCESS_MINUTES = 60
 JWT_REFRESH_DAYS = 7
 
-# Email + OpenAI (manual)
-OPENAI_API_KEY = ''  # paste your key if used
+#  OpenAI (manual)
+OPENAI_API_KEY = '' # paste your key if used
+
+#Email settings 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = 'theosknowledge@gmail.com'
+EMAIL_HOST_PASSWORD = 'qbou ikyx crnt mody'
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'no-reply@localhost'
+DEFAULT_FROM_EMAIL = 'theosknowledge@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'theosknowledge@gmail.com'
+# EMAIL_HOST_PASSWORD = 'qbou ikyx crnt mody '  # You'll need to set this to your Gmail app password
+# EMAIL_USE_TLS = True
+# DEFAULT_FROM_EMAIL = 'theosknowledge@gmail.com'
 
 # Database options (manual)
 # Default remains SQLite. A Postgres connection is defined for optional use.
@@ -107,28 +127,32 @@ WSGI_APPLICATION = 'icycon.wsgi.application'
 
 # Database
 # Default uses SQLite for easy local dev. A Postgres connection is also defined;
-# flip USE_POSTGRES_AS_DEFAULT to True to make Postgres the primary database.
+# set USE_POSTGRES_AS_DEFAULT to True if your Postgres instance is running.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-    
 }
-USE_POSTGRES_AS_DEFAULT = False #set to true in order to use db 
+USE_POSTGRES_AS_DEFAULT = False  # toggle to True only when Postgres is up
 POSTGRES = {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'icycon',
-    'USER': 'postgres',
-    'PASSWORD': '',
-    'HOST': 'localhost',
+    'USER': 'icy',
+    'PASSWORD': 'IpE6ksNJL2pqnB96kxLAWE9ZiUdNBzZx',
+    'HOST': 'dpg-d4euuargk3sc73c06940-a',
     'PORT': '5432',
 }
 
 if USE_POSTGRES_AS_DEFAULT:
-    DATABASES['default'] = POSTGRES
+    DATABASES = {
+        'default': POSTGRES,
+        'sqlite': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        },
+    }
 else:
-    # Keep Postgres available for routers or manual use without making it default
     DATABASES['postgres'] = POSTGRES
 
 AUTH_PASSWORD_VALIDATORS = [

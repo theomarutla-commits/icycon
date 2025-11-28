@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Logo } from '../components/Logo';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { API_BASE, login, signup, UserProfile } from '../lib/api';
+import { login, signup, API_BASE, UserProfile } from '../lib/api';
 
 interface AuthPageProps {
   onLogin?: (user: UserProfile) => void;
@@ -17,8 +17,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const toggleMode = () => {
@@ -36,7 +36,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         setError('Email and password are required.');
         return;
       }
-
       if (!isLogin && password !== passwordConfirm) {
         setError('Passwords must match.');
         return;
@@ -47,9 +46,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         onLogin?.(auth.user);
         navigate('/dashboard');
       } else {
-        const emailPrefix = email.split('@')[0];
-        const usernameSeed = [firstName, lastName].filter(Boolean).join('.') || emailPrefix;
-        const username = usernameSeed.toLowerCase().replace(/[^a-z0-9._-]/g, '') || emailPrefix;
+        const usernameSeed = [firstName, lastName].filter(Boolean).join('.') || email.split('@')[0];
+        const username = usernameSeed.toLowerCase().replace(/[^a-z0-9._-]/g, '') || email;
         await signup({ email, username, password, password_confirm: passwordConfirm || password });
         const auth = await login(email, password);
         onLogin?.(auth.user);

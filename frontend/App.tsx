@@ -10,8 +10,9 @@ import SEOPage from './pages/SEOPage';
 import EmailPage from './pages/EmailPage';
 import SocialPage from './pages/SocialPage';
 import Dashboard from './pages/Dashboard';
+import DataLab from './pages/DataLab';
 import Footer from './components/Footer';
-import { UserProfile, getStoredAuth, clearStoredAuth } from './lib/api';
+import { UserProfile, getStoredAuth, clearStoredAuth, fetchDashboard, pingApi, API_BASE } from './lib/api';
 
 // Component to scroll to top on route change
 function ScrollToTop() {
@@ -26,14 +27,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    const saved = getStoredAuth();
-    if (saved) {
-      setIsAuthenticated(true);
-      setUser(saved.user);
-    }
-  }, []);
+  const [apiStatus, setApiStatus] = useState<{ ok: boolean; message?: string } | null>(null);
 
   useEffect(() => {
     if (darkMode) {
@@ -42,6 +36,29 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  // Validate stored credentials against the backend; fallback to logged out on failure.
+  useEffect(() => {
+    const saved = getStoredAuth();
+    if (!saved) return;
+    fetchDashboard()
+      .then((res) => {
+        setIsAuthenticated(true);
+        setUser(res.user);
+      })
+      .catch(() => {
+        clearStoredAuth();
+        setIsAuthenticated(false);
+        setUser(null);
+      });
+  }, []);
+
+  // Probe the backend to confirm connectivity for this frontend build
+  useEffect(() => {
+    pingApi()
+      .then((res) => setApiStatus({ ok: true, message: res.message }))
+      .catch((err) => setApiStatus({ ok: false, message: err?.message || 'Unreachable' }));
+  }, []);
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
@@ -72,9 +89,13 @@ export default function App() {
           darkMode={darkMode} 
           toggleTheme={toggleTheme} 
           isAuthenticated={isAuthenticated} 
-          user={user}
           onLogout={handleLogout}
         />
+        {apiStatus && (
+          <div className={`mx-auto mt-2 w-[95%] lg:w-[90%] text-xs px-3 py-2 rounded-xl ${apiStatus.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'} border border-black/5`}>
+            API: {apiStatus.ok ? 'reachable' : 'unreachable'} ({API_BASE || window.location.origin}) {apiStatus.message ? `– ${apiStatus.message}` : ''}
+          </div>
+        )}
         
         <main className="relative z-10 flex-grow">
           <Routes>
@@ -87,12 +108,9 @@ export default function App() {
             <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
             <Route 
               path="/dashboard" 
-              element={
-                isAuthenticated 
-                  ? <Dashboard user={user} /> 
-                  : <Navigate to="/auth" replace />
-              } 
+              element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth" replace />} 
             />
+            <Route path="/data" element={isAuthenticated ? <DataLab /> : <Navigate to="/auth" replace />} />
           </Routes>
         </main>
 

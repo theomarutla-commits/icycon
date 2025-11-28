@@ -3,7 +3,7 @@ import {
   LayoutGrid, Bot, MessageSquare, Mail, Globe, Link as LinkIcon, 
   MapPin, Zap, Smartphone, ShoppingBag, PenTool, Activity, Users, 
   TrendingUp, BarChart3, Rocket, Target, Facebook, Instagram, 
-  Linkedin, Twitter, Download, Star, RotateCcw
+  Linkedin, Twitter, Download, Star, RotateCcw, Eye, Clock, UserPlus, FileText
 } from 'lucide-react';
 
 // --- Categories ---
@@ -157,4 +157,96 @@ export const marketplaceMessages = [
   { user: "Mike Ross", platform: "Amazon", subject: "Item not received", time: "10m ago" },
   { user: "Rachel Green", platform: "Etsy", subject: "Custom order request", time: "1h ago" },
   { user: "Harvey S.", platform: "Shopify", subject: "Refund status?", time: "2h ago" },
+];
+
+// --- Mock Data: Email & SMS ---
+export const deliverabilityData = [
+  { name: 'Week 1', rate: 99.2, bounce: 0.5, spam: 0.02 },
+  { name: 'Week 2', rate: 98.8, bounce: 0.8, spam: 0.05 },
+  { name: 'Week 3', rate: 99.5, bounce: 0.4, spam: 0.01 },
+  { name: 'Week 4', rate: 97.5, bounce: 1.8, spam: 0.12 }, // Dip
+  { name: 'Week 5', rate: 99.1, bounce: 0.6, spam: 0.03 },
+  { name: 'Week 6', rate: 99.4, bounce: 0.5, spam: 0.02 },
+];
+
+export const emailCampaigns = [
+  { name: "Black Friday Early Access", type: "Campaign", sent: "12.5k", open: "42%", click: "12%", rev: "$8,450" },
+  { name: "Monthly Newsletter", type: "Campaign", sent: "45.2k", open: "35%", click: "5%", rev: "$1,200" },
+  { name: "Product Launch: V2", type: "Campaign", sent: "8.1k", open: "55%", click: "18%", rev: "$12,800" },
+];
+
+export const emailFlows = [
+  { name: "Welcome Series", type: "Flow", status: "Active", open: "68%", click: "22%", rev: "$15.50/user" },
+  { name: "Abandoned Cart", type: "Flow", status: "Active", open: "45%", click: "14%", rev: "$42.00/user" },
+  { name: "Post-Purchase Upsell", type: "Flow", status: "Active", open: "52%", click: "9%", rev: "$8.50/user" },
+  { name: "Winback 60 Days", type: "Flow", status: "Paused", open: "12%", click: "2%", rev: "$1.20/user" },
+];
+
+export const audienceDeviceData = [
+  { name: 'Mobile', value: 65, color: '#4092ef' },
+  { name: 'Desktop', value: 30, color: '#818cf8' },
+  { name: 'Tablet', value: 5, color: '#a78bfa' },
+];
+
+// --- Mock Data: Blog Engine ---
+export const blogTrafficData = [
+  { name: 'Mon', views: 5200, visitors: 3800 },
+  { name: 'Tue', views: 4800, visitors: 3200 },
+  { name: 'Wed', views: 6100, visitors: 4500 },
+  { name: 'Thu', views: 5500, visitors: 3900 },
+  { name: 'Fri', views: 7200, visitors: 5100 },
+  { name: 'Sat', views: 8500, visitors: 6200 },
+  { name: 'Sun', views: 8100, visitors: 5900 },
+];
+
+export const blogSources = [
+  { name: 'Organic Search', value: 55, color: '#4092ef' },
+  { name: 'Social Media', value: 25, color: '#a855f7' },
+  { name: 'Direct', value: 15, color: '#10b981' },
+  { name: 'Referral', value: 5, color: '#f59e0b' },
+];
+
+export const topBlogPosts = [
+  { title: "10 Tips for AEO Dominance", views: "12.5k", avgTime: "4m 30s", status: "Indexed" },
+  { title: "The Future of Digital Marketing", views: "8.2k", avgTime: "3m 15s", status: "Indexed" },
+  { title: "How to Scale Your SaaS", views: "5.4k", avgTime: "5m 45s", status: "Indexed" },
+  { title: "Email Marketing Guide 2025", views: "3.1k", avgTime: "2m 50s", status: "Updating" },
+];
+
+export const blogNotifications = [
+  { type: "Comment", message: "New comment on '10 Tips for AEO Dominance'", time: "10m ago" },
+  { type: "System", message: "Backup completed successfully", time: "1h ago" },
+  { type: "SEO", message: "'Future of Digital' is ranking #3 for keyword 'digital trends'", time: "3h ago" },
+];
+
+// --- Mock Data: Backlinks ---
+export const backlinkOverview = [
+  { name: 'Jan', total: 1200, lost: 50 },
+  { name: 'Feb', total: 1450, lost: 40 },
+  { name: 'Mar', total: 1600, lost: 60 },
+  { name: 'Apr', total: 1900, lost: 30 },
+  { name: 'May', total: 2200, lost: 45 },
+  { name: 'Jun', total: 2450, lost: 25 },
+];
+
+export const anchorTextData = [
+  { name: 'Branded', value: 45, color: '#4092ef' },
+  { name: 'Exact Match', value: 20, color: '#a855f7' },
+  { name: 'Partial Match', value: 25, color: '#10b981' },
+  { name: 'Generic', value: 10, color: '#f59e0b' },
+];
+
+export const referringDomains = [
+  { domain: 'techcrunch.com', authority: 92, links: 12, spam: '1%' },
+  { domain: 'forbes.com', authority: 88, links: 5, spam: '2%' },
+  { domain: 'medium.com', authority: 95, links: 45, spam: '0%' },
+  { domain: 'searchengineland.com', authority: 85, links: 8, spam: '1%' },
+  { domain: 'indiehackers.com', authority: 78, links: 15, spam: '0%' },
+];
+
+export const competitorBacklinks = [
+  { name: 'Your Site', value: 45, fill: '#4092ef' },
+  { name: 'Competitor A', value: 52, fill: '#94a3b8' },
+  { name: 'Competitor B', value: 38, fill: '#94a3b8' },
+  { name: 'Competitor C', value: 65, fill: '#94a3b8' },
 ];

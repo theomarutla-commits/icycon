@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.core.mail import send_mail
 from django.conf import settings
+from tenants.models import Tenant, TenantUser
 from .auth_serializers import SignupSerializer, LoginSerializer
 
 
@@ -30,19 +31,23 @@ class SignupView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        # Send a simple welcome email; failures are logged but do not block signup
-        try:
-            subject = f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}!"
-            body = (
-                f"Hi {user.username},\n\n"
-                f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}! "
-                "Your account has been created successfully.\n\n"
-                "You can now log in and start exploring the API.\n"
-            )
-            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=True)
-        except Exception:
-            # Don't interrupt signup if email sending fails
-            pass
+        # Ensure the user has a default tenant/workspace
+        tenant = Tenant.objects.create(
+            name=f"{user.username}'s Workspace" if user.username else "Workspace",
+            region="US",
+            plan="free",
+        )
+        TenantUser.objects.create(user=user, tenant=tenant, role="owner")
+
+        # Send a welcome email; if misconfigured, surface the error so it can be fixed.
+        subject = f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}!"
+        body = (
+            f"Hi {user.username},\n\n"
+            f"Welcome to {getattr(settings, 'SITE_NAME', 'Icycon')}! "
+            "Your account has been created successfully.\n\n"
+            "You can now log in and start exploring the platform.\n"
+        )
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
         return user
 
 

@@ -1,6 +1,10 @@
+from uuid import uuid4
+from decimal import Decimal
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.utils.text import slugify
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -21,6 +25,7 @@ from seo.models import ContentItem as SEOContentItem
 from seo.models import Directory as SEODirectory
 from seo.models import KeywordCluster as SEOKeywordCluster
 from seo.models import Site as SEOSite
+from seo.models import Backlink
 from social_media.models import (
     Comment,
     Conversation as SocialConversation,
@@ -101,6 +106,20 @@ def get_user_tenant_ids(user):
         return []
 
 
+def get_primary_tenant(user):
+    tenant_ids = get_user_tenant_ids(user)
+    if not tenant_ids:
+        return None
+    return Tenant.objects.filter(id__in=tenant_ids).first()
+
+
+def ensure_tenant(user):
+    tenant = get_primary_tenant(user)
+    if not tenant:
+        return None, Response({"error": "User is not assigned to a tenant"}, status=400)
+    return tenant, None
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def api_home(request):
@@ -133,6 +152,19 @@ def dashboard(request):
             return qs.count()
         except Exception:
             return 0
+    base = request.build_absolute_uri("/").rstrip("/")
+    # Light summaries so the frontend can render user-specific data
+    aso_apps_qs = ASOApp.objects.filter(tenant_id__in=tenant_ids) if tenant_ids else ASOApp.objects.none()
+    marketplace_products_qs = Product.objects.filter(tenant_id__in=tenant_ids) if tenant_ids else Product.objects.none()
+    features_payload = [
+        {
+            "key": item["key"],
+            "name": item["name"],
+            "description": item["description"],
+            "endpoint": base + item["path"],
+        }
+        for item in FEATURES_INDEX
+    ]
 
     return Response(
         {
@@ -144,8 +176,30 @@ def dashboard(request):
                 "last_name": user.last_name,
                 "avatar": user.avatar.url if getattr(user, "avatar", None) else None,
             },
-            "aso_apps_count": safe_count(ASOApp.objects.filter(tenant_id__in=tenant_ids)) if tenant_ids else 0,
-            "marketplace_products_count": safe_count(Product.objects.filter(tenant_id__in=tenant_ids)) if tenant_ids else 0,
+            "aso_apps_count": safe_count(aso_apps_qs),
+            "marketplace_products_count": safe_count(marketplace_products_qs),
+            "aso_apps": [
+                {
+                    "id": app.id,
+                    "name": app.name,
+                    "platform": app.get_platform_display(),
+                    "rating": app.rating,
+                    "downloads_count": app.downloads_count,
+                    "status": app.status,
+                }
+                for app in aso_apps_qs[:5]
+            ],
+            "marketplace_products": [
+                {
+                    "id": p.id,
+                    "title": p.title,
+                    "category": p.get_category_display(),
+                    "price": float(p.price) if p.price else 0,
+                    "status": p.status,
+                }
+                for p in marketplace_products_qs[:5]
+            ],
+            "features": features_payload,
             "recent_activities": [],
         }
     )
@@ -155,28 +209,48 @@ def dashboard(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def aso_apps(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         name = request.data.get("name") or "New App"
-        platform = request.data.get("platform") or "ios"
+        platform = request.data.get("platform") if request.data.get("platform") in dict(ASOApp.PLATFORM_CHOICES) else "ios"
+        bundle_val = request.data.get("bundle_id") or f"{slugify(name) or 'app'}.{tenant.id}.{uuid4().hex[:6]}"
+        developer = request.data.get("developer_name") or (request.user.get_full_name() or request.user.username or "Owner")
+        description = request.data.get("description") or "App description to be updated."
+
+        app = ASOApp.objects.create(
+            tenant=tenant,
+            name=name,
+            bundle_id=bundle_val,
+            platform=platform,
+            developer_name=developer,
+            icon_url=request.data.get("icon_url", ""),
+            description=description,
+            status=request.data.get("status", "draft"),
+            category=request.data.get("category", "general"),
+            rating=0,
+            reviews_count=0,
+            downloads_count=0,
+        )
         return Response(
             {
-                "id": 0,
-                "name": name,
-                "platform": platform,
-                "bundle_id": request.data.get("bundle_id", ""),
-                "rating": 0,
-                "reviews_count": 0,
-                "downloads_count": 0,
-                "category": request.data.get("category", ""),
-                "icon_url": request.data.get("icon_url", ""),
-                "status": "draft",
-                "keywords_count": 0,
+                "id": app.id,
+                "name": app.name,
+                "platform": app.get_platform_display(),
+                "bundle_id": app.bundle_id,
+                "rating": app.rating,
+                "reviews_count": app.reviews_count,
+                "downloads_count": app.downloads_count,
+                "category": app.category,
+                "icon_url": app.icon_url,
+                "status": app.status,
+                "keywords_count": app.keywords.count(),
             },
             status=201,
         )
 
-    apps = ASOApp.objects.filter(tenant_id__in=tenant_ids)
+    apps = ASOApp.objects.filter(tenant=tenant)
     data = [
         {
             "id": app.id,
@@ -269,27 +343,44 @@ def aso_listings(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def marketplace_products(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         title = request.data.get("title") or "Untitled Product"
-        price = request.data.get("price", 0)
+        price = request.data.get("price", 0) or 0
+        category = request.data.get("category", "service")
+        status_val = request.data.get("status", "draft")
+        product = Product.objects.create(
+            tenant=tenant,
+            created_by=request.user,
+            title=title,
+            description=request.data.get("description", "Product description pending."),
+            category=category if category in dict(Product.CATEGORY_CHOICES) else "other",
+            status=status_val if status_val in dict(Product.STATUS_CHOICES) else "draft",
+            featured_image=request.data.get("featured_image", ""),
+            pricing_type=request.data.get("pricing_type", "fixed"),
+            price=Decimal(price) if price else None,
+            tags=request.data.get("tags", []),
+            features=request.data.get("features", []),
+        )
         return Response(
             {
-                "id": 0,
-                "title": title,
-                "category": request.data.get("category", "general"),
-                "status": request.data.get("status", "draft"),
-                "price": float(price) if price else 0,
-                "pricing_type": request.data.get("pricing_type", "one_time"),
-                "featured_image": request.data.get("featured_image", ""),
-                "rating": 0,
-                "review_count": 0,
-                "created_at": iso(None),
+                "id": product.id,
+                "title": product.title,
+                "category": product.get_category_display(),
+                "status": product.status,
+                "price": float(product.price) if product.price else 0,
+                "pricing_type": product.get_pricing_type_display(),
+                "featured_image": product.featured_image,
+                "rating": float(product.rating),
+                "review_count": product.review_count,
+                "created_at": iso(product.created_at),
             },
             status=201,
         )
 
-    products = Product.objects.filter(tenant_id__in=tenant_ids)
+    products = Product.objects.filter(tenant=tenant)
     data = [
         {
             "id": product.id,
@@ -497,22 +588,31 @@ def feature_index(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def analytics_sites(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
-        domain = request.data.get("domain") or "example.com"
+        domain = request.data.get("domain") or "https://example.com"
         locale = request.data.get("default_locale", "en")
+        site = Site.objects.create(
+            tenant=tenant,
+            domain=domain,
+            default_locale=locale,
+            sitemaps_url=request.data.get("sitemaps_url", ""),
+            robots_txt=request.data.get("robots_txt", ""),
+        )
         return Response(
             {
-                "id": 0,
-                "domain": domain,
-                "default_locale": locale,
-                "created_at": iso(None),
-                "pageview_count": 0,
+                "id": site.id,
+                "domain": site.domain,
+                "default_locale": site.default_locale,
+                "created_at": iso(site.created_at),
+                "pageview_count": site.pageview_set.count(),
             },
             status=201,
         )
 
-    sites = Site.objects.filter(tenant_id__in=tenant_ids)
+    sites = Site.objects.filter(tenant=tenant)
     data = [
         {
             "id": site.id,
@@ -690,19 +790,17 @@ def seo_site_detail(request, site_id):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_keyword_clusters(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
-        intent = request.data.get("intent") or request.data.get("keyword")
+        intent = request.data.get("intent") or request.data.get("keyword") or "New intent"
         terms = request.data.get("terms") or []
         locale = request.data.get("locale", "en")
         if isinstance(terms, str):
             terms = [t.strip() for t in terms.split(",") if t.strip()]
-        if not intent:
-            return Response({"error": "intent or keyword is required"}, status=400)
-        if not tenant_ids:
-            return Response({"error": "No tenant associated with user"}, status=400)
         cluster = SEOKeywordCluster.objects.create(
-            tenant_id=tenant_ids[0],
+            tenant=tenant,
             intent=intent,
             terms=terms if isinstance(terms, list) else [],
             locale=locale,
@@ -718,7 +816,7 @@ def seo_keyword_clusters(request):
             status=201,
         )
 
-    clusters = SEOKeywordCluster.objects.filter(tenant_id__in=tenant_ids)
+    clusters = SEOKeywordCluster.objects.filter(tenant=tenant)
     data = []
     for c in clusters:
         keyword_val = None
@@ -747,22 +845,35 @@ def seo_keyword_clusters(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_content_items(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         url = request.data.get("url") or "https://example.com"
+        content_type = request.data.get("type", "blog")
+        item = SEOContentItem.objects.create(
+            tenant=tenant,
+            type=content_type if content_type in dict(SEOContentItem.TYPE_CHOICES) else "blog",
+            url=url,
+            status=request.data.get("status", "draft"),
+            locale=request.data.get("locale", "en"),
+            brief_json=request.data.get("brief_json", {}),
+            draft_html=request.data.get("draft_html", ""),
+            json_ld=request.data.get("json_ld", ""),
+        )
         return Response(
             {
-                "id": 0,
-                "type": request.data.get("type", "page"),
-                "url": url,
-                "status": request.data.get("status", "draft"),
-                "locale": request.data.get("locale", "en"),
-                "created_at": iso(None),
+                "id": item.id,
+                "type": item.type,
+                "url": item.url,
+                "status": item.status,
+                "locale": item.locale,
+                "created_at": iso(item.created_at),
             },
             status=201,
         )
 
-    items = SEOContentItem.objects.filter(tenant_id__in=tenant_ids)
+    items = SEOContentItem.objects.filter(tenant=tenant)
     data = [
         {"id": i.id, "type": i.type, "url": i.url, "status": i.status, "locale": i.locale, "created_at": iso(i.created_at)}
         for i in items
@@ -773,21 +884,29 @@ def seo_content_items(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_faqs(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         question = request.data.get("question") or "New FAQ?"
         answer = request.data.get("answer") or ""
+        faq = SEOFAQ.objects.create(
+            tenant=tenant,
+            question=question,
+            answer=answer,
+            source_urls=request.data.get("source_urls", []),
+        )
         return Response(
             {
-                "id": 0,
-                "question": question,
-                "answer": answer,
-                "created_at": iso(None),
+                "id": faq.id,
+                "question": faq.question,
+                "answer": faq.answer,
+                "created_at": iso(faq.created_at),
             },
             status=201,
         )
 
-    faqs = SEOFAQ.objects.filter(tenant_id__in=tenant_ids)
+    faqs = SEOFAQ.objects.filter(tenant=tenant)
     data = [
         {
             "id": f.id,
@@ -803,26 +922,47 @@ def seo_faqs(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def seo_backlinks(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
+        site = None
+        site_id = request.data.get("site_id")
+        if site_id:
+            site = SEOSite.objects.filter(id=site_id, tenant=tenant).first()
+        if not site:
+            site = SEOSite.objects.filter(tenant=tenant).first()
+        if not site:
+            site = SEOSite.objects.create(tenant=tenant, domain="https://example.com", default_locale="en")
+
+        backlink = Backlink.objects.create(
+            site=site,
+            source_url=request.data.get("source_url", "https://source.example.com"),
+            target_url=request.data.get("target_url", site.domain),
+            anchor_text=request.data.get("anchor_text", ""),
+            status=request.data.get("status", "active"),
+            domain_rating=request.data.get("domain_rating", 0) or 0,
+            page_authority=request.data.get("page_authority", 0) or 0,
+            is_dofollow=request.data.get("is_dofollow", True),
+        )
         return Response(
             {
-                "id": 0,
-                "site_id": request.data.get("site_id"),
-                "domain": request.data.get("domain", "example.com"),
-                "source_url": request.data.get("source_url", ""),
-                "target_url": request.data.get("target_url", ""),
-                "anchor_text": request.data.get("anchor_text", ""),
-                "status": request.data.get("status", "active"),
-                "domain_rating": request.data.get("domain_rating", 0),
-                "created_at": iso(None),
+                "id": backlink.id,
+                "site_id": site.id,
+                "domain": site.domain,
+                "source_url": backlink.source_url,
+                "target_url": backlink.target_url,
+                "anchor_text": backlink.anchor_text,
+                "status": backlink.status,
+                "domain_rating": backlink.domain_rating,
+                "created_at": iso(backlink.first_seen),
             },
             status=201,
         )
 
     if not hasattr(SEOSite, "backlinks"):
         return Response([])
-    sites = SEOSite.objects.filter(tenant_id__in=tenant_ids).prefetch_related("backlinks")
+    sites = SEOSite.objects.filter(tenant=tenant).prefetch_related("backlinks")
     backlinks = []
     for site in sites:
         for b in getattr(site, "backlinks").all():
@@ -909,17 +1049,32 @@ def social_accounts(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def social_posts(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         content = request.data.get("content") or ""
+        title = request.data.get("title") or content[:50] or "New Post"
+        post = Post.objects.create(
+            tenant=tenant,
+            author=request.user,
+            title=title,
+            content=content,
+            excerpt=content[:140],
+            post_type=request.data.get("post_type", "post"),
+            category=request.data.get("category", "general"),
+            status=request.data.get("status", "draft"),
+            platforms=request.data.get("platforms", [request.data.get("platform", "general")]),
+            featured_image=request.data.get("featured_image", ""),
+        )
         return Response(
             {
-                "id": 0,
-                "content": content,
-                "platform": request.data.get("platform", "general"),
-                "status": "scheduled",
-                "created_at": iso(None),
-                "posted_date": None,
+                "id": post.id,
+                "content": post.content,
+                "platform": post.platforms[0] if post.platforms else "general",
+                "status": post.status,
+                "created_at": iso(post.created_at),
+                "posted_date": iso(post.published_at),
                 "like_count": 0,
                 "comment_count": 0,
                 "share_count": 0,
@@ -927,7 +1082,7 @@ def social_posts(request):
             status=201,
         )
 
-    posts = Post.objects.filter(tenant_id__in=tenant_ids)
+    posts = Post.objects.filter(tenant=tenant)
     data = [
         {
             "id": p.id,
@@ -1029,23 +1184,31 @@ def social_messages(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_lists(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         name = request.data.get("name") or "New List"
+        email_list = EmailList.objects.create(
+            tenant=tenant,
+            name=name,
+            lawful_basis=request.data.get("lawful_basis", "consent"),
+            region=request.data.get("region", ""),
+        )
         return Response(
             {
-                "id": 0,
-                "name": name,
+                "id": email_list.id,
+                "name": email_list.name,
                 "subscriber_count": 0,
                 "is_active": True,
                 "open_rate": "0%",
-                "created_at": iso(None),
-                "description": f"Lawful basis: {request.data.get('lawful_basis', 'unknown')}",
+                "created_at": iso(email_list.created_at),
+                "description": f"Lawful basis: {email_list.lawful_basis}",
             },
             status=201,
         )
 
-    lists = EmailList.objects.filter(tenant_id__in=tenant_ids)
+    lists = EmailList.objects.filter(tenant=tenant)
     data = [
         {
             "id": l.id,
@@ -1064,23 +1227,33 @@ def email_lists(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_templates(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         name = request.data.get("name") or "New Template"
         subject = request.data.get("subject") or "Subject"
+        body_html = request.data.get("body_html") or "<p>Welcome!</p>"
+        template = EmailTemplate.objects.create(
+            tenant=tenant,
+            name=name,
+            subject=subject,
+            body_html=body_html,
+            body_text=request.data.get("body_text", ""),
+        )
         return Response(
             {
-                "id": 0,
-                "name": name,
-                "subject": subject,
+                "id": template.id,
+                "name": template.name,
+                "subject": template.subject,
                 "is_active": True,
-                "created_at": iso(None),
-                "date_created": iso(None),
+                "created_at": iso(template.created_at),
+                "date_created": iso(template.created_at),
             },
             status=201,
         )
 
-    templates = EmailTemplate.objects.filter(tenant_id__in=tenant_ids)
+    templates = EmailTemplate.objects.filter(tenant=tenant)
     data = [
         {
             "id": t.id,
@@ -1098,21 +1271,29 @@ def email_templates(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_flows(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         name = request.data.get("name") or "New Flow"
+        flow = EmailFlow.objects.create(
+            tenant=tenant,
+            name=name,
+            description=request.data.get("description", "Email automation flow"),
+            enabled=True,
+        )
         return Response(
             {
-                "id": 0,
-                "name": name,
-                "is_active": True,
-                "description": request.data.get("description", "Email automation flow"),
-                "created_at": iso(None),
+                "id": flow.id,
+                "name": flow.name,
+                "is_active": flow.enabled,
+                "description": flow.description or "Email automation flow",
+                "created_at": iso(flow.created_at),
             },
             status=201,
         )
 
-    flows = EmailFlow.objects.filter(tenant_id__in=tenant_ids)
+    flows = EmailFlow.objects.filter(tenant=tenant)
     data = [
         {
             "id": f.id,
@@ -1129,22 +1310,31 @@ def email_flows(request):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def email_contacts(request):
-    tenant_ids = get_user_tenant_ids(request.user)
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
     if request.method == "POST":
         email_val = request.data.get("email") or ""
+        contact = Contact.objects.create(
+            tenant=tenant,
+            email=email_val,
+            name=request.data.get("name", ""),
+            subscribed=True,
+            properties=request.data.get("properties", {}),
+        )
         return Response(
             {
-                "id": 0,
-                "email": email_val,
-                "name": request.data.get("name", ""),
-                "subscribed": True,
-                "subscribed_at": iso(None),
-                "unsubscribed_at": None,
+                "id": contact.id,
+                "email": contact.email,
+                "name": contact.name,
+                "subscribed": contact.subscribed,
+                "subscribed_at": iso(contact.subscribed_at),
+                "unsubscribed_at": iso(contact.unsubscribed_at),
             },
             status=201,
         )
 
-    contacts = Contact.objects.filter(tenant_id__in=tenant_ids)
+    contacts = Contact.objects.filter(tenant=tenant)
     data = [
         {
             "id": c.id,

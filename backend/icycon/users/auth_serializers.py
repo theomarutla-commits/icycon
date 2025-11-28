@@ -45,7 +45,8 @@ class SignupSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login."""
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=False, allow_blank=True)
+    username = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField(read_only=True)
     features_url = serializers.SerializerMethodField(read_only=True)
@@ -54,12 +55,17 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         """Authenticate the user."""
         email = data.get('email') or ''
+        username = data.get('username') or ''
         password = data.get('password') or ''
 
-        # Get user by email; fall back gracefully if multiple or missing
-        user = User.objects.filter(email=email).first()
+        # Get user by email, then by username
+        user = None
+        if email:
+            user = User.objects.filter(email=email).first()
+        if not user and username:
+            user = User.objects.filter(username=username).first()
         if not user:
-            raise serializers.ValidationError({'email': 'Invalid email or password.'})
+            raise serializers.ValidationError({'email': 'Invalid username/email or password.'})
 
         if not user.check_password(password):
             raise serializers.ValidationError({'password': 'Invalid email or password.'})
