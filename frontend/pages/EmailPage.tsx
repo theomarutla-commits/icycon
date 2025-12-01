@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, MessageSquare, Users, TrendingUp } from 'lucide-react';
 import CTA from '../components/CTA';
 import QuickCreateCard from '../components/QuickCreateCard';
+import { Link } from 'react-router-dom';
 
 const features = [
   {
@@ -45,6 +46,14 @@ const EmailPage: React.FC = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Turn subscribers into superfans. We build compliant, high-performance Email & SMS systems that maximize Lifetime Value (LTV) and automate your growth.
           </p>
+          <div className="mt-6">
+            <Link
+              to="/data-entry"
+              className="inline-flex px-5 py-3 bg-icy-main text-white rounded-full font-semibold text-sm hover:bg-blue-600 transition-colors"
+            >
+              Open Data Entry
+            </Link>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-24">

@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Globe, Smartphone, BarChart, Bot } from 'lucide-react';
 import CTA from '../components/CTA';
+import { Link } from 'react-router-dom';
 
 const features = [
   {
@@ -69,6 +70,26 @@ const OptimisationPage: React.FC = () => {
               </div>
               <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-icy-main transition-colors">{f.title}</h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{f.desc}</p>
+              {f.title === 'Technical SEO' && (
+                <div className="mt-6">
+                  <Link
+                    to="/seo/data"
+                    className="inline-flex px-4 py-2 rounded-full bg-icy-main text-white text-xs font-semibold hover:bg-blue-600 transition-colors"
+                  >
+                    Open SEO Data Entry
+                  </Link>
+                </div>
+              )}
+              {f.title === 'AEO (Answer Engine Optimization)' && (
+                <div className="mt-6">
+                  <Link
+                    to="/aeo/data"
+                    className="inline-flex px-4 py-2 rounded-full bg-icy-main text-white text-xs font-semibold hover:bg-blue-600 transition-colors"
+                  >
+                    Open AEO Data Entry
+                  </Link>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

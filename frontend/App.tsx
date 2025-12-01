@@ -9,6 +9,9 @@ import ReachPage from './pages/ReachPage';
 import GrowthPage from './pages/GrowthPage';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
+import FeatureInputPage from './pages/FeatureInputPage';
+import SEODataPage from './pages/SEODataPage';
+import AeoDataPage from './pages/AeoDataPage';
 import Footer from './components/Footer';
 import { getStoredAuth, clearStoredAuth } from './lib/api';
 
@@ -61,6 +64,9 @@ export default function App() {
             <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <AuthPage onLogin={handleLogin} />} />
             <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <AuthPage onLogin={handleLogin} />} />
+            <Route path="/data-entry" element={isAuthenticated ? <FeatureInputPage /> : <AuthPage onLogin={handleLogin} />} />
+            <Route path="/seo/data" element={isAuthenticated ? <SEODataPage /> : <AuthPage onLogin={handleLogin} />} />
+            <Route path="/aeo/data" element={isAuthenticated ? <AeoDataPage /> : <AuthPage onLogin={handleLogin} />} />
           </Routes>
         </main>
 

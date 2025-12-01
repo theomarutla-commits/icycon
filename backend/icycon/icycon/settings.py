@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -11,11 +12,11 @@ except ImportError:  # optional dep; skip if not installed
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------------------------------------------------------------------
-# Manual settings (no environment variable lookup)
+# Manual settings with environment variable overrides
 # ---------------------------------------------------------------------------
-# Update these values directly to fit your deployment.
-SECRET_KEY = 'django-insecure-change-me'
-DEBUG = True  # Set to False in production
+# Values can be configured via environment variables for production safety.
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'  # Set to False in production
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','*']
 
 # CORS / CSRF (manually managed)
@@ -48,15 +49,15 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 #  OpenAI (manual)
-OPENAI_API_KEY = '' # paste your key if used
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
 #Email settings 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'theosknowledge@gmail.com'
-EMAIL_HOST_PASSWORD = 'qbou ikyx crnt mody'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'theosknowledge@gmail.com'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@example.com')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
@@ -123,8 +124,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'icycon.wsgi.application'
 
 # Database: explicit Postgres URL; fallback to local SQLite if parsing fails or dependency missing
-DATABASE_URL = "postgresql://icy:IpE6ksNJL2pqnB96kxLAWE9ZiUdNBzZx@dpg-d4euuargk3sc73c06940-a.oregon-postgres.render.com/icycon"
-DATABASE_SSL_REQUIRED = True
+DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_SSL_REQUIRED = os.getenv("DATABASE_SSL_REQUIRED", "True").lower() == "true"
 
 default_sqlite = {
     "ENGINE": "django.db.backends.sqlite3",

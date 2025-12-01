@@ -15,6 +15,7 @@ import BlogDashboard from '../components/dashboard/BlogDashboard';
 import BacklinksDashboard from '../components/dashboard/BacklinksDashboard';
 import { services, stats } from '../lib/dashboard-data';
 import { fetchDashboard, UserProfile } from '../lib/api';
+import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<string>("Overview");
@@ -128,15 +129,25 @@ const Dashboard: React.FC = () => {
             </div>
           </motion.div>
 
-          <motion.button
+          <motion.div
             {...({
                 initial: { opacity: 0 },
                 animate: { opacity: 1 }
             } as any)}
-            className="px-6 py-3 bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-xl font-medium text-sm hover:bg-white/80 dark:hover:bg-white/20 transition-all shadow-sm hover:shadow-lg text-gray-800 dark:text-white"
+            className="flex items-center gap-3"
           >
-            Download Report
-          </motion.button>
+            <Link
+              to="/data-entry"
+              className="px-6 py-3 bg-icy-main text-white rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors shadow-sm hover:shadow-lg"
+            >
+              Add Data
+            </Link>
+            <button
+              className="px-6 py-3 bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-xl font-medium text-sm hover:bg-white/80 dark:hover:bg-white/20 transition-all shadow-sm hover:shadow-lg text-gray-800 dark:text-white"
+            >
+              Download Report
+            </button>
+          </motion.div>
         </div>
 
         {/* Overview Stats (Visible in Overview only) */}

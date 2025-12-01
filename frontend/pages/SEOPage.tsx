@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Globe, Zap, BarChart, Bot } from 'lucide-react';
 import CTA from '../components/CTA';
 import QuickCreateCard from '../components/QuickCreateCard';
+import { Link } from 'react-router-dom';
 
 const features = [
   {
@@ -45,6 +46,20 @@ const SEOPage: React.FC = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Future-proof your visibility. We combine traditional technical SEO with cutting-edge Answer Engine Optimization to ensure you rank on Google and be the answer on AI.
           </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Link
+              to="/seo/data"
+              className="inline-flex px-5 py-3 bg-icy-main text-white rounded-full font-semibold text-sm hover:bg-blue-600 transition-colors"
+            >
+              SEO Data Entry
+            </Link>
+            <Link
+              to="/data-entry"
+              className="inline-flex px-5 py-3 bg-white/80 text-icy-main rounded-full font-semibold text-sm hover:bg-white transition-colors border border-icy-main/20"
+            >
+              All Features
+            </Link>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-24">
