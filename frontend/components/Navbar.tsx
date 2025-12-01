@@ -17,6 +17,7 @@ const navLinks = [
   { name: 'Optimisation', href: '/optimisation' },
   { name: 'Growth', href: '/growth' },
   { name: 'Reach', href: '/reach' },
+  { name: 'Leads', href: '/leads' },
 ];
 
 const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, onLogout }) => {

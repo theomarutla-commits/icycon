@@ -1,6 +1,8 @@
+import re
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.conf import settings
 
 class User(AbstractUser):
     """
@@ -26,6 +28,7 @@ class User(AbstractUser):
         ("editor", "Editor"),
         ("viewer", "Viewer"),
     ]
+    phone_number = models.CharField(max_length=32, blank=True)
     organization_role = models.CharField(
         max_length=20, 
         choices=ROLE_CHOICES,
@@ -46,7 +49,29 @@ class User(AbstractUser):
         # Set organization creation time on first save
         if self.organization_name and not self.organization_created_at:
             self.organization_created_at = timezone.now()
+        if self.phone_number:
+            normalized = re.sub(r"[^0-9+]", "", self.phone_number)
+            if normalized and not normalized.startswith("+"):
+                normalized = f"+{normalized}"
+            # basic length guard; don't block save, just truncate if wildly long
+            if len(normalized) > 20:
+                normalized = normalized[:20]
+            self.phone_number = normalized
         super().save(*args, **kwargs)
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reset_tokens")
+    token = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def is_valid(self):
+        return not self.used and timezone.now() < self.expires_at
 
     @property
     def is_organization(self):

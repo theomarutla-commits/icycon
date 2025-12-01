@@ -5,6 +5,7 @@ export type UserProfile = {
   first_name?: string;
   last_name?: string;
   avatar?: string | null;
+  date_joined?: string | null;
 };
 
 export type AuthState = {
@@ -29,11 +30,17 @@ export type DashboardResponse = {
 };
 
 const STORAGE_KEY = "icy_auth_state";
-const defaultBase = typeof window !== "undefined" ? window.location.origin : "";
-// Resolve API base: prefer VITE_API_BASE, otherwise fall back to localhost:8000
+const browserOrigin = typeof window !== "undefined" ? window.location.origin : "";
+const browserHost = typeof window !== "undefined" ? window.location.hostname : "";
+// Resolve API base: prefer explicit env, otherwise use localhost:8000 for dev or the current origin for same-host deploys
 const envBase = (import.meta.env.VITE_API_BASE as string | undefined) || "";
 const sanitizedEnv = envBase.replace(/\/$/, "");
-export const API_BASE = sanitizedEnv || "http://127.0.0.1:8000";
+const localDevBase =
+  browserHost && (browserHost === "localhost" || browserHost === "127.0.0.1")
+    ? `http://${browserHost}:8000`
+    : "";
+export const API_BASE = sanitizedEnv || localDevBase || browserOrigin || "http://127.0.0.1:8000";
+const envApiKey = ((import.meta.env.VITE_API_KEY as string | undefined) || "").trim();
 
 const buildBasicToken = (identifier: string, password: string) => {
   const encoded = btoa(`${identifier}:${password}`);
@@ -89,6 +96,10 @@ async function request<T>(path: string, init?: RequestInit, opts?: RequestOption
   if (!opts?.skipAuth) {
     const token = getAuthHeader();
     if (token) headers.set("Authorization", token);
+  }
+
+  if (envApiKey) {
+    headers.set("X-API-Key", envApiKey);
   }
 
   const target = normalizePath(path);
@@ -150,17 +161,19 @@ export async function signup({
   username,
   password,
   password_confirm,
+  phone_number,
 }: {
   email: string;
   username: string;
   password: string;
   password_confirm: string;
+  phone_number?: string;
 }) {
   const res = await request<{ user: UserProfile }>(
     "/api/auth/signup",
     {
       method: "POST",
-      body: JSON.stringify({ email, username, password, password_confirm }),
+      body: JSON.stringify({ email, username, password, password_confirm, phone_number }),
     },
     { skipAuth: true }
   );
@@ -173,6 +186,20 @@ export async function signup({
   };
   persistAuth(authState);
   return res;
+}
+
+export async function requestPasswordReset(email: string) {
+  return request("/api/auth/request-reset", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function confirmPasswordReset(token: string, password: string) {
+  return request("/api/auth/confirm-reset", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
 }
 
 export async function fetchDashboard(): Promise<DashboardResponse> {
@@ -196,8 +223,33 @@ export async function fetchFeatureIndex(): Promise<FeatureIndexItem[]> {
   return res.features;
 }
 
+export async function downloadDashboardReport(params?: { range?: string; start_date?: string; end_date?: string }): Promise<Blob> {
+  const headers = new Headers();
+  const auth = getStoredAuth();
+  if (auth) {
+    const token = buildBasicToken(auth.username || auth.email, auth.password);
+    headers.set("Authorization", token);
+  }
+  const search = new URLSearchParams();
+  if (params?.range) search.set("range", params.range);
+  if (params?.start_date) search.set("start_date", params.start_date);
+  if (params?.end_date) search.set("end_date", params.end_date);
+  const res = await fetch(normalizePath(`/api/report/dashboard/${search.toString() ? `?${search.toString()}` : ""}`), { headers });
+  if (!res.ok) {
+    throw new Error(`Failed to download report (${res.status})`);
+  }
+  return res.blob();
+}
+
 export async function postFeatureData(path: string, payload: Record<string, any>) {
   return request(path, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function submitLead(payload: Record<string, any>) {
+  return request("/api/leads/", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -223,4 +275,5 @@ export const apiActions = {
   createEmailTemplate: (payload: Record<string, any>) => postFeatureData("/api/email/templates/", payload),
   createEmailFlow: (payload: Record<string, any>) => postFeatureData("/api/email/flows/", payload),
   createEmailContact: (payload: Record<string, any>) => postFeatureData("/api/email/contacts/", payload),
+  createLead: (payload: Record<string, any>) => postFeatureData("/api/leads/", payload),
 };

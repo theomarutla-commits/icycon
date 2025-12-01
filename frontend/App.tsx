@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import FeatureInputPage from './pages/FeatureInputPage';
 import SEODataPage from './pages/SEODataPage';
 import AeoDataPage from './pages/AeoDataPage';
+import LeadCapturePage from './pages/LeadCapturePage';
 import Footer from './components/Footer';
 import { getStoredAuth, clearStoredAuth } from './lib/api';
 
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <AuthPage onLogin={handleLogin} />} />
             <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <AuthPage onLogin={handleLogin} />} />
+            <Route path="/leads" element={<LeadCapturePage />} />
             <Route path="/data-entry" element={isAuthenticated ? <FeatureInputPage /> : <AuthPage onLogin={handleLogin} />} />
             <Route path="/seo/data" element={isAuthenticated ? <SEODataPage /> : <AuthPage onLogin={handleLogin} />} />
             <Route path="/aeo/data" element={isAuthenticated ? <AeoDataPage /> : <AuthPage onLogin={handleLogin} />} />

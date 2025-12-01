@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from icycon.api_views import FEATURES_INDEX
+import re
 
 User = get_user_model()
 
@@ -14,12 +15,22 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'username', 'password', 'password_confirm', 'features']
+        fields = ['email', 'username', 'password', 'password_confirm', 'phone_number', 'features']
 
     def validate(self, data):
         """Validate that passwords match."""
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({'password': 'Passwords do not match.'})
+        phone = data.get('phone_number') or ''
+        if phone:
+            normalized = re.sub(r"[^0-9+]", "", phone)
+            if not normalized:
+                raise serializers.ValidationError({'phone_number': 'Phone number is invalid.'})
+            if not normalized.startswith("+"):
+                normalized = f"+{normalized}"
+            if len(normalized) < 8 or len(normalized) > 20:
+                raise serializers.ValidationError({'phone_number': 'Phone number length looks invalid.'})
+            data['phone_number'] = normalized
         return data
 
     def create(self, validated_data):

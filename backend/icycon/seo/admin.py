@@ -10,7 +10,7 @@ admin.site.register(ContentItem)
 admin.site.register(FAQ)
 
 # Register Backlinks models
-from .models import Backlink, BacklinkProfile, CompetitorBacklink, LinkOpportunity
+from .models import Backlink, BacklinkProfile, CompetitorBacklink, LinkOpportunity, PressPitch, RepurposeJob, AeoChecklistItem, FreeZoneIdea
 
 @admin.register(Backlink)
 class BacklinkAdmin(admin.ModelAdmin):
@@ -38,4 +38,36 @@ class LinkOpportunityAdmin(admin.ModelAdmin):
     list_display = ('prospect_domain', 'priority', 'status', 'relevance_score', 'site')
     list_filter = ('status', 'priority', 'site', 'created_at')
     search_fields = ('prospect_domain', 'contact_email', 'prospect_url')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(PressPitch)
+class PressPitchAdmin(admin.ModelAdmin):
+    list_display = ('outlet', 'pitch_subject', 'status', 'sent_at', 'follow_up_at')
+    list_filter = ('status', 'sent_at')
+    search_fields = ('outlet', 'contact_email', 'pitch_subject')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(RepurposeJob)
+class RepurposeJobAdmin(admin.ModelAdmin):
+    list_display = ('source_url', 'status', 'scheduled_for', 'completed_at')
+    list_filter = ('status',)
+    search_fields = ('source_url',)
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(AeoChecklistItem)
+class AeoChecklistItemAdmin(admin.ModelAdmin):
+    list_display = ('name', 'status', 'tenant', 'updated_at')
+    list_filter = ('status', 'tenant')
+    search_fields = ('name',)
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(FreeZoneIdea)
+class FreeZoneIdeaAdmin(admin.ModelAdmin):
+    list_display = ('title', 'idea_type', 'status', 'effort', 'tenant')
+    list_filter = ('idea_type', 'status', 'effort', 'tenant')
+    search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')

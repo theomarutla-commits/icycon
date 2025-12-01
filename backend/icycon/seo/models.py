@@ -199,3 +199,128 @@ class LinkOpportunity(models.Model):
     
     def __str__(self):
         return f"Opportunity: {self.prospect_domain}"
+
+
+class PressPitch(models.Model):
+    """Tracks PR/media outreach attempts."""
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("sent", "Sent"),
+        ("responded", "Responded"),
+        ("secured", "Secured"),
+        ("rejected", "Rejected"),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='press_pitches')
+    outlet = models.CharField(max_length=255)
+    contact_name = models.CharField(max_length=255, blank=True)
+    contact_email = models.EmailField(blank=True)
+    pitch_subject = models.CharField(max_length=255)
+    pitch_body = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+    sent_at = models.DateTimeField(null=True, blank=True)
+    follow_up_at = models.DateTimeField(null=True, blank=True)
+    response_notes = models.TextField(blank=True)
+    article_url = models.URLField(blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["tenant", "status"])]
+
+    def __str__(self):
+        return f"{self.outlet} - {self.pitch_subject}"
+
+
+class RepurposeJob(models.Model):
+    """Schedules/records repurposing of a blog/article into other formats."""
+
+    STATUS_CHOICES = [
+        ("scheduled", "Scheduled"),
+        ("processing", "Processing"),
+        ("done", "Done"),
+        ("failed", "Failed"),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='repurpose_jobs')
+    source_url = models.URLField()
+    target_formats = models.JSONField(default=list, blank=True)  # e.g., ["twitter", "linkedin", "email"]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="scheduled")
+    scheduled_for = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    summary = models.TextField(blank=True)
+    outputs = models.JSONField(default=dict, blank=True)  # store snippets per format
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["tenant", "status"])]
+
+    def __str__(self):
+        return f"Repurpose: {self.source_url}"
+
+
+class AeoChecklistItem(models.Model):
+    STATUS_CHOICES = [
+        ("good", "Good"),
+        ("warning", "Warning"),
+        ("poor", "Poor"),
+        ("pending", "Pending"),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='aeo_checklist')
+    name = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    recommendation = models.TextField(blank=True)
+    source = models.CharField(max_length=50, default="manual")
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.status})"
+
+
+class FreeZoneIdea(models.Model):
+    IDEA_CHOICES = [
+        ("microtool", "Microtool"),
+        ("campaign", "Campaign"),
+        ("content", "Content"),
+    ]
+    STATUS_CHOICES = [
+        ("open", "Open"),
+        ("scheduled", "Scheduled"),
+        ("launched", "Launched"),
+        ("archived", "Archived"),
+    ]
+    EFFORT_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='free_zone_ideas')
+    title = models.CharField(max_length=255)
+    idea_type = models.CharField(max_length=50, choices=IDEA_CHOICES, default="microtool")
+    description = models.TextField(blank=True)
+    cta = models.CharField(max_length=255, blank=True)
+    effort = models.CharField(max_length=20, choices=EFFORT_CHOICES, default="medium")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title

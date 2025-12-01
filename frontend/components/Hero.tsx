@@ -61,9 +61,12 @@ const Hero: React.FC = () => {
               Start Your Growth <ArrowRight className="group-hover:translate-x-1 transition-transform" />
             </Link>
             
-            <button className="px-8 py-4 text-white font-semibold hover:text-icy-main transition-colors backdrop-blur-sm bg-black/10 rounded-full border border-white/10 hover:bg-white/10 w-full sm:w-auto">
-              View Case Studies
-            </button>
+            <Link 
+              to="/leads"
+              className="px-8 py-4 text-white font-semibold hover:text-icy-main transition-colors backdrop-blur-sm bg-black/10 rounded-full border border-white/10 hover:bg-white/10 w-full sm:w-auto text-center"
+            >
+              Build My Lead Engine
+            </Link>
           </motion.div>
         </div>
 

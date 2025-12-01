@@ -13,8 +13,8 @@ import MarketplaceDashboard from '../components/dashboard/MarketplaceDashboard';
 import EmailDashboard from '../components/dashboard/EmailDashboard';
 import BlogDashboard from '../components/dashboard/BlogDashboard';
 import BacklinksDashboard from '../components/dashboard/BacklinksDashboard';
-import { services, stats } from '../lib/dashboard-data';
-import { fetchDashboard, UserProfile } from '../lib/api';
+import { services, stats as staticStats } from '../lib/dashboard-data';
+import { fetchDashboard, UserProfile, DashboardResponse, downloadDashboardReport } from '../lib/api';
 import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
@@ -23,25 +23,65 @@ const Dashboard: React.FC = () => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [multiSeoEnabled, setMultiSeoEnabled] = useState(true); // Toggle state
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [liveStats, setLiveStats] = useState(staticStats);
   const [loadingUser, setLoadingUser] = useState(true);
   const [userError, setUserError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [rangePreset, setRangePreset] = useState<"today" | "7d" | "30d" | "90d" | "custom">("30d");
+  const [sliderDays, setSliderDays] = useState(30);
 
   useEffect(() => {
     let mounted = true;
-    fetchDashboard()
-      .then((data) => {
-        if (mounted) {
+
+    const load = () => {
+      fetchDashboard()
+        .then((data: DashboardResponse) => {
+          if (!mounted) return;
           setUser(data.user);
-        }
-      })
-      .catch((err: any) => {
-        if (mounted) setUserError(err?.message || "Unable to load profile");
-      })
-      .finally(() => {
-        if (mounted) setLoadingUser(false);
-      });
+          const dynamic = [
+            {
+              label: "ASO Apps",
+              value: String(data.aso_apps_count ?? 0),
+              trend: "+live",
+              color: "text-icy-main",
+              icon: () => <ChevronLeft className="hidden" />, // placeholder; icon unused in rendering below
+            },
+            {
+              label: "Marketplace Products",
+              value: String(data.marketplace_products_count ?? 0),
+              trend: "+live",
+              color: "text-purple-500",
+              icon: () => <ChevronLeft className="hidden" />,
+            },
+            {
+              label: "Features",
+              value: String((data as any).features?.length ?? staticStats.length),
+              trend: "+live",
+              color: "text-green-500",
+              icon: () => <ChevronLeft className="hidden" />,
+            },
+          ];
+          // Preserve icon definitions from static stats for display
+          setLiveStats([
+            { ...staticStats[0], value: dynamic[0].value, label: "ASO Apps", trend: dynamic[0].trend },
+            { ...staticStats[1], value: dynamic[1].value, label: "Marketplace Products", trend: dynamic[1].trend },
+            { ...staticStats[2], value: dynamic[2].value, label: "Features", trend: dynamic[2].trend },
+          ]);
+        })
+        .catch((err: any) => {
+          if (mounted) setUserError(err?.message || "Unable to load profile");
+        })
+        .finally(() => {
+          if (mounted) setLoadingUser(false);
+        });
+    };
+
+    load();
+    const id = window.setInterval(load, 30000); // refresh every 30s to keep dashboard live
     return () => {
       mounted = false;
+      window.clearInterval(id);
     };
   }, []);
 
@@ -84,6 +124,41 @@ const Dashboard: React.FC = () => {
   const displayedServices = currentView === "Overview" 
     ? services 
     : services.filter(s => s.category === currentView);
+
+  const handleDownload = async () => {
+    setDownloadError(null);
+    setDownloading(true);
+    try {
+      const now = new Date();
+      const start = new Date();
+      if (rangePreset === "today") {
+        start.setHours(0, 0, 0, 0);
+      } else if (rangePreset === "7d") {
+        start.setDate(now.getDate() - 7);
+      } else if (rangePreset === "30d") {
+        start.setDate(now.getDate() - 30);
+      } else if (rangePreset === "90d") {
+        start.setDate(now.getDate() - 90);
+      } else {
+        start.setDate(now.getDate() - sliderDays);
+      }
+      const blob = await downloadDashboardReport({
+        range: rangePreset === "custom" ? "custom" : rangePreset,
+        start_date: start.toISOString(),
+        end_date: now.toISOString(),
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dashboard-report.pdf';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setDownloadError(err?.message || "Failed to download report");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="pt-24 pb-12 px-4 min-h-screen bg-slate-50 dark:bg-icy-dark relative overflow-hidden transition-colors duration-300">
@@ -143,17 +218,50 @@ const Dashboard: React.FC = () => {
               Add Data
             </Link>
             <button
-              className="px-6 py-3 bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-xl font-medium text-sm hover:bg-white/80 dark:hover:bg-white/20 transition-all shadow-sm hover:shadow-lg text-gray-800 dark:text-white"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="px-6 py-3 bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-xl font-medium text-sm hover:bg-white/80 dark:hover:bg-white/20 transition-all shadow-sm hover:shadow-lg text-gray-800 dark:text-white disabled:opacity-60"
             >
-              Download Report
+              {downloading ? "Preparing..." : "Download Report"}
             </button>
           </motion.div>
         </div>
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <span className="text-xs text-gray-600 dark:text-gray-300">Range:</span>
+          {["today", "7d", "30d", "90d", "custom"].map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setRangePreset(opt as any)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                rangePreset === opt
+                  ? "bg-icy-main text-white border-icy-main"
+                  : "bg-white/60 dark:bg-white/5 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-white/10"
+              }`}
+            >
+              {opt === "7d" ? "7d" : opt === "30d" ? "30d" : opt === "90d" ? "90d" : opt === "today" ? "Today" : "Custom"}
+            </button>
+          ))}
+          {rangePreset === "custom" && (
+            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <input
+                type="range"
+                min={1}
+                max={180}
+                value={sliderDays}
+                onChange={(e) => setSliderDays(parseInt(e.target.value, 10))}
+              />
+              <span>{sliderDays}d</span>
+            </div>
+          )}
+        </div>
+        {downloadError && (
+          <p className="text-xs text-red-500 mb-4">Report error: {downloadError}</p>
+        )}
 
         {/* Overview Stats (Visible in Overview only) */}
         {currentView === "Overview" && !selectedService && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {stats.map((stat, index) => (
+            {liveStats.map((stat, index) => (
                 <motion.div
                 key={index}
                 {...({

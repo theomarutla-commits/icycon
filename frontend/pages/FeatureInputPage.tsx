@@ -12,6 +12,22 @@ const FeatureInputPage: React.FC = () => {
 
         <div className="grid md:grid-cols-2 gap-6">
           <QuickCreateCard
+            title="Inbound Lead"
+            description="POST /api/leads/"
+            endpoint="/api/leads/"
+            fields={[
+              { name: 'name', label: 'Name', placeholder: 'Jane Doe' },
+              { name: 'email', label: 'Email', placeholder: 'jane@example.com' },
+              { name: 'phone', label: 'Phone', placeholder: '+1 415 555 5555' },
+              { name: 'company', label: 'Company', placeholder: 'Acme Co' },
+              { name: 'service_interest', label: 'Service Interest', placeholder: 'SEO, Email, Social' },
+              { name: 'budget', label: 'Budget', placeholder: '$2k/month' },
+              { name: 'message', label: 'Notes', placeholder: 'Goals, pain points', type: 'textarea' },
+              { name: 'source', label: 'Source', placeholder: 'utm / channel' },
+            ]}
+          />
+
+          <QuickCreateCard
             title="ASO App"
             description="POST /api/aso/apps/"
             endpoint="/api/aso/apps/"
@@ -100,6 +116,21 @@ const FeatureInputPage: React.FC = () => {
           />
 
           <QuickCreateCard
+            title="Press Pitch"
+            description="POST /api/seo/pr-pitches/"
+            endpoint="/api/seo/pr-pitches/"
+            fields={[
+              { name: 'outlet', label: 'Outlet', placeholder: 'TechCrunch' },
+              { name: 'pitch_subject', label: 'Subject', placeholder: 'Launch story idea' },
+              { name: 'pitch_body', label: 'Pitch Body', placeholder: 'Your pitch', type: 'textarea' },
+              { name: 'contact_name', label: 'Contact Name', placeholder: 'Editor' },
+              { name: 'contact_email', label: 'Contact Email', placeholder: 'editor@example.com' },
+              { name: 'status', label: 'Status', placeholder: 'sent', defaultValue: 'sent' },
+              { name: 'article_url', label: 'Article URL', placeholder: 'https://example.com/coverage' },
+            ]}
+          />
+
+          <QuickCreateCard
             title="Social Post"
             description="POST /api/social/posts/"
             endpoint="/api/social/posts/"
@@ -137,6 +168,78 @@ const FeatureInputPage: React.FC = () => {
             fields={[
               { name: 'email', label: 'Email', placeholder: 'user@example.com' },
               { name: 'name', label: 'Name', placeholder: 'Jane Doe' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Send Email"
+            description="POST /api/email/sends/"
+            endpoint="/api/email/sends/"
+            fields={[
+              { name: 'recipient_id', label: 'Recipient ID', placeholder: 'Contact ID' },
+              { name: 'template_id', label: 'Template ID (or leave blank)', placeholder: 'Template ID' },
+              { name: 'subject', label: 'Subject (if no template)', placeholder: 'Welcome to Icycon' },
+              { name: 'body_text', label: 'Body Text', placeholder: 'Plaintext body', type: 'textarea' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Send SMS"
+            description="POST /api/email/sms/"
+            endpoint="/api/email/sms/"
+            fields={[
+              { name: 'to_number', label: 'To Number (optional; falls back to your phone)', placeholder: '+15551234567' },
+              { name: 'body', label: 'Message', placeholder: 'Your SMS message', type: 'textarea' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Email Campaign"
+            description="POST /api/email/campaigns/"
+            endpoint="/api/email/campaigns/"
+            fields={[
+              { name: 'email_list_id', label: 'Email List ID', placeholder: 'List ID' },
+              { name: 'template_id', label: 'Template ID (optional)', placeholder: 'Template ID' },
+              { name: 'subject', label: 'Subject (if no template)', placeholder: 'Welcome' },
+              { name: 'body_text', label: 'Body Text', placeholder: 'Plaintext body', type: 'textarea' },
+              { name: 'body_html', label: 'Body HTML', placeholder: '<p>Hello</p>', type: 'textarea' },
+              { name: 'send_now', label: 'Send Now (true/false)', placeholder: 'true', defaultValue: 'true' },
+              { name: 'scheduled_for', label: 'Scheduled For (ISO datetime)', placeholder: '2025-12-02T10:00:00Z' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Schedule Social Post"
+            description="POST /api/social/schedule/"
+            endpoint="/api/social/schedule/"
+            fields={[
+              { name: 'title', label: 'Title', placeholder: 'Post title' },
+              { name: 'content', label: 'Content', placeholder: 'Write your post', type: 'textarea' },
+              { name: 'platforms', label: 'Platforms (JSON array)', placeholder: '["linkedin","x"]' },
+              { name: 'publish_at', label: 'Publish At (ISO datetime)', placeholder: '2025-12-02T10:00:00Z' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Translate Text"
+            description="POST /api/translate/"
+            endpoint="/api/translate/"
+            fields={[
+              { name: 'text', label: 'Text', placeholder: 'Content to translate', type: 'textarea' },
+              { name: 'target_lang', label: 'Target Language', placeholder: 'fr' },
+              { name: 'url', label: 'Source URL (optional)', placeholder: 'https://example.com/page' },
+            ]}
+          />
+
+          <QuickCreateCard
+            title="Free Zone Ideas"
+            description="POST /api/free-zone/"
+            endpoint="/api/free-zone/"
+            fields={[
+              { name: 'goal', label: 'Goal', placeholder: 'organic growth' },
+              { name: 'audience', label: 'Audience', placeholder: 'SMBs' },
+              { name: 'vertical', label: 'Vertical', placeholder: 'SaaS' },
+              { name: 'regenerate', label: 'Regenerate (true/false)', placeholder: 'true', defaultValue: 'true' },
             ]}
           />
         </div>

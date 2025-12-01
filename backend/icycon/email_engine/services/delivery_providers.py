@@ -67,7 +67,7 @@ def _smtp_send(from_addr, to_addr, subject, body_text, body_html=None):
         return False, None, str(exc)
 
 
-def send_via_provider(email_send):
+def send_via_provider(email_send, subject_override=None, body_text_override=None, body_html_override=None):
     """Send using configured provider (SMTP) or fall back to dry-run.
 
     email_send: EmailSend instance
@@ -81,9 +81,12 @@ def send_via_provider(email_send):
     if not to_addr:
         return False, None, 'recipient email missing'
 
-    subject = template.subject if template and getattr(template, 'subject', None) else f"Message from {email_send.tenant.name}"
-    body_text = getattr(template, 'body_text', '') if template else ''
-    body_html = getattr(template, 'body_html', None) if template else None
+    subject = (
+        subject_override
+        or (template.subject if template and getattr(template, 'subject', None) else f"Message from {getattr(email_send.tenant, 'name', 'Icycon')}")
+    )
+    body_text = body_text_override if body_text_override is not None else (getattr(template, 'body_text', '') if template else '')
+    body_html = body_html_override if body_html_override is not None else (getattr(template, 'body_html', None) if template else None)
 
     # Prefer SMTP if configured
     if getattr(settings, 'EMAIL_HOST', None):

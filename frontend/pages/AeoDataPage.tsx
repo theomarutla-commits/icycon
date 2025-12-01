@@ -51,6 +51,20 @@ const AeoDataPage: React.FC = () => {
               { name: 'url', label: 'Listing URL', placeholder: 'https://yelp.com/yourbiz' },
             ]}
           />
+
+          <QuickCreateCard
+            title="Run AEO Readiness"
+            description="POST /api/aeo/readiness/"
+            endpoint="/api/aeo/readiness/"
+            fields={[
+              { name: 'domain', label: 'Domain', placeholder: 'https://example.com' },
+              { name: 'vertical', label: 'Vertical', placeholder: 'SaaS' },
+              { name: 'primary_keywords', label: 'Primary Keywords (comma separated)', placeholder: 'productivity software, team chat' },
+              { name: 'locales', label: 'Locales (comma separated)', placeholder: 'en,de,fr' },
+              { name: 'faq_urls', label: 'FAQ URLs (comma separated)', placeholder: 'https://example.com/faq' },
+              { name: 'regenerate', label: 'Regenerate (true/false)', placeholder: 'true', defaultValue: 'true' },
+            ]}
+          />
         </div>
       </div>
     </div>

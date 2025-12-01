@@ -11,18 +11,42 @@ except ImportError:  # optional dep; skip if not installed
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+def env_list(name, default=None):
+    """
+    Parse comma-separated env vars into a list, trimming whitespace/trailing slashes.
+    Keeps local-friendly defaults when not provided.
+    """
+    raw = os.getenv(name)
+    if not raw:
+        return default or []
+    return [item.strip().rstrip("/") for item in raw.split(",") if item.strip()]
+
+def with_https_variants(origins):
+    """Ensure https variants exist for any http origins."""
+    https_variants = []
+    for origin in origins or []:
+        if origin.startswith("http://"):
+            https_variants.append("https://" + origin.split("://", 1)[1])
+    # Preserve order while deduping
+    return list(dict.fromkeys((origins or []) + https_variants))
+
 # ---------------------------------------------------------------------------
 # Manual settings with environment variable overrides
 # ---------------------------------------------------------------------------
 # Values can be configured via environment variables for production safety.
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'  # Set to False in production
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost','*']
+default_allowed_hosts = ['127.0.0.1', 'localhost']
+# Allow Render to inject its hostname automatically, while still letting env override.
+render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if render_host:
+    default_allowed_hosts.append(render_host)
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', default_allowed_hosts)
 
 # CORS / CSRF (manually managed)
 CORS_ALLOW_ALL_ORIGINS = False  # avoid '*' because we send credentials
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
+default_frontend_origins = [
     'http://127.0.0.1:3000',
     'http://localhost:3000',
     'http://127.0.0.1:3001',
@@ -34,22 +58,20 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-    'http://127.0.0.1:3001',
-    'http://localhost:3001',
-    'http://127.0.0.1:5173',
-    'http://localhost:5173',
-    'http://127.0.0.1:4173',
-    'http://localhost:4173',
-]
+frontend_env_origins = env_list('CORS_ALLOWED_ORIGINS')
+frontend_single_url = os.getenv('FRONTEND_URL')
+if frontend_single_url:
+    frontend_env_origins = (frontend_env_origins or []) + [frontend_single_url]
+CORS_ALLOWED_ORIGINS = frontend_env_origins or default_frontend_origins
+
+# Keep CSRF in sync with CORS unless explicitly overridden
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = with_https_variants(CORS_ALLOWED_ORIGINS)
 
 
 #  OpenAI (manual)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+OPENAI_API_KEY = 'OPENAI_KEY_REMOVED'
 
 #Email settings 
 EMAIL_HOST = 'smtp.gmail.com'

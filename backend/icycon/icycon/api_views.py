@@ -1,17 +1,21 @@
 from uuid import uuid4
 from decimal import Decimal
+from io import BytesIO
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.text import slugify
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from PIL import Image, ImageDraw, ImageFont
 
 from analytics.models import Site, ContentItem, PageView
 from aso.models import App as ASOApp, AppKeyword, AppListing
-from email_engine.models import Contact, EmailFlow, EmailList, EmailSend, EmailTemplate
+from email_engine.models import Contact, EmailFlow, EmailList, EmailSend, EmailTemplate, Lead, SmsMessage, EmailCampaign
 from marketplace.models import (
     Conversation as MarketplaceConversation,
     Message as MarketplaceMessage,
@@ -25,7 +29,7 @@ from seo.models import ContentItem as SEOContentItem
 from seo.models import Directory as SEODirectory
 from seo.models import KeywordCluster as SEOKeywordCluster
 from seo.models import Site as SEOSite
-from seo.models import Backlink
+from seo.models import Backlink, PressPitch, RepurposeJob, AeoChecklistItem, FreeZoneIdea
 from social_media.models import (
     Comment,
     Conversation as SocialConversation,
@@ -35,10 +39,18 @@ from social_media.models import (
     SocialAccount,
 )
 from tenants.models import Tenant, TenantUser
+from email_engine.services.delivery_providers import send_via_provider
+from email_engine.services.sms_providers import send_sms_via_provider
+from textwrap import dedent
+from datetime import timedelta
+from users.models import PasswordResetToken
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
 
 FEATURES_INDEX = [
     # Platform / global
     {"key": "dashboard", "slug": "seo", "name": "Dashboard", "path": "/api/dashboard/", "description": "User overview and counts"},
+    {"key": "leads", "slug": "crm", "name": "Leads", "path": "/api/leads/", "description": "Capture and review inbound leads"},
     # AEO
     {"key": "aeo_readiness", "slug": "aeo", "name": "AEO Readiness", "path": "/api/aeo/readiness/", "description": "AEO/LLM structured data readiness checklist"},
     {"key": "translation_llm", "slug": "aeo", "name": "Translation & LLM", "path": "/api/translate/", "description": "Translate supplied text (stubbed LLM)"},
@@ -55,12 +67,21 @@ FEATURES_INDEX = [
     {"key": "email_flows", "slug": "email", "name": "Email Flows", "path": "/api/email/flows/", "description": "Automation flows"},
     {"key": "email_contacts", "slug": "email", "name": "Email Contacts", "path": "/api/email/contacts/", "description": "Contacts"},
     {"key": "email_sends", "slug": "email", "name": "Email Sends", "path": "/api/email/sends/", "description": "Send history"},
+    {"key": "email_campaigns", "slug": "email", "name": "Email Campaigns", "path": "/api/email/campaigns/", "description": "Campaign scheduling and sends"},
+    {"key": "sms_messages", "slug": "email", "name": "SMS Messages", "path": "/api/email/sms/", "description": "Outbound SMS"},
     {"key": "email_marketing_summary", "slug": "email", "name": "Email Marketing", "path": "/api/email/marketing/", "description": "Email marketing overview"},
+    {"key": "password_reset", "slug": "auth", "name": "Password Reset", "path": "/api/auth/request-reset", "description": "Request password reset"},
+    {"key": "password_reset_confirm", "slug": "auth", "name": "Reset Confirm", "path": "/api/auth/confirm-reset", "description": "Confirm password reset"},
+    {"key": "usage", "slug": "billing", "name": "Usage & Limits", "path": "/api/usage/", "description": "Usage stats for billing"},
+    {"key": "tasks_status", "slug": "tasks", "name": "Tasks Status", "path": "/api/tasks/status/", "description": "Scheduled jobs overview"},
+    {"key": "usage", "slug": "billing", "name": "Usage & Limits", "path": "/api/usage/", "description": "Usage stats for billing"},
+    {"key": "tasks_status", "slug": "tasks", "name": "Tasks Status", "path": "/api/tasks/status/", "description": "Scheduled jobs overview"},
     # Multilingual
     {"key": "multilingual_summary", "slug": "multilingual", "name": "Multilingual Summary", "path": "/api/multilingual/summary/", "description": "Content locales summary"},
     # Backlinks & directories
     {"key": "seo_backlinks", "slug": "backlinks", "name": "SEO Backlinks", "path": "/api/seo/backlinks/", "description": "Backlinks for your SEO sites"},
     {"key": "seo_directories", "slug": "directories", "name": "SEO Directories", "path": "/api/seo/directories/", "description": "Directory listings/citations"},
+    {"key": "press_pitches", "slug": "seo", "name": "Press Pitches", "path": "/api/seo/pr-pitches/", "description": "PR outreach tracking"},
     # Free zone (stub ideas)
     {"key": "free_zone", "slug": "free-zone", "name": "Free Zone", "path": "/api/free-zone/", "description": "Microtool and campaign ideas (stub)"},
     # ASO
@@ -89,6 +110,8 @@ FEATURES_INDEX = [
     {"key": "seo_keyword_clusters", "slug": "content", "name": "SEO Keyword Clusters", "path": "/api/seo/keywords/", "description": "Keyword clusters"},
     {"key": "seo_content_items", "slug": "content", "name": "SEO Content", "path": "/api/seo/content/", "description": "Content items"},
     {"key": "seo_faqs", "slug": "aeo", "name": "SEO FAQs", "path": "/api/seo/faqs/", "description": "FAQ entries"},
+    {"key": "seo_repurpose", "slug": "content", "name": "Repurpose Jobs", "path": "/api/seo/repurpose/", "description": "Blog repurpose & scheduling"},
+    {"key": "report_dashboard", "slug": "reports", "name": "Dashboard Report", "path": "/api/report/dashboard/", "description": "PDF summary of key metrics"},
     # Geo helper
     {"key": "geo_lookup", "slug": "seo", "name": "Geo Lookup", "path": "/api/geo/lookup/", "description": "Geocode an address (stub with optional OpenAI)"},
 ]
@@ -137,6 +160,7 @@ def api_home(request):
             "navigation": {
                 "features": f"{base}/api/features/",
                 "dashboard": f"{base}/api/dashboard/",
+                "report": f"{base}/api/report/dashboard/",
             },
         }
     )
@@ -175,6 +199,7 @@ def dashboard(request):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "avatar": user.avatar.url if getattr(user, "avatar", None) else None,
+                "date_joined": iso(getattr(user, "date_joined", None)),
             },
             "aso_apps_count": safe_count(aso_apps_qs),
             "marketplace_products_count": safe_count(marketplace_products_qs),
@@ -883,6 +908,96 @@ def seo_content_items(request):
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
+def seo_repurpose(request):
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    if request.method == "POST":
+        source_url = request.data.get("source_url") or ""
+        formats = request.data.get("target_formats") or []
+        if isinstance(formats, str):
+            formats = [f.strip() for f in formats.split(",") if f.strip()]
+        if not source_url:
+            return Response({"error": "source_url is required"}, status=400)
+
+        job = RepurposeJob.objects.create(
+            tenant=tenant,
+            source_url=source_url,
+            target_formats=formats or ["twitter", "linkedin", "email"],
+            status="scheduled",
+            scheduled_for=request.data.get("scheduled_for"),
+        )
+
+        # Inline LLM repurpose (best-effort) using OpenAI if configured
+        api_key = getattr(settings, "OPENAI_API_KEY", None)
+        if api_key:
+            try:
+                import openai
+
+                openai.api_key = api_key
+                prompt = dedent(
+                    f"""
+                    Repurpose the following blog/article into social and email snippets.
+                    Source URL: {source_url}
+                    Target formats: {formats or ['twitter','linkedin','email']}
+                    Return JSON with keys matching target formats and values as arrays of snippets (max 3 each), plus a short summary.
+                    """
+                )
+                completion = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    temperature=0.6,
+                    messages=[
+                        {"role": "system", "content": "Return valid JSON only."},
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                import json
+
+                parsed = json.loads(completion["choices"][0]["message"]["content"])
+                job.outputs = parsed
+                job.summary = parsed.get("summary", "")
+                job.status = "done"
+                job.completed_at = timezone.now()
+                job.save()
+            except Exception as exc:
+                job.status = "failed"
+                job.error = str(exc)
+                job.save()
+
+        return Response(
+            {
+                "id": job.id,
+                "source_url": job.source_url,
+                "target_formats": job.target_formats,
+                "status": job.status,
+                "scheduled_for": iso(job.scheduled_for),
+                "completed_at": iso(job.completed_at),
+                "outputs": job.outputs,
+                "error": job.error,
+            },
+            status=201 if job.status != "failed" else 500,
+        )
+
+    jobs = RepurposeJob.objects.filter(tenant=tenant)
+    data = [
+        {
+            "id": j.id,
+            "source_url": j.source_url,
+            "target_formats": j.target_formats,
+            "status": j.status,
+            "scheduled_for": iso(j.scheduled_for),
+            "completed_at": iso(j.completed_at),
+            "summary": j.summary,
+            "error": j.error,
+        }
+        for j in jobs
+    ]
+    return Response(data)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def seo_faqs(request):
     tenant, err = ensure_tenant(request.user)
     if err:
@@ -1025,6 +1140,69 @@ def seo_directories(request):
     return Response(data)
 
 
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def press_pitches(request):
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    if request.method == "POST":
+        outlet = request.data.get("outlet") or ""
+        pitch_subject = request.data.get("pitch_subject") or ""
+        pitch_body = request.data.get("pitch_body") or ""
+        if not outlet or not pitch_subject or not pitch_body:
+            return Response({"error": "outlet, pitch_subject, and pitch_body are required"}, status=400)
+
+        tags = request.data.get("tags") or []
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
+
+        pitch = PressPitch.objects.create(
+            tenant=tenant,
+            outlet=outlet,
+            contact_name=request.data.get("contact_name", ""),
+            contact_email=request.data.get("contact_email", ""),
+            pitch_subject=pitch_subject,
+            pitch_body=pitch_body,
+            status=request.data.get("status", "sent"),
+            sent_at=request.data.get("sent_at"),
+            follow_up_at=request.data.get("follow_up_at"),
+            response_notes=request.data.get("response_notes", ""),
+            article_url=request.data.get("article_url", ""),
+            tags=tags,
+            metadata=request.data.get("metadata", {}),
+        )
+        return Response(
+            {
+                "id": pitch.id,
+                "outlet": pitch.outlet,
+                "pitch_subject": pitch.pitch_subject,
+                "status": pitch.status,
+                "sent_at": iso(pitch.sent_at),
+                "follow_up_at": iso(pitch.follow_up_at),
+            },
+            status=201,
+        )
+
+    pitches = PressPitch.objects.filter(tenant=tenant)
+    data = [
+        {
+            "id": p.id,
+            "outlet": p.outlet,
+            "contact_email": p.contact_email,
+            "pitch_subject": p.pitch_subject,
+            "status": p.status,
+            "sent_at": iso(p.sent_at),
+            "follow_up_at": iso(p.follow_up_at),
+            "article_url": p.article_url,
+            "tags": p.tags,
+        }
+        for p in pitches
+    ]
+    return Response(data)
+
+
 # Social -------------------------------------------------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -1055,6 +1233,11 @@ def social_posts(request):
     if request.method == "POST":
         content = request.data.get("content") or ""
         title = request.data.get("title") or content[:50] or "New Post"
+        scheduled_at = request.data.get("scheduled_at")
+        status_val = request.data.get("status", "draft")
+        if status_val == "scheduled" and scheduled_at and timezone.now() >= timezone.make_aware(timezone.datetime.fromisoformat(str(scheduled_at))):
+            status_val = "published"
+        published_at_val = timezone.now() if status_val == "published" else None
         post = Post.objects.create(
             tenant=tenant,
             author=request.user,
@@ -1063,9 +1246,11 @@ def social_posts(request):
             excerpt=content[:140],
             post_type=request.data.get("post_type", "post"),
             category=request.data.get("category", "general"),
-            status=request.data.get("status", "draft"),
+            status=status_val,
             platforms=request.data.get("platforms", [request.data.get("platform", "general")]),
             featured_image=request.data.get("featured_image", ""),
+            scheduled_at=scheduled_at,
+            published_at=published_at_val,
         )
         return Response(
             {
@@ -1176,6 +1361,133 @@ def social_messages(request):
             "timestamp": iso(m.timestamp),
         }
         for m in messages
+    ]
+    return Response(data)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def social_schedule(request):
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    if request.method == "POST":
+        content = request.data.get("content") or ""
+        title = request.data.get("title") or content[:50] or "Scheduled Post"
+        publish_at = request.data.get("publish_at")
+        if not publish_at:
+            return Response({"error": "publish_at is required"}, status=400)
+        status_val = "scheduled"
+        post = Post.objects.create(
+            tenant=tenant,
+            author=request.user,
+            title=title,
+            content=content,
+            excerpt=content[:140],
+            post_type=request.data.get("post_type", "post"),
+            category=request.data.get("category", "general"),
+            status=status_val,
+            platforms=request.data.get("platforms", [request.data.get("platform", "general")]),
+            featured_image=request.data.get("featured_image", ""),
+            scheduled_at=publish_at,
+        )
+        return Response({"id": post.id, "status": post.status, "scheduled_at": iso(post.scheduled_at)}, status=201)
+
+    # GET: process due scheduled posts and report counts
+    due = Post.objects.filter(tenant=tenant, status="scheduled", scheduled_at__lte=timezone.now())
+    published = 0
+    for p in due:
+        p.status = "published"
+        p.published_at = timezone.now()
+        p.save()
+        published += 1
+    pending = Post.objects.filter(tenant=tenant, status="scheduled").count()
+    return Response({"published_now": published, "pending": pending})
+
+
+# Leads --------------------------------------------------------------------
+@api_view(["GET", "POST"])
+@permission_classes([AllowAny])
+def leads(request):
+    """
+    Capture inbound leads (public POST) and allow authenticated users to review them (GET).
+    If the user is authenticated, the lead is associated to their tenant when available.
+    """
+    if request.method == "POST":
+        email_val = (request.data.get("email") or "").strip()
+        if not email_val:
+            return Response({"error": "email is required"}, status=400)
+
+        tenant_obj = None
+        if getattr(request, "user", None) and request.user.is_authenticated:
+            tenant_obj, _err = ensure_tenant(request.user)
+            # If tenant is missing, allow saving without tenant so data isn't lost.
+            if _err:
+                tenant_obj = None
+
+        tags = request.data.get("tags") or []
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
+
+        # Merge any metadata provided by caller with context hints.
+        metadata = request.data.get("metadata") or {}
+        if not isinstance(metadata, dict):
+            metadata = {}
+        metadata.setdefault("user_agent", request.META.get("HTTP_USER_AGENT"))
+        metadata.setdefault("referrer", request.META.get("HTTP_REFERER"))
+
+        lead = Lead.objects.create(
+            tenant=tenant_obj,
+            name=request.data.get("name", "").strip(),
+            email=email_val,
+            phone=request.data.get("phone", "").strip(),
+            company=request.data.get("company", "").strip(),
+            website=request.data.get("website", "").strip(),
+            service_interest=request.data.get("service_interest", "").strip(),
+            budget=request.data.get("budget", "").strip(),
+            message=request.data.get("message", "").strip(),
+            source=request.data.get("source", "").strip() or request.data.get("utm_source", ""),
+            status=request.data.get("status", "new").strip() or "new",
+            tags=tags,
+            metadata=metadata,
+        )
+        return Response(
+            {
+                "id": lead.id,
+                "name": lead.name,
+                "email": lead.email,
+                "company": lead.company,
+                "service_interest": lead.service_interest,
+                "budget": lead.budget,
+                "status": lead.status,
+                "created_at": iso(lead.created_at),
+            },
+            status=201,
+        )
+
+    if not request.user or not request.user.is_authenticated:
+        return Response({"error": "Authentication required"}, status=401)
+
+    tenant_ids = get_user_tenant_ids(request.user)
+    leads_qs = Lead.objects.filter(Q(tenant_id__in=tenant_ids) | Q(tenant__isnull=True))
+    data = [
+        {
+            "id": lead.id,
+            "name": lead.name,
+            "email": lead.email,
+            "phone": lead.phone,
+            "company": lead.company,
+            "website": lead.website,
+            "service_interest": lead.service_interest,
+            "budget": lead.budget,
+            "message": lead.message,
+            "source": lead.source,
+            "status": lead.status,
+            "tags": lead.tags,
+            "created_at": iso(lead.created_at),
+        }
+        for lead in leads_qs
     ]
     return Response(data)
 
@@ -1349,9 +1661,151 @@ def email_contacts(request):
     return Response(data)
 
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def request_password_reset(request):
+    email = (request.data.get("email") or "").strip()
+    if not email:
+        return Response({"error": "email required"}, status=400)
+    try:
+        user = get_user_model().objects.get(email=email)
+    except Exception:
+        return Response({"message": "If the account exists, a reset email has been sent."})
+
+    token = get_random_string(48)
+    expires_at = timezone.now() + timedelta(hours=1)
+    PasswordResetToken.objects.create(user=user, token=token, expires_at=expires_at)
+
+    reset_url = f"{request.build_absolute_uri('/').rstrip('/')}/api/auth/confirm-reset?token={token}"
+    try:
+        send_mail(
+            "Password reset",
+            f"Use this link to reset your password: {reset_url}",
+            getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@example.com"),
+            [user.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+    return Response({"message": "If the account exists, a reset email has been sent."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def confirm_password_reset(request):
+    token_val = request.data.get("token")
+    new_password = request.data.get("password")
+    if not token_val or not new_password:
+        return Response({"error": "token and password required"}, status=400)
+    try:
+        token = PasswordResetToken.objects.get(token=token_val, used=False)
+    except PasswordResetToken.DoesNotExist:
+        return Response({"error": "Invalid token"}, status=400)
+    if not token.is_valid():
+        return Response({"error": "Token expired or used"}, status=400)
+    user = token.user
+    user.set_password(new_password)
+    user.save()
+    token.used = True
+    token.save()
+    return Response({"message": "Password updated"})
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+def usage_summary(request):
+    tenant_ids = get_user_tenant_ids(request.user)
+    usage = {
+        "email_sends": EmailSend.objects.filter(tenant_id__in=tenant_ids).count(),
+        "sms_messages": SmsMessage.objects.filter(tenant_id__in=tenant_ids).count(),
+        "leads": Lead.objects.filter(Q(tenant_id__in=tenant_ids) | Q(tenant__isnull=True)).count(),
+        "social_posts": Post.objects.filter(tenant_id__in=tenant_ids).count(),
+        "campaigns": EmailCampaign.objects.filter(tenant_id__in=tenant_ids).count(),
+    }
+    limits = {
+        "email_sends": 10000,
+        "sms_messages": 2000,
+        "leads": 5000,
+        "social_posts": 3000,
+        "campaigns": 500,
+    }
+    return Response({"usage": usage, "limits": limits})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def tasks_status(request):
+    tenant_ids = get_user_tenant_ids(request.user)
+    scheduled_posts = Post.objects.filter(tenant_id__in=tenant_ids, status="scheduled").count()
+    scheduled_campaigns = EmailCampaign.objects.filter(tenant_id__in=tenant_ids, status="scheduled").count()
+    return Response(
+        {
+            "scheduled_posts": scheduled_posts,
+            "scheduled_campaigns": scheduled_campaigns,
+        }
+    )
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def email_sends(request):
+    if request.method == "POST":
+        tenant, err = ensure_tenant(request.user)
+        if err:
+            return err
+        recipient_id = request.data.get("recipient_id")
+        template_id = request.data.get("template_id")
+        subject_override = request.data.get("subject")
+        body_text_override = request.data.get("body_text")
+        body_html_override = request.data.get("body_html")
+        email_list_id = request.data.get("email_list_id")
+
+        if not recipient_id:
+            return Response({"error": "recipient_id is required"}, status=400)
+        if not template_id and not (body_text_override or body_html_override or subject_override):
+            return Response({"error": "template_id or subject/body required"}, status=400)
+
+        recipient = get_object_or_404(Contact, id=recipient_id, tenant=tenant)
+        template = None
+        if template_id:
+            template = get_object_or_404(EmailTemplate, id=template_id, tenant=tenant)
+        email_list = None
+        if email_list_id:
+            email_list = get_object_or_404(EmailList, id=email_list_id, tenant=tenant)
+
+        send = EmailSend.objects.create(
+            tenant=tenant,
+            recipient=recipient,
+            template=template,
+            email_list=email_list,
+            status="queued",
+        )
+
+        ok, message_id, error = send_via_provider(
+            send,
+            subject_override=subject_override,
+            body_text_override=body_text_override,
+            body_html_override=body_html_override,
+        )
+        if ok:
+            send.status = "sent"
+            send.sent_at = timezone.now()
+            send.message_id = message_id or ""
+        else:
+            send.status = "failed"
+            send.last_error = error or "Unknown error"
+        send.save()
+
+        return Response(
+            {
+                "id": send.id,
+                "status": send.status,
+                "message_id": send.message_id,
+                "sent_at": iso(send.sent_at),
+                "error": send.last_error,
+            },
+            status=201 if ok else 500,
+        )
+
     tenant_ids = get_user_tenant_ids(request.user)
     sends = EmailSend.objects.filter(tenant_id__in=tenant_ids)
     data = [
@@ -1366,6 +1820,172 @@ def email_sends(request):
             "complaints": s.complaints,
         }
         for s in sends
+    ]
+    return Response(data)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def sms_messages(request):
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    if request.method == "POST":
+        to_number = (request.data.get("to_number") or "").strip()
+        if not to_number:
+            # Fallback to user's phone_number if provided
+            to_number = getattr(request.user, "phone_number", "") or ""
+        body = (request.data.get("body") or "").strip()
+        contact_id = request.data.get("contact_id")
+        if not to_number:
+            return Response({"error": "to_number is required and no user phone_number is set"}, status=400)
+        if not body:
+            return Response({"error": "body is required"}, status=400)
+
+        contact = None
+        if contact_id:
+            contact = get_object_or_404(Contact, id=contact_id, tenant=tenant)
+
+        sms = SmsMessage.objects.create(
+            tenant=tenant,
+            contact=contact,
+            to_number=to_number,
+            body=body,
+            status="queued",
+            metadata={"source": request.data.get("source") or "manual"},
+        )
+
+        ok, message_id, error = send_sms_via_provider(sms)
+        if ok:
+            sms.status = "sent"
+            sms.sent_at = timezone.now()
+            sms.provider_message_id = message_id or ""
+        else:
+            sms.status = "failed"
+            sms.last_error = error or "Unknown error"
+        sms.save()
+
+        return Response(
+            {
+                "id": sms.id,
+                "status": sms.status,
+                "provider_message_id": sms.provider_message_id,
+                "sent_at": iso(sms.sent_at),
+                "error": sms.last_error,
+            },
+            status=201 if ok else 500,
+        )
+
+    sms_qs = SmsMessage.objects.filter(tenant=tenant)
+    data = [
+        {
+            "id": sms.id,
+            "to_number": sms.to_number,
+            "body": sms.body[:140] + "..." if len(sms.body) > 140 else sms.body,
+            "status": sms.status,
+            "sent_at": iso(sms.sent_at),
+            "provider_message_id": sms.provider_message_id,
+            "error": sms.last_error,
+        }
+        for sms in sms_qs
+    ]
+    return Response(data)
+
+
+def _send_campaign_now(campaign, tenant):
+    contacts = Contact.objects.filter(tenant=tenant, subscribed=True)
+    sent = 0
+    errors = []
+    for contact in contacts:
+        send = EmailSend.objects.create(
+            tenant=tenant,
+            recipient=contact,
+            template=campaign.template,
+            email_list=campaign.email_list,
+            status="queued",
+        )
+        ok, message_id, error = send_via_provider(
+            send,
+            subject_override=campaign.subject_override or None,
+            body_text_override=campaign.body_text_override or None,
+            body_html_override=campaign.body_html_override or None,
+        )
+        if ok:
+            send.status = "sent"
+            send.sent_at = timezone.now()
+            send.message_id = message_id or ""
+            sent += 1
+        else:
+            send.status = "failed"
+            send.last_error = error or "Unknown error"
+            errors.append(error)
+        send.save()
+    campaign.sent_count = sent
+    campaign.sent_at = timezone.now()
+    campaign.status = "sent" if sent else "failed"
+    campaign.last_error = "; ".join([e for e in errors if e])[:500]
+    campaign.save()
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def email_campaigns(request):
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    if request.method == "POST":
+        email_list_id = request.data.get("email_list_id")
+        template_id = request.data.get("template_id")
+        subject = request.data.get("subject") or ""
+        body_text = request.data.get("body_text") or ""
+        body_html = request.data.get("body_html") or ""
+        send_now = str(request.data.get("send_now", "")).lower() in ("1", "true", "yes")
+        scheduled_for = request.data.get("scheduled_for")
+
+        email_list = get_object_or_404(EmailList, id=email_list_id, tenant=tenant) if email_list_id else None
+        template = get_object_or_404(EmailTemplate, id=template_id, tenant=tenant) if template_id else None
+
+        if not template and not subject and not body_text and not body_html:
+            return Response({"error": "template or subject/body required"}, status=400)
+
+        campaign = EmailCampaign.objects.create(
+            tenant=tenant,
+            email_list=email_list,
+            template=template,
+            subject_override=subject,
+            body_text_override=body_text,
+            body_html_override=body_html,
+            status="scheduled" if scheduled_for else ("draft" if not send_now else "scheduled"),
+            scheduled_for=scheduled_for,
+        )
+
+        if send_now or (scheduled_for and scheduled_for <= timezone.now()):
+            _send_campaign_now(campaign, tenant)
+
+        return Response(
+            {
+                "id": campaign.id,
+                "status": campaign.status,
+                "sent_count": campaign.sent_count,
+                "scheduled_for": iso(campaign.scheduled_for),
+                "sent_at": iso(campaign.sent_at),
+            },
+            status=201,
+        )
+
+    campaigns = EmailCampaign.objects.filter(tenant=tenant)
+    data = [
+        {
+            "id": c.id,
+            "status": c.status,
+            "sent_count": c.sent_count,
+            "scheduled_for": iso(c.scheduled_for),
+            "sent_at": iso(c.sent_at),
+            "created_at": iso(c.created_at),
+        }
+        for c in campaigns
     ]
     return Response(data)
 
@@ -1524,33 +2144,372 @@ def geo_lookup(request):
 
 
 # AEO ----------------------------------------------------------------------
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def aeo_readiness(request):
-    """Stubbed AEO readiness checklist."""
-    return Response(
-        {
-            "status": "ok",
-            "checks": [
-                {"name": "Structured FAQs", "status": "pending"},
-                {"name": "Multilingual coverage", "status": "pending"},
-                {"name": "Backlinks", "status": "pending"},
-            ],
-        }
+    """
+    AEO readiness check with optional OpenAI analysis and persistent checklist.
+    Accepts: domain, vertical, primary_keywords (list), locales (list), faq_urls (list), regenerate (bool).
+    """
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    payload = request.data if request.method == "POST" else request.query_params
+    domain = payload.get("domain", "")
+    vertical = payload.get("vertical", "")
+    keywords = payload.get("primary_keywords", [])
+    if isinstance(keywords, str):
+        keywords = [k.strip() for k in keywords.split(",") if k.strip()]
+    locales = payload.get("locales", [])
+    if isinstance(locales, str):
+        locales = [l.strip() for l in locales.split(",") if l.strip()]
+    faq_urls = payload.get("faq_urls", [])
+    if isinstance(faq_urls, str):
+        faq_urls = [u.strip() for u in faq_urls.split(",") if u.strip()]
+    regenerate = str(payload.get("regenerate", "")).lower() in ("1", "true", "yes")
+
+    # If we already have stored checklist and no regenerate requested, return it.
+    existing = AeoChecklistItem.objects.filter(tenant=tenant).order_by("-updated_at")
+    if existing.exists() and not regenerate:
+        data = [
+            {
+                "id": item.id,
+                "name": item.name,
+                "status": item.status,
+                "recommendation": item.recommendation,
+                "updated_at": iso(item.updated_at),
+            }
+            for item in existing
+        ]
+        return Response({"status": "ok", "source": "stored", "checks": data})
+
+    nav_context = dedent(
+        """
+        App navigation:
+        - Home (/)
+        - Pricing (/pricing)
+        - Optimisation (/optimisation) [SEO/Technical]
+        - Reach (/reach) [Social/Community]
+        - Growth (/growth) [Email/SMS]
+        - Dashboard (/dashboard)
+        - Data entry (/data-entry, /seo/data, /aeo/data)
+        - Leads (/leads)
+        """
     )
+
+    checks = []
+    quick_actions = [
+        {"action": "Add FAQs in /aeo/data", "cta": "/#/aeo/data"},
+        {"action": "Seed keywords in /seo/data", "cta": "/#/seo/data"},
+        {"action": "Capture leads in /leads", "cta": "/#/leads"},
+    ]
+    source_label = "stub"
+
+    api_key = getattr(settings, "OPENAI_API_KEY", None)
+    if api_key:
+        try:
+            import openai
+            import json
+
+            openai.api_key = api_key
+            prompt = dedent(
+                f"""
+                You are an AEO (answer-engine optimization) readiness auditor.
+                Assess the site's readiness given:
+                - domain: {domain or 'unknown'}
+                - vertical: {vertical or 'general'}
+                - primary keywords: {keywords or 'none supplied'}
+                - locales: {locales or 'en'}
+                - faq URLs: {faq_urls or 'none'}
+                - app navigation routes: {nav_context}
+
+                Return a concise JSON with:
+                - checks: array of objects with name, status (good|warning|poor), and recommendation.
+                - quick_actions: array of actions with cta paths in this app.
+                """
+            )
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.3,
+                messages=[
+                    {"role": "system", "content": "Return valid JSON only. Keep it concise."},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            parsed = json.loads(completion["choices"][0]["message"]["content"])
+            checks = parsed.get("checks", [])
+            quick_actions = parsed.get("quick_actions", quick_actions)
+            source_label = "openai"
+        except Exception:
+            checks = []
+
+    if not checks:
+        checks = [
+            {"name": "Structured FAQs", "status": "warning", "recommendation": "Add FAQ schema to top questions."},
+            {"name": "Multilingual coverage", "status": "warning", "recommendation": "Localize priority pages and add hreflang."},
+            {"name": "Backlinks", "status": "warning", "recommendation": "Add 5+ authoritative backlinks to key URLs."},
+            {"name": "Answer coverage", "status": "poor", "recommendation": "Create concise Q&A for top keywords."},
+        ]
+
+    # Replace stored checklist with new results
+    AeoChecklistItem.objects.filter(tenant=tenant).delete()
+    valid_statuses = {choice[0] for choice in AeoChecklistItem.STATUS_CHOICES}
+    stored_items = []
+    for item in checks:
+        status_val = item.get("status", "pending")
+        if status_val not in valid_statuses:
+            status_val = "pending"
+        obj = AeoChecklistItem.objects.create(
+            tenant=tenant,
+            name=item.get("name", "Check"),
+            status=status_val,
+            recommendation=item.get("recommendation", ""),
+            source=source_label,
+            metadata=item,
+        )
+        stored_items.append(obj)
+
+    data = [
+        {
+            "id": item.id,
+            "name": item.name,
+            "status": item.status,
+            "recommendation": item.recommendation,
+            "updated_at": iso(item.updated_at),
+        }
+        for item in stored_items
+    ]
+    return Response({"status": "ok", "source": source_label, "checks": data, "quick_actions": quick_actions})
 
 
 # Free Zone ---------------------------------------------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def free_zone(request):
-    """Stubbed Free Zone ideas."""
+    """
+    Free Zone ideation powered by OpenAI (if configured) with persistence.
+    Accepts optional: goal, audience, vertical, regenerate (bool).
+    """
+    tenant, err = ensure_tenant(request.user)
+    if err:
+        return err
+
+    payload = request.data if request.method == "POST" else request.query_params
+    goal = payload.get("goal", "organic growth")
+    audience = payload.get("audience", "SMBs")
+    vertical = payload.get("vertical", "general")
+    regenerate = str(payload.get("regenerate", "")).lower() in ("1", "true", "yes")
+
+    existing = FreeZoneIdea.objects.filter(tenant=tenant).order_by("-updated_at")
+    if existing.exists() and not regenerate:
+        return Response(
+            {
+                "source": "stored",
+                "ideas": [
+                    {
+                        "id": idea.id,
+                        "title": idea.title,
+                        "type": idea.idea_type,
+                        "description": idea.description,
+                        "cta": idea.cta,
+                        "effort": idea.effort,
+                        "status": idea.status,
+                    }
+                    for idea in existing
+                ],
+            }
+        )
+
+    nav_context = dedent(
+        """
+        App navigation:
+        - Home (/)
+        - Pricing (/pricing)
+        - Optimisation (/optimisation)
+        - Reach (/reach)
+        - Growth (/growth)
+        - Dashboard (/dashboard)
+        - Data entry (/data-entry, /seo/data, /aeo/data)
+        - Leads (/leads)
+        """
+    )
+
+    ideas = []
+    landing_route = "/"
+    source_label = "stub"
+
+    api_key = getattr(settings, "OPENAI_API_KEY", None)
+    if api_key:
+        try:
+            import openai, json
+
+            openai.api_key = api_key
+            prompt = dedent(
+                f"""
+                Generate Free Zone ideas (microtools, campaigns, content) for:
+                goal: {goal}
+                audience: {audience}
+                vertical: {vertical}
+                app navigation: {nav_context}
+                Return JSON with:
+                - landing_route: one of the routes above
+                - ideas: array of items with title, type (microtool|campaign|content), description, cta (route), effort (low|medium|high)
+                """
+            )
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                temperature=0.6,
+                messages=[
+                    {"role": "system", "content": "Return valid JSON only. Keep items concise."},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            parsed = json.loads(completion["choices"][0]["message"]["content"])
+            ideas = parsed.get("ideas", [])
+            landing_route = parsed.get("landing_route", "/")
+            source_label = "openai"
+        except Exception:
+            ideas = []
+
+    if not ideas:
+        ideas = [
+            {"title": "SEO mini-audit", "type": "microtool", "description": "Quickly score on-page SEO for top URLs.", "cta": "/#/seo/data", "effort": "low"},
+            {"title": "Headline tester", "type": "microtool", "description": "Test headline variants for CTR uplift.", "cta": "/#/aeo/data", "effort": "low"},
+            {"title": "Lead magnet promo", "type": "campaign", "description": "Collect emails with a targeted guide.", "cta": "/#/leads", "effort": "medium"},
+        ]
+
+    FreeZoneIdea.objects.filter(tenant=tenant).delete()
+    valid_types = {c[0] for c in FreeZoneIdea.IDEA_CHOICES}
+    valid_effort = {c[0] for c in FreeZoneIdea.EFFORT_CHOICES}
+    stored = []
+    for idea in ideas:
+        idea_type = idea.get("type", "microtool")
+        if idea_type not in valid_types:
+            idea_type = "microtool"
+        effort_val = idea.get("effort", "medium")
+        if effort_val not in valid_effort:
+            effort_val = "medium"
+        obj = FreeZoneIdea.objects.create(
+            tenant=tenant,
+            title=idea.get("title", "Idea"),
+            idea_type=idea_type,
+            description=idea.get("description", ""),
+            cta=idea.get("cta", ""),
+            effort=effort_val,
+            status="open",
+            metadata=idea,
+        )
+        stored.append(obj)
+
     return Response(
         {
+            "source": source_label,
+            "landing_route": landing_route,
             "ideas": [
-                {"title": "SEO mini-audit", "type": "microtool", "cta": "/"},
-                {"title": "A/B headline tester", "type": "microtool", "cta": "/"},
-                {"title": "Newsletter opt-in promo", "type": "campaign", "cta": "/"},
-            ]
+                {
+                    "id": idea.id,
+                    "title": idea.title,
+                    "type": idea.idea_type,
+                    "description": idea.description,
+                    "cta": idea.cta,
+                    "effort": idea.effort,
+                    "status": idea.status,
+                }
+                for idea in stored
+            ],
         }
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def dashboard_report(request):
+    """Generate a lightweight PDF summary of key metrics for the dashboard."""
+    tenant_ids = get_user_tenant_ids(request.user)
+
+    range_param = request.query_params.get("range", "30d")
+    start_param = request.query_params.get("start_date")
+    end_param = request.query_params.get("end_date")
+    now = timezone.now()
+    start_date = None
+    end_date = now
+
+    if range_param == "today":
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif range_param == "7d":
+        start_date = now - timedelta(days=7)
+    elif range_param == "30d":
+        start_date = now - timedelta(days=30)
+    elif range_param == "90d":
+        start_date = now - timedelta(days=90)
+    elif range_param == "custom":
+        try:
+            if start_param:
+                start_date = timezone.datetime.fromisoformat(start_param)
+                if timezone.is_naive(start_date):
+                    start_date = timezone.make_aware(start_date)
+            if end_param:
+                end_date = timezone.datetime.fromisoformat(end_param)
+                if timezone.is_naive(end_date):
+                    end_date = timezone.make_aware(end_date)
+        except Exception:
+            pass
+
+    def safe_count(qs, field_name):
+        try:
+            if start_date:
+                qs = qs.filter(**{f"{field_name}__gte": start_date})
+            if end_date:
+                qs = qs.filter(**{f"{field_name}__lte": end_date})
+            return qs.count()
+        except Exception:
+            return qs.count()
+
+    # Collect basic counts
+    aso_count = safe_count(ASOApp.objects.filter(tenant_id__in=tenant_ids), "created_at")
+    marketplace_count = safe_count(Product.objects.filter(tenant_id__in=tenant_ids), "created_at")
+    seo_sites_count = safe_count(SEOSite.objects.filter(tenant_id__in=tenant_ids), "created_at")
+    backlink_count = safe_count(Backlink.objects.filter(site__tenant_id__in=tenant_ids), "first_seen")
+    leads_count = safe_count(Lead.objects.filter(Q(tenant_id__in=tenant_ids) | Q(tenant__isnull=True)), "created_at")
+    emails_count = safe_count(Contact.objects.filter(tenant_id__in=tenant_ids), "subscribed_at")
+    sms_count = safe_count(SmsMessage.objects.filter(tenant_id__in=tenant_ids), "created_at")
+    repurpose_jobs = safe_count(RepurposeJob.objects.filter(tenant_id__in=tenant_ids), "created_at")
+    aeo_checks = safe_count(AeoChecklistItem.objects.filter(tenant_id__in=tenant_ids), "updated_at")
+    free_zone_ideas = safe_count(FreeZoneIdea.objects.filter(tenant_id__in=tenant_ids), "updated_at")
+
+    buffer = BytesIO()
+    img = Image.new("RGB", (1200, 1600), color="white")
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.load_default()
+    line_height = font.getbbox("Ag")[3] + 6
+
+    lines = [
+        "Icycon Dashboard Report",
+        f"User: {request.user.email}",
+        "",
+        "Key Metrics:",
+        f"- ASO Apps: {aso_count}",
+        f"- Marketplace Products: {marketplace_count}",
+        f"- SEO Sites: {seo_sites_count}",
+        f"- Backlinks: {backlink_count}",
+        f"- Leads: {leads_count}",
+        f"- Email Contacts: {emails_count}",
+        f"- SMS Messages: {sms_count}",
+        f"- Repurpose Jobs: {repurpose_jobs}",
+        f"- AEO Checklist Items: {aeo_checks}",
+        f"- Free Zone Ideas: {free_zone_ideas}",
+    ]
+
+    x, y = 60, 60
+    for line in lines:
+        draw.text((x, y), line, fill="black", font=font)
+        y += line_height
+
+    img.save(buffer, format="PDF")
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="dashboard-report.pdf"'
+    return response

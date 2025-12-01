@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EmailList, Contact, EmailTemplate, EmailFlow, EmailSend
+from .models import EmailList, Contact, EmailTemplate, EmailFlow, EmailSend, SmsMessage, EmailCampaign
 
 class EmailListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,4 +24,14 @@ class EmailFlowSerializer(serializers.ModelSerializer):
 class EmailSendSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailSend
+        fields = '__all__'
+
+class SmsMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SmsMessage
+        fields = '__all__'
+
+class EmailCampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailCampaign
         fields = '__all__'
