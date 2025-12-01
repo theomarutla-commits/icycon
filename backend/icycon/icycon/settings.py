@@ -117,6 +117,7 @@ MIDDLEWARE = [
     # WhiteNoise middleware serves static files in production without NGINX
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'icycon.middleware.ClearCorruptedSessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

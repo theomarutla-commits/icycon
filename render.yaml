@@ -3,8 +3,8 @@ services:
     name: icycon-backend
     rootDir: backend
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn icycon.wsgi:application --bind 0.0.0.0:8000
+    buildCommand: pip install -r icycon/requirements.txt
+    startCommand: cd icycon && gunicorn icycon.wsgi:application --bind 0.0.0.0:8000
     plan: free
     envVars:
       - key: DJANGO_SETTINGS_MODULE
