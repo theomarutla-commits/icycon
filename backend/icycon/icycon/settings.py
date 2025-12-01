@@ -70,8 +70,8 @@ if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = with_https_variants(CORS_ALLOWED_ORIGINS)
 
 
-#  OpenAI (manual)
-OPENAI_API_KEY = 'OPENAI_KEY_REMOVED'
+# OpenAI (env only; never hardcode secrets)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
 #Email settings 
 EMAIL_HOST = 'smtp.gmail.com'
