@@ -14,7 +14,7 @@ import SEODataPage from './pages/SEODataPage';
 import AeoDataPage from './pages/AeoDataPage';
 import LeadCapturePage from './pages/LeadCapturePage';
 import Footer from './components/Footer';
-import { getStoredAuth, clearStoredAuth } from './lib/api';
+import { getStoredAuth, clearStoredAuth, fetchProfile } from './lib/api';
 
 // Component to scroll to top on route change
 function ScrollToTop() {
@@ -27,11 +27,37 @@ function ScrollToTop() {
 
 export default function App() {
   // Hardcoded dark mode behavior
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!getStoredAuth());
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
 
   useEffect(() => {
     // Enforce dark mode class
     document.documentElement.classList.add('dark');
+  }, []);
+
+  // Validate stored auth on mount; if it fails, clear it so /auth stays accessible
+  useEffect(() => {
+    let mounted = true;
+    const stored = getStoredAuth();
+    if (!stored) {
+      setAuthChecked(true);
+      return () => {};
+    }
+    fetchProfile()
+      .then(() => {
+        if (!mounted) return;
+        setIsAuthenticated(true);
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        clearStoredAuth();
+        setIsAuthenticated(false);
+        setAuthChecked(true);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleLogin = () => setIsAuthenticated(true);
@@ -56,6 +82,9 @@ export default function App() {
         />
         
         <main className="relative z-10 flex-grow">
+          {!authChecked ? (
+            <div className="flex items-center justify-center py-24 text-gray-300 text-sm">Checking session…</div>
+          ) : (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/pricing" element={<PricingPage />} />
@@ -70,6 +99,7 @@ export default function App() {
             <Route path="/seo/data" element={isAuthenticated ? <SEODataPage /> : <AuthPage onLogin={handleLogin} />} />
             <Route path="/aeo/data" element={isAuthenticated ? <AeoDataPage /> : <AuthPage onLogin={handleLogin} />} />
           </Routes>
+          )}
         </main>
 
         <Footer />

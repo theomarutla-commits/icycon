@@ -196,6 +196,8 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
 LOGOUT_REDIRECT_URL = '/'  # Redirect to home page after logout
 LOGIN_URL = '/login/'  # URL to redirect to when login is required
+# Rotate session cookie name to avoid stale/corrupted cookies from prior keys/deploys
+SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'icycon_sessionid')
 
 # CORS / CSRF settings (manually managed above)
 
